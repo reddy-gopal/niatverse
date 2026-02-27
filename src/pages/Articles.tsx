@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { ThumbsUp, ChevronDown, PenLine } from 'lucide-react';
+import { ChevronDown, PenLine } from 'lucide-react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import { allArticles, campuses } from '../data/mockData';
