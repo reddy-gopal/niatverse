@@ -3,6 +3,7 @@ import { Link, useParams } from 'react-router-dom';
 import { ChevronRight, ThumbsUp, Edit3, Clock, MessageSquare } from 'lucide-react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
+import ImageWithFallback from '../components/ImageWithFallback';
 import { campuses, allArticles, articleComments, relatedArticles } from '../data/mockData';
 import { CATEGORY_CONFIG } from '../data/articleCategories';
 
@@ -17,23 +18,25 @@ export default function Article() {
 
   const article = pageArticle
     ? {
-        title: pageArticle.title,
-        excerpt: pageArticle.excerpt,
-        updatedDays: pageArticle.updatedDays,
-        helpful: pageArticle.helpful,
-        author: 'NIAT Student',
-        category: pageArticle.category,
-        campusName: pageArticle.campusName,
-      }
+      title: pageArticle.title,
+      excerpt: pageArticle.excerpt,
+      updatedDays: pageArticle.updatedDays,
+      helpful: pageArticle.helpful,
+      author: 'NIAT Student',
+      category: pageArticle.category,
+      campusName: pageArticle.campusName,
+      coverImage: pageArticle.coverImage,
+    }
     : {
-        title: 'Article not found',
-        excerpt: '',
-        updatedDays: 0,
-        helpful: 0,
-        author: 'NIAT Student',
-        category: 'irc' as const,
-        campusName: 'Global',
-      };
+      title: 'Article not found',
+      excerpt: '',
+      updatedDays: 0,
+      helpful: 0,
+      author: 'NIAT Student',
+      category: 'irc' as const,
+      campusName: 'Global',
+      coverImage: undefined,
+    };
 
   const categoryConfig = CATEGORY_CONFIG[article.category];
   const [showEditHistory, setShowEditHistory] = useState(false);
@@ -52,25 +55,39 @@ export default function Article() {
           <Link to="/" className="hover:text-[#991b1b]">Home</Link>
           <ChevronRight className="h-4 w-4 mx-1" />
           {isGlobalRoute ? (
-            <>
-              <Link to="/articles" className="hover:text-[#991b1b]">Articles</Link>
-              <ChevronRight className="h-4 w-4 mx-1" />
-            </>
+            pageArticle?.isGlobalGuide ? (
+              <>
+                <Link to="/how-to-guides" className="hover:text-[#991b1b]">How-To Guides</Link>
+                <ChevronRight className="h-4 w-4 mx-1" />
+              </>
+            ) : (
+              <>
+                <Link to="/articles" className="hover:text-[#991b1b]">Articles</Link>
+                <ChevronRight className="h-4 w-4 mx-1" />
+                <span
+                  className="truncate max-w-xs"
+                  style={{ color: categoryConfig?.text ?? '#991b1b' }}
+                >
+                  {categoryConfig?.label ?? 'Article'}
+                </span>
+                <ChevronRight className="h-4 w-4 mx-1" />
+              </>
+            )
           ) : (
             <>
               <Link to={`/campus/${campusId}`} className="hover:text-[#991b1b]">
                 {campus?.name ?? 'Campus'}
               </Link>
               <ChevronRight className="h-4 w-4 mx-1" />
+              <span
+                className="truncate max-w-xs"
+                style={{ color: categoryConfig?.text ?? '#991b1b' }}
+              >
+                {categoryConfig?.label ?? 'Article'}
+              </span>
+              <ChevronRight className="h-4 w-4 mx-1" />
             </>
           )}
-          <span
-            className="truncate max-w-xs"
-            style={{ color: categoryConfig?.text ?? '#991b1b' }}
-          >
-            {categoryConfig?.label ?? 'Article'}
-          </span>
-          <ChevronRight className="h-4 w-4 mx-1" />
           <span className="text-black truncate max-w-xs">{article.title}</span>
         </nav>
 
@@ -103,6 +120,12 @@ export default function Article() {
           {article.title}
         </h1>
 
+        {article.coverImage && (
+          <div className="w-full h-64 md:h-80 rounded-xl overflow-hidden mb-6">
+            <ImageWithFallback src={article.coverImage} alt={article.title} className="w-full h-full object-cover" />
+          </div>
+        )}
+
         {/* Meta Row */}
         <div className="flex flex-wrap items-center gap-4 text-sm text-black mb-8 pb-6 border-b border-[rgba(30,41,59,0.1)]">
           <span>Written by {article.author}</span>
@@ -119,9 +142,9 @@ export default function Article() {
         {/* Article Body */}
         <article className="prose prose-lg max-w-none mb-8">
           <p className="text-black leading-relaxed mb-6">
-            The IRC (Industry Readiness Course) submission process at St. Mary's can feel overwhelming 
-            at first. The official documentation is sparse, and every coordinator seems to have their 
-            own interpretation of the rules. After going through this twice and helping dozens of 
+            The IRC (Industry Readiness Course) submission process at St. Mary's can feel overwhelming
+            at first. The official documentation is sparse, and every coordinator seems to have their
+            own interpretation of the rules. After going through this twice and helping dozens of
             juniors, here's what actually works.
           </p>
 
@@ -139,19 +162,19 @@ export default function Article() {
             What Actually Happens (What Students Know)
           </h2>
           <p className="text-black leading-relaxed mb-4">
-            In reality, the process has a few unwritten rules that can make or break your timeline. 
-            The portal is notorious for going down during the last week of every month — plan your 
+            In reality, the process has a few unwritten rules that can make or break your timeline.
+            The portal is notorious for going down during the last week of every month — plan your
             submissions for the middle of the month if possible.
           </p>
           <p className="text-black leading-relaxed mb-6">
-            Mentor availability is another bottleneck. Most mentors are full-time faculty with their 
-            own research and teaching commitments. The best time to catch them is during their office 
+            Mentor availability is another bottleneck. Most mentors are full-time faculty with their
+            own research and teaching commitments. The best time to catch them is during their office
             hours (usually posted on the department notice board) or right after their classes.
           </p>
 
           <div className="bg-[#fbf2f3] border-l-4 border-[#991b1b] p-4 mb-6">
             <p className="text-sm text-black">
-              <span className="font-medium">Pro tip:</span> Book your lab slot for the entire semester 
+              <span className="font-medium">Pro tip:</span> Book your lab slot for the entire semester
               in the first week. The good slots (mornings, when mentors are fresh) fill up fast.
             </p>
           </div>
@@ -165,8 +188,8 @@ export default function Article() {
               <div>
                 <p className="font-medium text-amber-800 mb-1">Warning</p>
                 <p className="text-sm text-amber-700">
-                  The most common delay happens when students wait for mentor feedback before proceeding. 
-                  Don't wait — keep working on parallel tracks while waiting for approvals. The mentors 
+                  The most common delay happens when students wait for mentor feedback before proceeding.
+                  Don't wait — keep working on parallel tracks while waiting for approvals. The mentors
                   appreciate students who show initiative.
                 </p>
               </div>
@@ -229,7 +252,7 @@ export default function Article() {
             <MessageSquare className="h-5 w-5 mr-2" />
             Discussion ({articleComments.length} comments)
           </h3>
-          
+
           <div className="space-y-4 mb-6">
             {articleComments.map((comment) => (
               <div key={comment.id} className="bg-section rounded-lg p-4">
@@ -241,7 +264,7 @@ export default function Article() {
               </div>
             ))}
           </div>
-          
+
           <div className="bg-gray-50 rounded-lg p-4">
             <p className="text-sm text-black mb-2">Join the discussion...</p>
             <p className="text-xs text-black">Login required to comment</p>
@@ -284,7 +307,7 @@ export default function Article() {
           >
             View edit history (3 edits)
           </button>
-          
+
           {showEditHistory && (
             <div className="mt-4 bg-gray-50 rounded-lg p-4">
               <ul className="text-sm text-black space-y-2">

@@ -1,6 +1,17 @@
 import { Link } from 'react-router-dom';
+import { allArticles } from '../data/mockData';
+
+const HOW_TO_GUIDES_URL = '/how-to-guides';
+
+function getGlobalGuides(limit: number) {
+  return allArticles
+    .filter((a) => a.isGlobalGuide === true)
+    .sort((a, b) => b.helpful - a.helpful)
+    .slice(0, limit);
+}
 
 export default function Footer() {
+  const guides = getGlobalGuides(4);
   return (
     <footer className="bg-black text-white py-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -32,8 +43,30 @@ export default function Footer() {
             </Link>
           </div>
           
-          {/* Empty column for balance */}
-          <div className="hidden md:block" />
+          {/* Guides column */}
+          <div>
+            <h3 className="font-display font-semibold text-white mb-3">Guides</h3>
+            <ul className="space-y-2">
+              {guides.map((guide) => (
+                <li key={guide.id}>
+                  <Link
+                    to={`/article/${guide.id}`}
+                    className="text-white/60 hover:text-white text-sm transition-colors"
+                  >
+                    {guide.title}
+                  </Link>
+                </li>
+              ))}
+              <li>
+                <Link
+                  to={HOW_TO_GUIDES_URL}
+                  className="text-white/60 hover:text-white text-sm transition-colors inline-flex items-center"
+                >
+                  View all guides →
+                </Link>
+              </li>
+            </ul>
+          </div>
         </div>
         
         {/* Bottom bar */}

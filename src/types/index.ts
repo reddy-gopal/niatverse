@@ -8,8 +8,9 @@ export interface Campus {
   batchSize: number;
   articleCount: number;
   rating: number | null;
-  coverage: 'Full' | 'Growing' | 'New';
   coverColor: string;
+  coverImage: string;
+  logoImage?: string;
   sections?: string[];
 }
 
@@ -22,6 +23,7 @@ export interface Article {
   author: string;
   updatedDays: number;
   helpful: number;
+  coverImage?: string;
 }
 
 export interface Accommodation {
@@ -35,6 +37,7 @@ export interface Accommodation {
   wifiAvailable: boolean;
   safetyNote: string;
   verifiedDate: string;
+  image?: string;
 }
 
 export interface FoodSpot {
@@ -45,6 +48,7 @@ export interface FoodSpot {
   specialty: string;
   lateNight: boolean;
   swiggy: boolean;
+  image?: string;
 }
 
 export interface IRCInfo {
@@ -86,17 +90,38 @@ export interface Experience {
   yearOfStudy: string;
   isAnonymous: boolean;
   publishedDate: string;
+  image?: string;
 }
 
+export type ClubType =
+  | 'Coding'
+  | 'Cultural'
+  | 'Sports'
+  | 'Literary'
+  | 'Robotics'
+  | 'Social'
+  | 'Music'
+  | 'Dance'
+  | 'NIAT Circle';
+
 export interface Club {
+  id: number;
+  campusId: number;
   name: string;
-  type: string;
+  type: ClubType;
   about: string;
   activities: string;
   achievements: string;
   openToAll: boolean;
   howToJoin: string;
-  instagram: string;
+  email: string | null;
+  instagram: string | null;
+  foundedYear: number;
+  memberCount: number;
+  logo: string | null;
+  verifiedDate: string;
+  coverImage?: string;
+  logoImage?: string;
 }
 
 export interface Ratings {
@@ -131,6 +156,14 @@ export interface StateCount {
 
 export type ArticleCategory = 'irc' | 'campus-life' | 'experiences' | 'academics' | 'howto';
 
+export type GuideTopic =
+  | 'Placements'
+  | 'Open Source'
+  | 'Internships'
+  | 'Competitive Programming'
+  | 'GSoC'
+  | 'Skills';
+
 export interface ArticlePageArticle {
   id: number;
   campusId: number | null;
@@ -141,4 +174,8 @@ export interface ArticlePageArticle {
   updatedDays: number;
   helpful: number;
   featured?: boolean;
+  clubId?: number | null;
+  coverImage?: string;
+  isGlobalGuide?: boolean;
+  topic?: GuideTopic;
 }

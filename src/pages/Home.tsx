@@ -1,10 +1,19 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Search, ChevronRight, Calendar, Wrench, Briefcase, Edit3 } from 'lucide-react';
+import { Search, ChevronRight, Calendar, Wrench, Edit3 } from 'lucide-react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import CampusCard from '../components/CampusCard';
-import { campuses, stateCounts } from '../data/mockData';
+import { campuses, stateCounts, allArticles } from '../data/mockData';
+
+const HOW_TO_GUIDES_URL = '/how-to-guides';
+
+function getGlobalGuides(limit: number) {
+  return allArticles
+    .filter((a) => a.isGlobalGuide === true)
+    .sort((a, b) => b.helpful - a.helpful)
+    .slice(0, limit);
+}
 
 export default function Home() {
   const [heroSearch, setHeroSearch] = useState('');
@@ -101,6 +110,48 @@ export default function Home() {
         </div>
       </section>
 
+      {/* How-to Guides — before campus listing */}
+      <section className="py-12" style={{ backgroundColor: '#fefce8' }}>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="font-display text-2xl md:text-3xl font-bold text-black mb-2">
+            📘 How-to Guides for Every NIAT Student
+          </h2>
+          <p className="text-[#64748b] mb-6">
+            Practical knowledge that helps — no matter which campus you&apos;re at
+          </p>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+            {getGlobalGuides(3).map((guide) => (
+              <Link
+                key={guide.id}
+                to={`/article/${guide.id}`}
+                className="block bg-white rounded-xl shadow-card p-5 hover:shadow-lg hover:border-[#991b1b] transition-all border border-transparent"
+              >
+                <h3 className="font-display text-lg font-bold text-[#1e293b] mb-2 line-clamp-2">
+                  {guide.title}
+                </h3>
+                <p className="text-sm text-[#64748b] line-clamp-2 mb-3">
+                  {guide.excerpt}
+                </p>
+                <p className="text-xs text-[#94a3b8] mb-2">
+                  👍 {guide.helpful} found this helpful
+                </p>
+                <span className="inline-flex items-center text-[#991b1b] text-sm font-medium hover:underline">
+                  Read <ChevronRight className="h-4 w-4 ml-0.5" />
+                </span>
+              </Link>
+            ))}
+          </div>
+          <div className="flex justify-end">
+            <Link
+              to={HOW_TO_GUIDES_URL}
+              className="text-[#991b1b] font-medium text-sm hover:underline inline-flex items-center"
+            >
+              View all guides <ChevronRight className="h-4 w-4 ml-1" />
+            </Link>
+          </div>
+        </div>
+      </section>
+
       {/* Explore by State */}
       <section className="py-12 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -134,57 +185,48 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Start Here - New Student Block */}
+      {/* Start Here - 3 main cards → guide sections */}
       <section className="py-12 bg-navbar">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="font-display text-2xl md:text-3xl font-bold text-black mb-8">
             New to NIAT? Start here.
           </h2>
-          
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {/* Card 1 */}
-            <Link to="/campus/1" className="bg-white rounded-lg shadow-card p-5 hover:shadow-lg transition-shadow">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+            <Link
+              to="/guide#week1"
+              className="block bg-white rounded-xl shadow-card p-6 hover:shadow-lg transition-shadow border border-transparent hover:border-[#991b1b]/20"
+            >
               <Calendar className="h-8 w-8 text-[#991b1b] mb-3" />
               <h3 className="font-display text-lg font-bold text-black mb-1">
                 Week 1 at NIAT
               </h3>
-              <p className="text-sm text-black mb-3">What to do first</p>
+              <p className="text-sm text-[#64748b] mb-3">What to do first</p>
               <span className="inline-flex items-center text-[#991b1b] text-sm font-medium">
                 Read more <ChevronRight className="h-4 w-4 ml-1" />
               </span>
             </Link>
-            
-            {/* Card 2 */}
-            <Link to="/campus/1" className="bg-white rounded-lg shadow-card p-5 hover:shadow-lg transition-shadow">
+            <Link
+              to="/guide#irc"
+              className="block bg-white rounded-xl shadow-card p-6 hover:shadow-lg transition-shadow border border-transparent hover:border-[#991b1b]/20"
+            >
               <Wrench className="h-8 w-8 text-[#991b1b] mb-3" />
               <h3 className="font-display text-lg font-bold text-black mb-1">
                 How IRC actually works
               </h3>
-              <p className="text-sm text-black mb-3">The complete guide</p>
+              <p className="text-sm text-[#64748b] mb-3">The complete guide</p>
               <span className="inline-flex items-center text-[#991b1b] text-sm font-medium">
                 Read more <ChevronRight className="h-4 w-4 ml-1" />
               </span>
             </Link>
-            
-            {/* Card 3 */}
-            <Link to="/campus/1" className="bg-white rounded-lg shadow-card p-5 hover:shadow-lg transition-shadow">
-              <Briefcase className="h-8 w-8 text-[#991b1b] mb-3" />
-              <h3 className="font-display text-lg font-bold text-black mb-1">
-                Internship experiences
-              </h3>
-              <p className="text-sm text-black mb-3">What seniors say</p>
-              <span className="inline-flex items-center text-[#991b1b] text-sm font-medium">
-                Read more <ChevronRight className="h-4 w-4 ml-1" />
-              </span>
-            </Link>
-            
-            {/* Card 4 */}
-            <Link to="/contribute" className="bg-white rounded-lg shadow-card p-5 hover:shadow-lg transition-shadow">
+            <Link
+              to="/guide#contribute"
+              className="block bg-white rounded-xl shadow-card p-6 hover:shadow-lg transition-shadow border border-transparent hover:border-[#991b1b]/20"
+            >
               <Edit3 className="h-8 w-8 text-[#991b1b] mb-3" />
               <h3 className="font-display text-lg font-bold text-black mb-1">
                 How to contribute
               </h3>
-              <p className="text-sm text-black mb-3">Share what you know</p>
+              <p className="text-sm text-[#64748b] mb-3">Share what you know</p>
               <span className="inline-flex items-center text-[#991b1b] text-sm font-medium">
                 Read more <ChevronRight className="h-4 w-4 ml-1" />
               </span>

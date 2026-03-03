@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { 
   FileText, Utensils, Briefcase, MapPin, 
   Bold, Italic, Heading1, Heading2, List, Link as LinkIcon
@@ -14,7 +15,6 @@ export default function Contribute() {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [tags, setTags] = useState('');
-  const [isAnonymous, setIsAnonymous] = useState(false);
 
   const contributionTypes = [
     { id: 'article', label: 'Write an article', icon: FileText, description: 'Most common' },
@@ -59,23 +59,35 @@ export default function Contribute() {
       <section className="py-8 bg-white border-b border-[rgba(30,41,59,0.1)]">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {contributionTypes.map(({ id, label, icon: Icon, description }) => (
-              <button
-                key={id}
-                onClick={() => setSelectedType(id)}
-                className={`p-4 rounded-lg text-left transition-all ${
-                  selectedType === id
-                    ? 'bg-[#991b1b] text-white shadow-card'
-                    : 'bg-section text-black hover:shadow-soft'
-                }`}
-              >
-                <Icon className={`h-8 w-8 mb-3 ${selectedType === id ? 'text-white' : 'text-[#991b1b]'}`} />
-                <h3 className="font-bold text-sm mb-1">{label}</h3>
-                <p className={`text-xs ${selectedType === id ? 'text-white/80' : 'text-black'}`}>
-                  {description}
-                </p>
-              </button>
-            ))}
+            {contributionTypes.map(({ id, label, icon: Icon, description }) =>
+              id === 'article' ? (
+                <Link
+                  key={id}
+                  to="/contribute/write"
+                  className="p-4 rounded-lg text-left transition-all block bg-section text-black hover:shadow-soft hover:bg-[#fbf2f3]"
+                >
+                  <Icon className="h-8 w-8 mb-3 text-[#991b1b]" />
+                  <h3 className="font-bold text-sm mb-1">{label}</h3>
+                  <p className="text-xs text-black">{description}</p>
+                </Link>
+              ) : (
+                <button
+                  key={id}
+                  onClick={() => setSelectedType(id)}
+                  className={`p-4 rounded-lg text-left transition-all ${
+                    selectedType === id
+                      ? 'bg-[#991b1b] text-white shadow-card'
+                      : 'bg-section text-black hover:shadow-soft'
+                  }`}
+                >
+                  <Icon className={`h-8 w-8 mb-3 ${selectedType === id ? 'text-white' : 'text-[#991b1b]'}`} />
+                  <h3 className="font-bold text-sm mb-1">{label}</h3>
+                  <p className={`text-xs ${selectedType === id ? 'text-white/80' : 'text-black'}`}>
+                    {description}
+                  </p>
+                </button>
+              )
+            )}
           </div>
         </div>
       </section>
@@ -192,24 +204,6 @@ export default function Contribute() {
                 placeholder="e.g., hostel, budget, first-year"
                 className="w-full px-4 py-3 bg-white border border-[rgba(30,41,59,0.1)] rounded-lg text-black placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#991b1b]"
               />
-            </div>
-
-            {/* Anonymous Toggle */}
-            <div className="mb-8">
-              <label className="flex items-center cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={isAnonymous}
-                  onChange={(e) => setIsAnonymous(e.target.checked)}
-                  className="sr-only"
-                />
-                <div className={`w-11 h-6 rounded-full transition-colors ${isAnonymous ? 'bg-[#991b1b]' : 'bg-gray-200'}`}>
-                  <div className={`w-5 h-5 bg-white rounded-full shadow-md transform transition-transform ${isAnonymous ? 'translate-x-5' : 'translate-x-0.5'} mt-0.5`} />
-                </div>
-                <span className="ml-3 text-sm text-black">
-                  Post anonymously (for experiences)
-                </span>
-              </label>
             </div>
 
             {/* Submit Button */}

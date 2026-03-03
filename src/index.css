@@ -125,18 +125,6 @@
     @apply bg-[#fbf2f3];
   }
   
-  .coverage-full {
-    @apply bg-green-100 text-green-700 px-2 py-1 rounded-full text-xs font-medium;
-  }
-  
-  .coverage-growing {
-    @apply bg-amber-100 text-amber-700 px-2 py-1 rounded-full text-xs font-medium;
-  }
-  
-  .coverage-new {
-    @apply bg-slate-100 text-slate-500 px-2 py-1 rounded-full text-xs font-medium;
-  }
-  
   .tag-irc {
     @apply bg-[#991b1b] text-white px-2 py-1 rounded-full text-xs font-medium;
   }

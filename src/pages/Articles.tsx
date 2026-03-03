@@ -3,10 +3,16 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { ChevronDown, PenLine } from 'lucide-react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
+import ImageWithFallback from '../components/ImageWithFallback';
 import { allArticles, campuses } from '../data/mockData';
 import { CATEGORY_CONFIG, CATEGORY_ORDER } from '../data/articleCategories';
 import type { ArticleCategory } from '../types';
 import type { ArticlePageArticle } from '../types';
+
+/** Campus-scoped articles only; global guides live on /how-to-guides */
+const campusOnlyArticles = allArticles.filter(
+  (a): a is ArticlePageArticle & { campusId: number } => a.campusId !== null
+);
 
 const CATEGORY_LINKS = [
   { key: 'campus-life' as const, label: "Campus Life" },
@@ -25,35 +31,42 @@ function ArticleRow({ article }: { article: ArticlePageArticle }) {
   return (
     <Link
       to={articleUrl}
-      className="block py-4 pl-3 border-l-[3px] border-l-transparent transition-all duration-150 ease-out hover:border-l-[#991b1b]"
+      className="flex gap-4 py-4 pl-3 border-l-[3px] border-l-transparent transition-all duration-150 ease-out hover:border-l-[#991b1b]"
     >
-      <div className="flex flex-wrap gap-2 mb-1">
-        <span
-          className="inline-block text-[11px] font-semibold px-2 py-0.5 rounded-[100px]"
-          style={{ backgroundColor: config.bg, color: config.text }}
-        >
-          {config.label}
-        </span>
-        <span
-          className="inline-block text-[11px] font-semibold px-2 py-0.5 rounded-[100px]"
-          style={
-            article.campusName === 'Global'
-              ? { backgroundColor: '#f8fafc', color: '#64748b' }
-              : { backgroundColor: '#991b1b', color: 'white' }
-          }
-        >
-          {article.campusName}
-        </span>
+      {article.coverImage && (
+        <div className="w-24 h-24 md:w-32 md:h-24 shrink-0 rounded-xl overflow-hidden hidden sm:block">
+          <ImageWithFallback src={article.coverImage} alt={article.title} loading="lazy" className="w-full h-full object-cover" />
+        </div>
+      )}
+      <div className="flex-1">
+        <div className="flex flex-wrap gap-2 mb-1">
+          <span
+            className="inline-block text-[11px] font-semibold px-2 py-0.5 rounded-[100px]"
+            style={{ backgroundColor: config.bg, color: config.text }}
+          >
+            {config.label}
+          </span>
+          <span
+            className="inline-block text-[11px] font-semibold px-2 py-0.5 rounded-[100px]"
+            style={
+              article.campusName === 'Global'
+                ? { backgroundColor: '#f8fafc', color: '#64748b' }
+                : { backgroundColor: '#991b1b', color: 'white' }
+            }
+          >
+            {article.campusName}
+          </span>
+        </div>
+        <h3 className="font-playfair text-[17px] font-bold text-[#991b1b] mb-1 cursor-pointer hover:text-[#7f1d1d] hover:underline transition-colors duration-150">
+          {article.title}
+        </h3>
+        <p className="font-dm-sans text-[14px] text-[#64748b] line-clamp-2 mb-2">
+          {article.excerpt}
+        </p>
+        <p className="font-dm-sans text-[12px] text-[#94a3b8]">
+          Updated {article.updatedDays} days ago · 👍 {article.helpful} helpful
+        </p>
       </div>
-      <h3 className="font-playfair text-[17px] font-bold text-[#991b1b] mb-1 cursor-pointer hover:text-[#7f1d1d] hover:underline transition-colors duration-150">
-        {article.title}
-      </h3>
-      <p className="font-dm-sans text-[14px] text-[#64748b] line-clamp-2 mb-2">
-        {article.excerpt}
-      </p>
-      <p className="font-dm-sans text-[12px] text-[#94a3b8]">
-        Updated {article.updatedDays} days ago · 👍 {article.helpful} helpful
-      </p>
     </Link>
   );
 }
@@ -68,27 +81,25 @@ export default function Articles() {
   const activeCampusId = campusParam ? parseInt(campusParam, 10) : null;
 
   const filteredArticles = useMemo(() => {
-    let result = allArticles;
+    let result = campusOnlyArticles;
     if (activeCategory) {
       result = result.filter((a) => a.category === activeCategory);
     }
-    if (activeCampusId && !isNaN(activeCampusId)) {
+    if (activeCampusId != null && !isNaN(activeCampusId)) {
       result = result.filter((a) => a.campusId === activeCampusId);
     }
     return [...result].sort((a, b) => b.helpful - a.helpful);
   }, [activeCategory, activeCampusId]);
 
   const topArticles = useMemo(
-    () => [...allArticles].sort((a, b) => b.helpful - a.helpful).slice(0, 5),
+    () => [...campusOnlyArticles].sort((a, b) => b.helpful - a.helpful).slice(0, 5),
     []
   );
 
   const campusArticleCounts = useMemo(() => {
     const counts = new Map<number, number>();
-    for (const a of allArticles) {
-      if (a.campusId !== null) {
-        counts.set(a.campusId, (counts.get(a.campusId) || 0) + 1);
-      }
+    for (const a of campusOnlyArticles) {
+      counts.set(a.campusId, (counts.get(a.campusId) || 0) + 1);
     }
     return counts;
   }, []);
@@ -108,7 +119,7 @@ export default function Articles() {
     setCampusDropdownOpen(false);
   };
 
-  const totalCount = allArticles.length;
+  const totalCount = campusOnlyArticles.length;
   const campusCount = 22;
 
   return (
@@ -138,11 +149,10 @@ export default function Articles() {
             <div className="flex flex-wrap gap-2">
               <button
                 onClick={() => setCategory(null)}
-                className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
-                  !activeCategory
+                className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${!activeCategory
                     ? 'bg-[#991b1b] text-white'
                     : 'bg-white text-[#1e293b] hover:bg-[#fbf2f3]'
-                }`}
+                  }`}
               >
                 All
               </button>
@@ -150,11 +160,10 @@ export default function Articles() {
                 <button
                   key={key}
                   onClick={() => setCategory(key)}
-                  className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
-                    activeCategory === key
+                  className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${activeCategory === key
                       ? 'bg-[#991b1b] text-white'
                       : 'bg-white text-[#1e293b] hover:bg-[#fbf2f3]'
-                  }`}
+                    }`}
                 >
                   {label}
                 </button>
@@ -165,7 +174,7 @@ export default function Articles() {
                 onClick={() => setCampusDropdownOpen(!campusDropdownOpen)}
                 className="flex items-center gap-2 px-4 py-2 bg-white border border-[rgba(30,41,59,0.1)] rounded-md text-sm font-medium text-[#1e293b] hover:bg-gray-50"
               >
-                {activeCampusId
+                {activeCampusId != null
                   ? campuses.find((c) => c.id === activeCampusId)?.name ?? 'All Campuses'
                   : 'All Campuses'}
                 <ChevronDown className="h-4 w-4" />
@@ -179,9 +188,8 @@ export default function Articles() {
                   <div className="absolute right-0 mt-1 z-50 w-56 bg-white rounded-lg shadow-lg border border-[rgba(30,41,59,0.1)] py-1">
                     <button
                       onClick={() => setCampus(null)}
-                      className={`w-full text-left px-4 py-2 text-sm ${
-                        !activeCampusId ? 'bg-[#fbf2f3] text-[#991b1b] font-medium' : 'text-[#1e293b] hover:bg-gray-50'
-                      }`}
+                      className={`w-full text-left px-4 py-2 text-sm ${activeCampusId === null ? 'bg-[#fbf2f3] text-[#991b1b] font-medium' : 'text-[#1e293b] hover:bg-gray-50'
+                        }`}
                     >
                       All Campuses
                     </button>
@@ -189,9 +197,8 @@ export default function Articles() {
                       <button
                         key={c.id}
                         onClick={() => setCampus(c.id)}
-                        className={`w-full text-left px-4 py-2 text-sm flex justify-between ${
-                          activeCampusId === c.id ? 'bg-[#fbf2f3] text-[#991b1b] font-medium' : 'text-[#1e293b] hover:bg-gray-50'
-                        }`}
+                        className={`w-full text-left px-4 py-2 text-sm flex justify-between ${activeCampusId === c.id ? 'bg-[#fbf2f3] text-[#991b1b] font-medium' : 'text-[#1e293b] hover:bg-gray-50'
+                          }`}
                       >
                         {c.name}
                         <span className="text-[#64748b]">{campusArticleCounts.get(c.id) ?? 0}</span>

@@ -59,26 +59,6 @@ export default function CampusDirectory() {
         </div>
       </section>
 
-      {/* Coverage Legend */}
-      <section className="py-8 bg-section">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-wrap justify-center gap-6 text-sm">
-            <div className="flex items-center">
-              <span className="w-3 h-3 rounded-full bg-green-500 mr-2" />
-              <span className="text-black">Full Coverage = 40+ articles</span>
-            </div>
-            <div className="flex items-center">
-              <span className="w-3 h-3 rounded-full bg-amber-500 mr-2" />
-              <span className="text-black">Growing = 15–39 articles</span>
-            </div>
-            <div className="flex items-center">
-              <span className="w-3 h-3 rounded-full bg-slate-400 mr-2" />
-              <span className="text-black">New = under 15 articles</span>
-            </div>
-          </div>
-        </div>
-      </section>
-
       <Footer />
     </div>
   );

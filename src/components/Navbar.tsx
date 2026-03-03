@@ -14,8 +14,11 @@ const CATEGORY_NAV_LINKS = [
   { key: 'irc' as const, label: 'IRC & Skills', icon: '🔬', path: '/articles?category=irc' },
   { key: 'experiences' as const, label: 'Experiences', icon: '💼', path: '/articles?category=experiences' },
   { key: 'academics' as const, label: 'Academics', icon: '📚', path: '/articles?category=academics' },
-  { key: 'howto' as const, label: 'How-To Guides', icon: '📖', path: '/articles?category=howto' },
 ];
+const HOW_TO_GUIDES_LINK = { label: 'How-To Guides', icon: '📘', path: '/how-to-guides' };
+
+/** Niat Reviews Platform URL — update after deployment */
+const REVIEWS_PLATFORM_URL = 'http://localhost:3000';
 
 export default function Navbar({ searchQuery = '', showSearch }: NavbarProps) {
   const [search, setSearch] = useState(searchQuery);
@@ -57,9 +60,8 @@ export default function Navbar({ searchQuery = '', showSearch }: NavbarProps) {
 
   return (
     <nav
-      className={`bg-navbar border-b border-[rgba(30,41,59,0.1)] sticky top-0 z-50 transition-[box-shadow] duration-300 ease-out ${
-        shouldShowNavShadow ? 'shadow-[0_2px_12px_rgba(30,41,59,0.10)]' : ''
-      }`}
+      className={`bg-navbar border-b border-[rgba(30,41,59,0.1)] sticky top-0 z-50 transition-[box-shadow] duration-300 ease-out ${shouldShowNavShadow ? 'shadow-[0_2px_12px_rgba(30,41,59,0.10)]' : ''
+        }`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
@@ -72,11 +74,10 @@ export default function Navbar({ searchQuery = '', showSearch }: NavbarProps) {
           {/* Desktop Search - scroll-aware on Home, always visible elsewhere */}
           <form
             onSubmit={handleSearch}
-            className={`hidden md:flex mx-8 transition-[opacity,transform,width] duration-[250ms] ease-out ${
-              shouldShowSearch
+            className={`hidden md:flex mx-8 transition-[opacity,transform,width] duration-[250ms] ease-out ${shouldShowSearch
                 ? `opacity-100 translate-y-0 flex-1 min-w-0 overflow-visible ${isHome ? 'max-w-[280px]' : 'max-w-md'}`
                 : 'opacity-0 -translate-y-1.5 w-0 min-w-0 flex-none overflow-hidden pointer-events-none'
-            }`}
+              }`}
           >
             <div className="relative w-full">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
@@ -108,9 +109,8 @@ export default function Navbar({ searchQuery = '', showSearch }: NavbarProps) {
             >
               <Link
                 to="/articles"
-                className={`text-sm font-medium transition-colors flex items-center ${
-                  isOnArticles ? 'text-[#991b1b] border-b-2 border-[#991b1b] pb-0.5' : 'text-black hover:text-black'
-                }`}
+                className={`text-sm font-medium transition-colors flex items-center ${isOnArticles ? 'text-[#991b1b] border-b-2 border-[#991b1b] pb-0.5' : 'text-black hover:text-black'
+                  }`}
               >
                 Articles
               </Link>
@@ -148,6 +148,15 @@ export default function Navbar({ searchQuery = '', showSearch }: NavbarProps) {
                               </Link>
                             </li>
                           ))}
+                          <li className="border-t border-[rgba(30,41,59,0.08)] mt-2 pt-2">
+                            <Link
+                              to={HOW_TO_GUIDES_LINK.path}
+                              className="flex items-center gap-2 py-2 px-2 -mx-2 rounded-md text-[#1e293b] hover:bg-[#fbf2f3] hover:text-[#991b1b] transition-colors text-sm font-medium"
+                            >
+                              <span>{HOW_TO_GUIDES_LINK.icon}</span>
+                              {HOW_TO_GUIDES_LINK.label}
+                            </Link>
+                          </li>
                         </ul>
                       </div>
 
@@ -257,6 +266,14 @@ export default function Navbar({ searchQuery = '', showSearch }: NavbarProps) {
               )}
             </div>
 
+            <a
+              href={REVIEWS_PLATFORM_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-black hover:text-black text-sm font-medium transition-colors"
+            >
+              Niat Reviews
+            </a>
             <Link to="/contribute" className="btn-primary text-sm font-medium">
               Contribute
             </Link>
@@ -301,6 +318,15 @@ export default function Navbar({ searchQuery = '', showSearch }: NavbarProps) {
               >
                 Articles
               </Link>
+              <a
+                href={REVIEWS_PLATFORM_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => setMobileMenuOpen(false)}
+                className="text-black hover:text-black text-sm font-medium"
+              >
+                Niat Reviews
+              </a>
               <Link
                 to="/contribute"
                 onClick={() => setMobileMenuOpen(false)}
