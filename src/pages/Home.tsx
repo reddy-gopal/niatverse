@@ -4,6 +4,7 @@ import { Search, ChevronRight, Calendar, Wrench, Edit3 } from 'lucide-react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import CampusCard from '../components/CampusCard';
+import VideoCarousel from '../components/VideoCarousel';
 import { campuses, stateCounts, allArticles } from '../data/mockData';
 
 const HOW_TO_GUIDES_URL = '/how-to-guides';
@@ -38,8 +39,8 @@ export default function Home() {
     }
   };
 
-  const filteredCampuses = activeState === 'All' 
-    ? campuses 
+  const filteredCampuses = activeState === 'All'
+    ? campuses
     : campuses.filter(c => c.state === activeState);
 
   const states = ['All', 'Telangana', 'Andhra Pradesh', 'Tamil Nadu', 'Karnataka', 'Maharashtra'];
@@ -47,7 +48,7 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-white">
       <Navbar showSearch={showNavSearch} />
-      
+
       {/* Hero Section */}
       <section className="hero-gradient py-16 md:py-24">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
@@ -57,7 +58,7 @@ export default function Home() {
           <p className="text-white/80 text-base md:text-lg mb-8 max-w-2xl mx-auto">
             22 campuses. Real information. Written by students who figured it out the hard way.
           </p>
-          
+
           {/* Hero Search */}
           <form onSubmit={handleHeroSearch} className="max-w-xl mx-auto mb-6">
             <div className="relative">
@@ -71,18 +72,17 @@ export default function Home() {
               />
             </div>
           </form>
-          
+
           {/* State Filter Pills */}
           <div className="flex flex-wrap justify-center gap-2">
             {states.map((state) => (
               <button
                 key={state}
                 onClick={() => setActiveState(state)}
-                className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-                  activeState === state
+                className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${activeState === state
                     ? 'bg-white text-[#991b1b]'
                     : 'bg-white/20 text-white hover:bg-white/30'
-                }`}
+                  }`}
               >
                 {state}
               </button>
@@ -110,77 +110,79 @@ export default function Home() {
         </div>
       </section>
 
-      {/* How-to Guides — before campus listing */}
-      <section className="py-12" style={{ backgroundColor: '#fefce8' }}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="font-display text-2xl md:text-3xl font-bold text-black mb-2">
-            📘 How-to Guides for Every NIAT Student
-          </h2>
-          <p className="text-[#64748b] mb-6">
-            Practical knowledge that helps — no matter which campus you&apos;re at
-          </p>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-            {getGlobalGuides(3).map((guide) => (
-              <Link
-                key={guide.id}
-                to={`/article/${guide.id}`}
-                className="block bg-white rounded-xl shadow-card p-5 hover:shadow-lg hover:border-[#991b1b] transition-all border border-transparent"
-              >
-                <h3 className="font-display text-lg font-bold text-[#1e293b] mb-2 line-clamp-2">
-                  {guide.title}
-                </h3>
-                <p className="text-sm text-[#64748b] line-clamp-2 mb-3">
-                  {guide.excerpt}
-                </p>
-                <p className="text-xs text-[#94a3b8] mb-2">
-                  👍 {guide.helpful} found this helpful
-                </p>
-                <span className="inline-flex items-center text-[#991b1b] text-sm font-medium hover:underline">
-                  Read <ChevronRight className="h-4 w-4 ml-0.5" />
-                </span>
-              </Link>
-            ))}
-          </div>
-          <div className="flex justify-end">
-            <Link
-              to={HOW_TO_GUIDES_URL}
-              className="text-[#991b1b] font-medium text-sm hover:underline inline-flex items-center"
-            >
-              View all guides <ChevronRight className="h-4 w-4 ml-1" />
-            </Link>
-          </div>
-        </div>
-      </section>
-
       {/* Explore by State */}
       <section className="py-12 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="font-display text-2xl md:text-3xl font-bold text-black mb-6">
             Explore All 22 Campuses
           </h2>
-          
+
           {/* State Tabs */}
           <div className="flex flex-wrap gap-2 mb-8 border-b border-[rgba(30,41,59,0.1)] pb-4">
             {stateCounts.map((state) => (
               <button
                 key={state.name}
                 onClick={() => setActiveState(state.name)}
-                className={`px-4 py-2 text-sm font-medium transition-colors ${
-                  activeState === state.name
+                className={`px-4 py-2 text-sm font-medium transition-colors ${activeState === state.name
                     ? 'text-[#991b1b] border-b-2 border-[#991b1b]'
                     : 'text-black hover:text-black'
-                }`}
+                  }`}
               >
                 {state.name} ({state.count})
               </button>
             ))}
           </div>
-          
+
           {/* Campus Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredCampuses.map((campus) => (
               <CampusCard key={campus.id} campus={campus} />
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Watch & Learn: videos + How-to Guides */}
+      <section className="bg-section">
+        <VideoCarousel />
+        <div className="py-12 px-4 sm:px-6 lg:px-8" style={{ backgroundColor: '#fefce8' }}>
+          <div className="max-w-7xl mx-auto">
+            <h2 className="font-display text-2xl md:text-3xl font-bold text-black mb-2">
+              📘 How-to Guides for Every NIAT Student
+            </h2>
+            <p className="text-[#64748b] mb-6">
+              Practical knowledge that helps — no matter which campus you&apos;re at
+            </p>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+              {getGlobalGuides(3).map((guide) => (
+                <Link
+                  key={guide.id}
+                  to={`/article/${guide.id}`}
+                  className="block bg-white rounded-xl shadow-card p-5 hover:shadow-lg hover:border-[#991b1b] transition-all border border-transparent"
+                >
+                  <h3 className="font-display text-lg font-bold text-[#1e293b] mb-2 line-clamp-2">
+                    {guide.title}
+                  </h3>
+                  <p className="text-sm text-[#64748b] line-clamp-2 mb-3">
+                    {guide.excerpt}
+                  </p>
+                  <p className="text-xs text-[#94a3b8] mb-2">
+                    👍 {guide.helpful} found this helpful
+                  </p>
+                  <span className="inline-flex items-center text-[#991b1b] text-sm font-medium hover:underline">
+                    Read <ChevronRight className="h-4 w-4 ml-0.5" />
+                  </span>
+                </Link>
+              ))}
+            </div>
+            <div className="flex justify-end">
+              <Link
+                to={HOW_TO_GUIDES_URL}
+                className="text-[#991b1b] font-medium text-sm hover:underline inline-flex items-center"
+              >
+                View all guides <ChevronRight className="h-4 w-4 ml-1" />
+              </Link>
+            </div>
           </div>
         </div>
       </section>
