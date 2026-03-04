@@ -1,5 +1,5 @@
 // Mock Data for NIATVerse
-import type { Campus, Article, Accommodation, FoodSpot, IRCInfo, Faculty, Experience, Club, Ratings, SearchResult, Comment, StateCount, ArticlePageArticle } from '../types';
+import type { Campus, Article,Club, Ratings, SearchResult, Comment, StateCount, ArticlePageArticle } from '../types';
 
 export const campuses: Campus[] = [
   {
@@ -15,7 +15,7 @@ export const campuses: Campus[] = [
     coverColor: "#991b1b",
     coverImage: "https://images.unsplash.com/photo-1562774053-701939374585?w=800&q=80",
     logoImage: "https://images.unsplash.com/photo-1599305445671-ac291c95aaa9?w=800&q=80",
-    sections: ["Week 1", "Living", "Food", "IRC", "Experiences", "Contacts", "Reviews"]
+    sections: ["Top voted articles", "30 days", "Clubs and Communities", "Food", "Living", "Reviews"]
   },
   {
     id: 2,
@@ -28,7 +28,9 @@ export const campuses: Campus[] = [
     articleCount: 31,
     rating: 3.9,
     coverColor: "#7678ed",
-    coverImage: "https://images.unsplash.com/photo-1498243691581-b145c3f54a5a?w=800&q=80"
+    coverImage: "https://images.unsplash.com/photo-1498243691581-b145c3f54a5a?w=800&q=80",
+    sections: ["Top voted articles", "30 days", "Clubs and Communities", "Food", "Living", "Reviews"]
+
   },
   {
     id: 3,
@@ -41,7 +43,8 @@ export const campuses: Campus[] = [
     articleCount: 8,
     rating: null,
     coverColor: "#f18701",
-    coverImage: "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=800&q=80"
+    coverImage: "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=800&q=80",
+    sections: ["Top voted articles", "30 days", "Clubs and Communities", "Food", "Living", "Reviews"]
   },
   {
     id: 4,
@@ -54,7 +57,8 @@ export const campuses: Campus[] = [
     articleCount: 22,
     rating: 4.0,
     coverColor: "#991b1b",
-    coverImage: "https://images.unsplash.com/photo-1606761568499-6d2451b08c66?w=800&q=80"
+    coverImage: "https://images.unsplash.com/photo-1606761568499-6d2451b08c66?w=800&q=80",
+    sections: ["Top voted articles", "30 days", "Clubs and Communities", "Food", "Living", "Reviews"]
   },
   {
     id: 5,
@@ -142,127 +146,14 @@ export const articles: Article[] = [
   }
 ];
 
-export const accommodation: Accommodation[] = [
-  {
-    name: "Sri Sai PG",
-    type: "PG Off-Campus",
-    area: "5 min walk from campus gate",
-    priceMin: 4500,
-    priceMax: 6000,
-    tags: ["Budget", "Close to Campus"],
-    foodIncluded: true,
-    wifiAvailable: true,
-    safetyNote: "Gated with 24hr security",
-    verifiedDate: "Jan 2026",
-    image: "https://images.unsplash.com/photo-1555854877-bab0e564b8d5?w=800&q=80"
-  },
-  {
-    name: "Campus Hostel Block A",
-    type: "Hostel On-Campus",
-    area: "On campus, near IRC lab",
-    priceMin: 3200,
-    priceMax: 3200,
-    tags: ["Budget", "Safe", "Close to Campus"],
-    foodIncluded: true,
-    wifiAvailable: false,
-    safetyNote: "Women's block has biometric entry",
-    verifiedDate: "Jan 2026",
-    image: "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=800&q=80"
-  }
-];
 
-export const foodSpots: FoodSpot[] = [
-  { name: "Raju Hotel", type: "Restaurant", area: "Near main gate", priceRange: "₹50–120", specialty: "Biryani, Thali", lateNight: true, swiggy: false, image: "https://images.unsplash.com/photo-1589302168068-964664d93cb0?w=800&q=80" },
-  { name: "Campus Canteen", type: "Mess", area: "Inside campus", priceRange: "Under ₹50", specialty: "South Indian", lateNight: false, swiggy: false, image: "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=800&q=80" },
-  { name: "Tea Point", type: "Street Food", area: "Back gate", priceRange: "Under ₹30", specialty: "Chai, Samosa", lateNight: true, swiggy: false, image: "https://images.unsplash.com/photo-1574071318508-1cdbab80d002?w=800&q=80" },
-  { name: "Domino's", type: "Restaurant", area: "2km from campus", priceRange: "₹150–300", specialty: "Pizza", lateNight: false, swiggy: true, image: "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=800&q=80" }
-];
-
-export const ircInfo: IRCInfo = {
-  labName: "NIAT IRC Lab, Room 204",
-  labLocation: "2nd Floor, CS Block",
-  labTimings: "Mon–Sat: 9:00 AM – 8:00 PM",
-  closedOn: "University holidays and 2nd Saturdays",
-  submissionMode: "Online Portal + Physical copy to coordinator",
-  coordinatorName: "Mr. Venkat Rao",
-  coordinatorEmail: "venkat.rao@stmarys.ac.in",
-  avgCompletionMonths: "4–6 months",
-  commonDelays: "Mentor unavailability during exam weeks. Portal downtime on month-end.",
-  campusTips: [
-    "Book lab slots a week in advance — it fills up fast",
-    "Submit progress reports every Friday or it counts as a missed week",
-    "Mr. Venkat is available 10am–12pm for IRC queries — don't cold-email",
-    "Project ideas from 2024 batch are pinned on the lab noticeboard",
-    "The portal is slow on mobile — use a laptop for submissions"
-  ]
-};
-
-export const faculty: Faculty[] = [
-  {
-    name: "Dr. Ramesh Kumar",
-    designation: "Associate Professor",
-    department: "Computer Science",
-    roleAtNiat: "NIAT Coordinator",
-    email: "ramesh.kumar@stmarys.ac.in",
-    linkedin: "linkedin.com/in/rameshkumar",
-    highestQual: "PhD",
-    specialization: "Machine Learning, Data Science",
-    subjectsTeaching: "Python, Data Structures, DBMS",
-    verifiedDate: "Jan 2026"
-  },
-  {
-    name: "Ms. Preethi Nair",
-    designation: "Assistant Professor",
-    department: "NIAT Program",
-    roleAtNiat: "IRC Mentor",
-    email: "preethi.nair@stmarys.ac.in",
-    linkedin: "linkedin.com/in/preethinair",
-    highestQual: "M.Tech",
-    specialization: "Web Development, Cloud Computing",
-    subjectsTeaching: "Web Technologies, Cloud Basics",
-    verifiedDate: "Jan 2026"
-  }
-];
-
-export const experiences: Experience[] = [
-  {
-    id: 1,
-    campusId: 1,
-    domain: "Web Development",
-    companyType: "Product Startup",
-    cityOfWork: "Hyderabad",
-    duration: "3 months",
-    howSelected: "LinkedIn cold outreach",
-    excerpt: "I reached out to 40 companies on LinkedIn in January. Got 3 responses, 2 interviews, 1 offer. Here's the exact message I used...",
-    skillsThatHelped: ["React", "Git", "Communication"],
-    yearOfStudy: "2nd Year",
-    isAnonymous: true,
-    publishedDate: "Nov 2025",
-    image: "https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=800&q=80"
-  },
-  {
-    id: 2,
-    campusId: 1,
-    domain: "Data Science",
-    companyType: "MNC",
-    cityOfWork: "Remote",
-    duration: "2 months",
-    howSelected: "Campus Drive",
-    excerpt: "TCS came to campus in March 2025. Only 2nd year NIAT students were eligible. The test had 3 sections — here's what each looked like...",
-    skillsThatHelped: ["Python", "SQL", "Excel"],
-    yearOfStudy: "2nd Year",
-    isAnonymous: true,
-    publishedDate: "Dec 2025",
-    image: "https://images.unsplash.com/photo-1515169067868-5387ec356754?w=800&q=80"
-  }
-];
 
 export const clubs: Club[] = [
   // St. Mary's clubs (campusId: 1)
   {
     id: 1,
-    campusId: 1,
-    name: "CodeCraft Club",
+    campusId: null,
+    name: "Coding Club",
     type: "Coding",
     about: "Weekly coding contests, competitive programming, and hackathon prep. The biggest tech club on campus.",
     activities: "LeetCode battles, internal hackathons, mock interview sessions, DSA workshops",
@@ -279,8 +170,8 @@ export const clubs: Club[] = [
   },
   {
     id: 2,
-    campusId: 1,
-    name: "Spectrum Cultural Club",
+    campusId: null,
+    name: "Cultural Club",
     type: "Cultural",
     about: "Dance, music, drama, and visual arts. Organises the annual Spectrum Fest — the biggest event on campus.",
     activities: "Weekend rehearsals, annual Spectrum Fest in February, inter-college cultural competitions",
@@ -297,8 +188,8 @@ export const clubs: Club[] = [
   },
   {
     id: 3,
-    campusId: 1,
-    name: "AI & ML Circle",
+    campusId: null,
+    name: "GEN AI Club",
     type: "Coding",
     about: "Focused on machine learning, deep learning, and data science. Runs study groups and project sprints aligned with IRC tracks.",
     activities: "Paper reading sessions, Kaggle competitions, IRC project collaboration, monthly speaker sessions",
@@ -720,5 +611,219 @@ export const allArticles: ArticlePageArticle[] = [
     excerpt: "Sections that matter, ATS-friendly format, and what NIAT students who got 10+ shortlists did differently.",
     updatedDays: 10, helpful: 189, featured: false, isGlobalGuide: true, topic: "Skills",
     coverImage: "https://images.unsplash.com/photo-1586281380117-5a60ae2050cc?w=800&q=80"
-  }
+  },
+
+  // Top voted student stories (experiences)
+  {
+    id: 29, campusId: 1, campusName: "St. Mary's",
+    category: "experiences", clubId: null,
+    title: "I Broke My Code 10 Times. Then It Finally Worked.",
+    excerpt: "Nobody told me that breaking things is actually how you learn to build them.",
+    updatedDays: 5, helpful: 92, featured: true,
+    coverImage: "https://images.unsplash.com/photo-1587620962725-abab7fe55159?w=800&q=80"
+  },
+  {
+    id: 30, campusId: 1, campusName: "St. Mary's",
+    category: "experiences", clubId: null,
+    title: "We Had Zero Clients. We Sent 30 DMs. One Said Yes.",
+    excerpt: "Starting something with no experience, no portfolio, and no clue — and doing it anyway.",
+    updatedDays: 12, helpful: 88, featured: true,
+    coverImage: "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=800&q=80"
+  },
+
+  // 30 days at NIAT (campus-life)
+  {
+    id: 31, campusId: 1, campusName: "St. Mary's",
+    category: "campus-life", clubId: null,
+    title: "Your First 30 Days at NIAT — What to Do Week by Week",
+    excerpt: "A practical week-by-week guide: registration, IRC intro, accommodation, clubs, and how to feel at home by day 30.",
+    updatedDays: 4, helpful: 56, featured: true,
+    coverImage: "https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=800&q=80"
+  },
+  {
+    id: 32, campusId: 1, campusName: "St. Mary's",
+    category: "campus-life", clubId: null,
+    title: "30 Days at St. Mary's: Registration, Lab Access, and Finding Your Feet",
+    excerpt: "What I did in my first month — admin queue hacks, meeting my IRC mentor, and the one thing I wish I'd known earlier.",
+    updatedDays: 10, helpful: 44, featured: false,
+    coverImage: "https://images.unsplash.com/photo-1511818966892-d7d671e672a2?w=800&q=80"
+  },
+
+  // Club-related articles (clubId for ClubDetail)
+  {
+    id: 33, campusId: 1, campusName: "St. Mary's",
+    category: "howto", clubId: 1,
+    title: "CodeCraft's Weekly Practice Schedule — How to Stay Consistent",
+    excerpt: "How the club runs weekly contests and mock interviews. The calendar that actually works for busy semesters.",
+    updatedDays: 7, helpful: 39, featured: false,
+    coverImage: "https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=800&q=80"
+  },
+  {
+    id: 34, campusId: 1, campusName: "St. Mary's",
+    category: "campus-life", clubId: 2,
+    title: "How to Prepare for Spectrum Fest Auditions — From Someone Who Got In",
+    excerpt: "What the judges look for, which slots fill first, and how to pick a piece that stands out without overreaching.",
+    updatedDays: 14, helpful: 28, featured: false,
+    coverImage: "https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?w=800&q=80"
+  },
+
+  // Food (campus-life) — campusSection for campus page
+  {
+    id: 35, campusId: 1, campusName: "St. Mary's",
+    category: "campus-life", clubId: null,
+    title: "Best Food Spots Near St. Mary's — Mess, Cafes, and Late-Night Options",
+    excerpt: "From the campus canteen to biryani under ₹100. Where to eat when you're broke, in a rush, or celebrating.",
+    updatedDays: 6, helpful: 62, featured: true,
+    coverImage: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=800&q=80",
+    campusSection: "food"
+  },
+  {
+    id: 36, campusId: 1, campusName: "St. Mary's",
+    category: "campus-life", clubId: null,
+    title: "Where to Eat on a Student Budget — Under ₹50 a Meal",
+    excerpt: "Chai, samosa, and full meals that won't break the bank. Verified by 2nd year students who've been there.",
+    updatedDays: 11, helpful: 48, featured: false,
+    coverImage: "https://images.unsplash.com/photo-1589302168068-964664d93cb0?w=800&q=80",
+    campusSection: "food"
+  },
+
+  // Hostel / living (campus-life) — campusSection for campus page
+  {
+    id: 37, campusId: 1, campusName: "St. Mary's",
+    category: "campus-life", clubId: null,
+    title: "Hostel vs PG Near St. Mary's — Honest Comparison 2025",
+    excerpt: "Costs, food, WiFi, curfew, and what seniors actually recommend. Plus which hostels have the best IRC crowd.",
+    updatedDays: 8, helpful: 55, featured: true,
+    coverImage: "https://images.unsplash.com/photo-1555854877-bab0e564b8d5?w=800&q=80",
+    campusSection: "living"
+  },
+  {
+    id: 38, campusId: 1, campusName: "St. Mary's",
+    category: "campus-life", clubId: null,
+    title: "Finding a PG in Your First Week — What Worked for Me",
+    excerpt: "I had no local contacts. Here's how I shortlisted 5 PGs, checked safety, and moved in within 6 days.",
+    updatedDays: 15, helpful: 41, featured: false,
+    coverImage: "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=800&q=80",
+    campusSection: "living"
+  },
+
+  // 30 days at NIAT — global (campusId null), same on all campuses for demo
+  {
+    id: 69, campusId: null, campusName: "Global",
+    category: "campus-life", clubId: null,
+    title: "Your first month at NIAT — Week 1",
+    excerpt: "Register, get your ID and lab access, meet your IRC coordinator, and attend orientation. Find accommodation and join the batch WhatsApp group.",
+    updatedDays: 3, helpful: 72, featured: true,
+    coverImage: "https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=800&q=80",
+    campusSection: "30days"
+  },
+  {
+    id: 70, campusId: null, campusName: "Global",
+    category: "campus-life", clubId: null,
+    title: "Your first month at NIAT — Week 2",
+    excerpt: "Settle into a routine: lab slots, first mentor meeting, and exploring food spots. Start shortlisting IRC project ideas and check out campus clubs.",
+    updatedDays: 3, helpful: 68, featured: true,
+    coverImage: "https://images.unsplash.com/photo-1511818966892-d7d671e672a2?w=800&q=80",
+    campusSection: "30days"
+  },
+  {
+    id: 71, campusId: null, campusName: "Global",
+    category: "campus-life", clubId: null,
+    title: "Your first month at NIAT — Week 3–4",
+    excerpt: "Lock your IRC topic with your mentor, join at least one club, and connect with seniors. By day 30 you should feel part of the campus.",
+    updatedDays: 3, helpful: 65, featured: true,
+    coverImage: "https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?w=800&q=80",
+    campusSection: "30days"
+  },
+
+  // Global (campusId null) — shown on every campus like clubs
+  {
+    id: 72, campusId: null, campusName: "Global",
+    category: "experiences", clubId: null,
+    title: "I Broke My Code 10 Times. Then It Finally Worked.",
+    excerpt: "Nobody told me that breaking things is actually how you learn to build them.",
+    updatedDays: 5, helpful: 92, featured: true,
+    coverImage: "https://images.unsplash.com/photo-1587620962725-abab7fe55159?w=800&q=80"
+  },
+  {
+    id: 73, campusId: null, campusName: "Global",
+    category: "experiences", clubId: null,
+    title: "We Had Zero Clients. We Sent 30 DMs. One Said Yes.",
+    excerpt: "Starting something with no experience, no portfolio, and no clue — and doing it anyway.",
+    updatedDays: 12, helpful: 88, featured: true,
+    coverImage: "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=800&q=80"
+  },
+  {
+    id: 74, campusId: null, campusName: "Global",
+    category: "campus-life", clubId: null,
+    title: "Best Food Spots — Mess, Cafes, and Late-Night Options",
+    excerpt: "From the campus canteen to biryani under ₹100. Where to eat when you're broke, in a rush, or celebrating.",
+    updatedDays: 6, helpful: 62, featured: true,
+    coverImage: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=800&q=80",
+    campusSection: "food"
+  },
+  {
+    id: 75, campusId: null, campusName: "Global",
+    category: "campus-life", clubId: null,
+    title: "Where to Eat on a Student Budget — Under ₹50 a Meal",
+    excerpt: "Chai, samosa, and full meals that won't break the bank. Verified by 2nd year students who've been there.",
+    updatedDays: 11, helpful: 48, featured: false,
+    coverImage: "https://images.unsplash.com/photo-1589302168068-964664d93cb0?w=800&q=80",
+    campusSection: "food"
+  },
+  {
+    id: 76, campusId: null, campusName: "Global",
+    category: "campus-life", clubId: null,
+    title: "Hostel vs PG — Honest Comparison 2025",
+    excerpt: "Costs, food, WiFi, curfew, and what seniors actually recommend. Plus which hostels have the best IRC crowd.",
+    updatedDays: 8, helpful: 55, featured: true,
+    coverImage: "https://images.unsplash.com/photo-1555854877-bab0e564b8d5?w=800&q=80",
+    campusSection: "living"
+  },
+  {
+    id: 77, campusId: null, campusName: "Global",
+    category: "campus-life", clubId: null,
+    title: "Finding a PG in Your First Week — What Worked for Me",
+    excerpt: "I had no local contacts. Here's how I shortlisted 5 PGs, checked safety, and moved in within 6 days.",
+    updatedDays: 15, helpful: 41, featured: false,
+    coverImage: "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=800&q=80",
+    campusSection: "living"
+  },
+
+  // Duplicated for campuses 2–6 so every campus has articles in each section (same content, repeated per campus)
+  ...(() => {
+    const CAMPUSES: { id: number; name: string }[] = [
+      { id: 2, name: "Aurora" },
+      { id: 3, name: "NSRIT" },
+      { id: 4, name: "BS Abdur Rahman" },
+      { id: 5, name: "Alard" },
+      { id: 6, name: "RNS Bangalore" },
+    ];
+    const topVotedTemplates: Omit<ArticlePageArticle, 'id' | 'campusId' | 'campusName'>[] = [
+      { category: "experiences", clubId: null, title: "I Broke My Code 10 Times. Then It Finally Worked.", excerpt: "Nobody told me that breaking things is actually how you learn to build them.", updatedDays: 5, helpful: 92, featured: true, coverImage: "https://images.unsplash.com/photo-1587620962725-abab7fe55159?w=800&q=80" },
+      { category: "experiences", clubId: null, title: "We Had Zero Clients. We Sent 30 DMs. One Said Yes.", excerpt: "Starting something with no experience, no portfolio, and no clue — and doing it anyway.", updatedDays: 12, helpful: 88, featured: true, coverImage: "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=800&q=80" },
+    ];
+    const foodTemplates: Omit<ArticlePageArticle, 'id' | 'campusId' | 'campusName'>[] = [
+      { category: "campus-life", clubId: null, title: "Best Food Spots — Mess, Cafes, and Late-Night Options", excerpt: "From the campus canteen to biryani under ₹100. Where to eat when you're broke, in a rush, or celebrating.", updatedDays: 6, helpful: 62, featured: true, coverImage: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=800&q=80", campusSection: "food" },
+      { category: "campus-life", clubId: null, title: "Where to Eat on a Student Budget — Under ₹50 a Meal", excerpt: "Chai, samosa, and full meals that won't break the bank. Verified by 2nd year students who've been there.", updatedDays: 11, helpful: 48, featured: false, coverImage: "https://images.unsplash.com/photo-1589302168068-964664d93cb0?w=800&q=80", campusSection: "food" },
+    ];
+    const livingTemplates: Omit<ArticlePageArticle, 'id' | 'campusId' | 'campusName'>[] = [
+      { category: "campus-life", clubId: null, title: "Hostel vs PG — Honest Comparison 2025", excerpt: "Costs, food, WiFi, curfew, and what seniors actually recommend. Plus which hostels have the best IRC crowd.", updatedDays: 8, helpful: 55, featured: true, coverImage: "https://images.unsplash.com/photo-1555854877-bab0e564b8d5?w=800&q=80", campusSection: "living" },
+      { category: "campus-life", clubId: null, title: "Finding a PG in Your First Week — What Worked for Me", excerpt: "I had no local contacts. Here's how I shortlisted 5 PGs, checked safety, and moved in within 6 days.", updatedDays: 15, helpful: 41, featured: false, coverImage: "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=800&q=80", campusSection: "living" },
+    ];
+    let id = 39;
+    const out: ArticlePageArticle[] = [];
+    for (const campus of CAMPUSES) {
+      for (const t of topVotedTemplates) {
+        out.push({ ...t, id: id++, campusId: campus.id, campusName: campus.name });
+      }
+      for (const t of foodTemplates) {
+        out.push({ ...t, id: id++, campusId: campus.id, campusName: campus.name });
+      }
+      for (const t of livingTemplates) {
+        out.push({ ...t, id: id++, campusId: campus.id, campusName: campus.name });
+      }
+    }
+    return out;
+  })()
 ];

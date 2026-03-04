@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Search, ChevronRight, Calendar, Wrench, Edit3 } from 'lucide-react';
+import { Search, ChevronRight, Calendar, Edit3, MapPin } from 'lucide-react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import CampusCard from '../components/CampusCard';
@@ -227,14 +227,14 @@ export default function Home() {
               </span>
             </Link>
             <Link
-              to="/guide#irc"
+              to="/campuses"
               className="block bg-white rounded-xl shadow-card p-6 hover:shadow-lg transition-shadow border border-transparent hover:border-[#991b1b]/20"
             >
-              <Wrench className="h-8 w-8 text-[#991b1b] mb-3" />
+              <MapPin className="h-8 w-8 text-[#991b1b] mb-3" />
               <h3 className="font-display text-lg font-bold text-black mb-1">
-                How IRC actually works
+                Find your campus
               </h3>
-              <p className="text-sm text-[#64748b] mb-3">The complete guide</p>
+              <p className="text-sm text-[#64748b] mb-3">Browse all campuses</p>
               <span className="inline-flex items-center text-[#991b1b] text-sm font-medium">
                 Read more <ChevronRight className="h-4 w-4 ml-1" />
               </span>

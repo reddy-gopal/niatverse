@@ -4,7 +4,6 @@ import {
   ChevronRight,
   BookOpen,
   Calendar,
-  Wrench,
   Briefcase,
   Edit3,
   MessageCircle,
@@ -36,17 +35,6 @@ const SECTIONS = [
     links: [
       { label: 'Find your campus', to: '/campuses' },
       { label: 'Campus Life articles', to: '/articles?category=campus-life' },
-    ],
-  },
-  {
-    id: 'irc',
-    icon: Wrench,
-    title: 'How IRC actually works',
-    description:
-      'Industry Readiness Course (IRC) is a core part of NIAT. How it runs, timelines, submissions, and tips vary by campus. We’ve moved the full IRC guide into our docs so you get one clear place to understand it.',
-    links: [
-      { label: 'How-to guides (IRC & skills)', to: '/how-to-guides' },
-      { label: 'IRC & Skills articles by campus', to: '/articles?category=irc' },
     ],
   },
   {
@@ -108,7 +96,7 @@ export default function Guide() {
             New to NIAT? Start here.
           </h1>
           <p className="text-black/80 text-base md:text-lg">
-            A single guide to the whole NIATVerse app—campuses, IRC, experiences, contributing, and the Q&A system.
+            A single guide to the whole NIATVerse app—campuses, experiences, contributing, and the Q&A system.
           </p>
         </div>
       </section>

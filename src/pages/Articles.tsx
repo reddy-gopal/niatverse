@@ -9,7 +9,6 @@ import { CATEGORY_CONFIG, CATEGORY_ORDER } from '../data/articleCategories';
 import type { ArticleCategory } from '../types';
 import type { ArticlePageArticle } from '../types';
 
-/** Campus-scoped articles only (mock data); global guides on /how-to-guides */
 const campusOnlyArticles = allArticles.filter(
   (a): a is ArticlePageArticle & { campusId: number } => a.campusId !== null
 );

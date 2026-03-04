@@ -22,17 +22,20 @@ export default function Login() {
 
   const nextUrl = (location.state as { from?: string })?.from ?? '/';
 
+  const phoneDigits = phone.replace(/\D/g, '');
+  const isPhoneValid = phoneDigits.length === 10;
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    const p = phone.trim();
-    if (!p || p.length < 10) {
-      setError('Enter a valid mobile number.');
+    if (!isPhoneValid) {
+      setError('Mobile number must be exactly 10 digits.');
       return;
     }
     if (!password) {
       setError('Enter your password.');
       return;
     }
+    const p = phoneDigits;
     setError(null);
     setLoading(true);
     try {
@@ -70,15 +73,22 @@ export default function Login() {
               <input
                 id="login-phone"
                 type="tel"
+                inputMode="numeric"
+                pattern="[0-9]*"
+                maxLength={10}
                 value={phone}
                 onChange={(e) => {
-                  setPhone(e.target.value);
+                  const val = e.target.value.replace(/\D/g, '').slice(0, 10);
+                  setPhone(val);
                   setError(null);
                 }}
                 placeholder="e.g. 9876543210"
                 autoComplete="tel"
                 className="w-full rounded-xl border border-[rgba(30,41,59,0.15)] bg-white px-3 py-2.5 text-sm text-[#1e293b] focus:outline-none focus:ring-2 focus:ring-[#991b1b] focus:border-[#991b1b]"
               />
+              {phone.length > 0 && !isPhoneValid && (
+                <p className="mt-1 text-xs text-red-600" role="alert">Mobile number must be exactly 10 digits.</p>
+              )}
             </div>
 
             <div>
@@ -110,7 +120,7 @@ export default function Login() {
 
             <button
               type="submit"
-              disabled={!phone.trim() || phone.trim().length < 10 || !password || loading}
+              disabled={!isPhoneValid || !password || loading}
               className="w-full rounded-xl bg-[#991b1b] px-8 py-3 text-sm font-medium text-white hover:bg-[#b91c1c] disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? (

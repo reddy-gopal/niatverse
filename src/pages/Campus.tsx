@@ -2,17 +2,12 @@ import { useState, useEffect, useRef, useMemo } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import {
   Star, MapPin, Users, FileText, Clock, ChevronRight,
-  Calendar, Home, Utensils, Briefcase,
-  UserCheck, MessageSquare, AlertTriangle,
-  Linkedin, Mail, Wifi, UtensilsCrossed, Shield
+  Calendar, MessageSquare, Award, Utensils, Home
 } from 'lucide-react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import ImageWithFallback from '../components/ImageWithFallback';
-import {
-  accommodation, foodSpots,
-  faculty, experiences, ratings, clubs, allArticles
-} from '../data/mockData';
+import { ratings, clubs, allArticles } from '../data/mockData';
 import { CLUB_TYPE_BADGE_STYLES } from '../constants/clubBadges';
 import { useCampuses } from '../hooks/useCampuses';
 import { apiCampusToCampus } from '../lib/campusUtils';
@@ -56,17 +51,37 @@ export default function Campus() {
   };
   const displayArticleCount = campus ? articleCount : displayCampus.articleCount;
 
-  const [activeSection, setActiveSection] = useState('week1');
+  const [activeSection, setActiveSection] = useState('topVoted');
 
   const sectionRefs = {
+    topVoted: useRef<HTMLDivElement>(null),
     week1: useRef<HTMLDivElement>(null),
-    experiences: useRef<HTMLDivElement>(null),
     clubs: useRef<HTMLDivElement>(null),
-    contacts: useRef<HTMLDivElement>(null),
-    living: useRef<HTMLDivElement>(null),
     food: useRef<HTMLDivElement>(null),
+    living: useRef<HTMLDivElement>(null),
     reviews: useRef<HTMLDivElement>(null),
   };
+
+  const campusArticles = useMemo(
+    () => allArticles.filter((a) => a.campusId === campusId || a.campusId === null),
+    [campusId]
+  );
+  const topVotedArticles = useMemo(
+    () => [...campusArticles].sort((a, b) => b.helpful - a.helpful).slice(0, 6),
+    [campusArticles]
+  );
+  const foodArticles = useMemo(
+    () => campusArticles.filter((a) => a.campusSection === 'food'),
+    [campusArticles]
+  );
+  const livingArticles = useMemo(
+    () => campusArticles.filter((a) => a.campusSection === 'living'),
+    [campusArticles]
+  );
+  const thirtyDaysArticles = useMemo(
+    () => allArticles.filter((a) => a.campusSection === '30days'),
+    []
+  );
 
   const scrollToSection = (sectionId: string) => {
     setActiveSection(sectionId);
@@ -171,12 +186,11 @@ export default function Campus() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex overflow-x-auto scrollbar-hide gap-1 py-3">
             {[
-              { id: 'week1', label: 'Week 1', icon: Calendar },
-              { id: 'experiences', label: 'Experiences', icon: Briefcase },
+              { id: 'topVoted', label: 'Top voted', icon: Award },
+              { id: 'week1', label: '30 days', icon: Calendar },
               { id: 'clubs', label: 'Clubs', icon: Users },
-              { id: 'contacts', label: 'Contacts', icon: UserCheck },
-              { id: 'living', label: 'Living', icon: Home },
               { id: 'food', label: 'Food', icon: Utensils },
+              { id: 'living', label: 'Living', icon: Home },
               { id: 'reviews', label: 'Reviews', icon: MessageSquare },
             ].map(({ id, label, icon: Icon }) => (
               <button
@@ -196,120 +210,76 @@ export default function Campus() {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Section 1: Week 1 Survival Guide */}
+        {/* Section: Top voted articles */}
+        <section ref={sectionRefs.topVoted} className="mb-16">
+          <div className="flex items-center mb-4">
+            <Award className="h-6 w-6 text-[#991b1b] mr-3" />
+            <h2 className="font-display text-2xl font-bold text-black">
+              Top voted articles
+            </h2>
+          </div>
+          <p className="text-black mb-6">Most helpful articles at {displayCampus.name}</p>
+          {topVotedArticles.length === 0 ? (
+            <p className="text-black mb-4">No articles yet. Be the first to write one.</p>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+              {topVotedArticles.map((article) => (
+                <Link
+                  key={article.id}
+                  to={article.campusId ? `/campus/${article.campusId}/article/${article.id}` : `/article/${article.id}`}
+                  className="block bg-white rounded-xl shadow-card overflow-hidden border border-transparent hover:border-[#991b1b]/30 transition-colors"
+                >
+                  {article.coverImage && (
+                    <div className="h-36 w-full overflow-hidden">
+                      <ImageWithFallback src={article.coverImage} alt={article.title} loading="lazy" className="w-full h-full object-cover" />
+                    </div>
+                  )}
+                  <div className="p-4">
+                    <h3 className="font-display font-medium text-[#1e293b] mb-1 line-clamp-2">{article.title}</h3>
+                    <p className="text-sm text-[#64748b] line-clamp-2 mb-2">{article.excerpt}</p>
+                    <span className="text-xs text-[#94a3b8]">👍 {article.helpful} helpful</span>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          )}
+          <Link
+            to={`/articles${campusId && Number.isFinite(campusId) ? `?campus=${campusId}` : ''}`}
+            className="inline-flex items-center gap-1.5 rounded-lg bg-[#991b1b] px-5 py-2.5 text-sm font-medium text-white hover:bg-[#7f1d1d] transition-colors"
+          >
+            Know more <ChevronRight className="h-4 w-4" />
+          </Link>
+        </section>
+
+        {/* Section: 30 days at NIAT — global articles, same on all campuses */}
         <section ref={sectionRefs.week1} className="mb-16">
           <div className="flex items-center mb-4">
             <Calendar className="h-6 w-6 text-[#991b1b] mr-3" />
             <h2 className="font-display text-2xl font-bold text-black">
-              Week 1 Survival Guide
+              30 days at NIAT
             </h2>
           </div>
-          <p className="text-black mb-6">What to do in your first 7 days at {displayCampus.name}</p>
+          <p className="text-black mb-6">Your first month at {displayCampus.name}: what to do week by week.</p>
 
-          {/* Day cards */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-            <div className="bg-white rounded-lg shadow-card p-5 border-l-4 border-[#991b1b]">
-              <h3 className="font-bold text-black mb-2">Day 1</h3>
-              <p className="text-sm text-black">
-                Register at the admin office (Block A, Ground Floor) before 10am. Carry your admission letter,
-                4 passport photos, and Aadhar. Go with a senior if possible — the queue is confusing.
-              </p>
-            </div>
-            <div className="bg-white rounded-lg shadow-card p-5 border-l-4 border-[#7678ed]">
-              <h3 className="font-bold text-black mb-2">Day 2–3</h3>
-              <p className="text-sm text-black">
-                Find your IRC coordinator and introduce yourself. Get your lab access card.
-                Attend the orientation session and collect your schedule.
-              </p>
-            </div>
-            <div className="bg-white rounded-lg shadow-card p-5 border-l-4 border-[#f18701]">
-              <h3 className="font-bold text-black mb-2">Day 4–7</h3>
-              <p className="text-sm text-black">
-                Settle into accommodation, explore the campus, find food spots, and join
-                the WhatsApp groups. Start thinking about your IRC project idea.
-              </p>
-            </div>
-          </div>
-
-          {/* WhatsApp CTA */}
-          <button className="btn-primary mb-6">
-            Join the {displayCampus.name} NIAT 2025 batch group →
-          </button>
-
-          {/* Common mistakes */}
-          <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
-            <div className="flex items-center mb-2">
-              <AlertTriangle className="h-5 w-5 text-amber-600 mr-2" />
-              <h4 className="font-bold text-amber-800">Common Mistakes to Avoid</h4>
-            </div>
-            <ul className="text-sm text-amber-700 space-y-1">
-              <li>• Don't wait until Day 3 to register — the lines get longer</li>
-              <li>• Don't skip the IRC coordinator meeting — they're your lifeline</li>
-              <li>• Don't book PG without visiting first — photos can be misleading</li>
-            </ul>
-          </div>
-        </section>
-
-        {/* Section: Student Experiences */}
-        <section ref={sectionRefs.experiences} className="mb-16">
-          <div className="flex items-center mb-4">
-            <Briefcase className="h-6 w-6 text-[#991b1b] mr-3" />
-            <h2 className="font-display text-2xl font-bold text-black">
-              Student Experiences
-            </h2>
-          </div>
-
-          {/* Note Banner */}
-          <div className="bg-teal-50 border border-teal-200 rounded-lg p-4 mb-6">
-            <p className="text-sm text-teal-700">
-              <span className="font-medium">Real stories. Anonymous. Verified by Campus Ambassador.</span>
-            </p>
-          </div>
-
-          <div className="space-y-4">
-            {experiences.map((exp) => (
-              <div key={exp.id} className="bg-white rounded-xl shadow-card overflow-hidden">
-                <div className="h-36 w-full overflow-hidden">
-                  <ImageWithFallback src={exp.image} alt={exp.domain} loading="lazy" className="w-full h-full object-cover" />
-                </div>
-                <div className="p-5">
-                  <div className="flex flex-wrap items-center gap-2 mb-3">
-                    <span className="tag-campus-life">{exp.domain}</span>
-                    <span className="text-sm text-black">{exp.companyType}</span>
-                    <span className="text-sm text-black">• {exp.cityOfWork}</span>
-                    <span className="text-sm text-black">• {exp.duration}</span>
-                  </div>
-
-                  <p className="text-sm text-black mb-3">{exp.excerpt}</p>
-
-                  <div className="flex flex-wrap items-center gap-2 mb-3">
-                    <span className="text-xs text-black">How selected:</span>
-                    <span className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded-full">
-                      {exp.howSelected}
-                    </span>
-                  </div>
-
-                  <div className="flex flex-wrap items-center gap-2 mb-3">
-                    <span className="text-xs text-black">Skills that helped:</span>
-                    {exp.skillsThatHelped.map((skill, i) => (
-                      <span key={i} className="text-xs bg-[#fbf2f3] text-[#991b1b] px-2 py-1 rounded-full">
-                        {skill}
-                      </span>
-                    ))}
-                  </div>
-
-                  <div className="flex items-center justify-between text-xs text-black">
-                    <span>{exp.yearOfStudy} Student</span>
-                    <span>{exp.publishedDate}</span>
-                  </div>
-                </div>
-              </div>
+            {thirtyDaysArticles.map((article) => (
+              <Link
+                key={article.id}
+                to={article.campusId ? `/campus/${article.campusId}/article/${article.id}` : `/article/${article.id}`}
+                className="block bg-white rounded-lg shadow-card p-5 border-l-4 border-[#991b1b] hover:border-[#7f1d1d] transition-colors"
+              >
+                <h3 className="font-bold text-black mb-2">{article.title.replace('Your first month at NIAT — ', '')}</h3>
+                <p className="text-sm text-black">{article.excerpt}</p>
+              </Link>
             ))}
           </div>
 
-          <button className="btn-secondary mt-6">
-            Share your experience →
-          </button>
+          <Link
+            to={`/articles${campusId && Number.isFinite(campusId) ? `?campus=${campusId}` : ''}`}
+            className="inline-flex items-center gap-1.5 rounded-lg bg-[#991b1b] px-5 py-2.5 text-sm font-medium text-white hover:bg-[#7f1d1d] transition-colors"
+          >
+            Know more <ChevronRight className="h-4 w-4" />
+          </Link>
         </section>
 
         {/* Section: Clubs & Communities */}
@@ -325,7 +295,7 @@ export default function Campus() {
           </p>
 
           {(() => {
-            const campusClubs = clubs.filter((c) => c.campusId === campusId);
+            const campusClubs = clubs.filter((c) => c.campusId === campusId || c.campusId === null);
             const previewClubs = campusClubs.slice(0, 3);
             if (campusClubs.length === 0) {
               return (
@@ -343,9 +313,10 @@ export default function Campus() {
                   {previewClubs.map((club) => {
                     const badge = CLUB_TYPE_BADGE_STYLES[club.type];
                     return (
-                      <div
+                      <Link
                         key={club.id}
-                        className="bg-white rounded-xl border border-[rgba(30,41,59,0.1)] transition-all hover:border-[#991b1b] hover:shadow-lg overflow-hidden flex flex-col"
+                        to={`/campus/${campusId}/clubs/${club.id}`}
+                        className="block bg-white rounded-xl border border-[rgba(30,41,59,0.1)] transition-all hover:border-[#991b1b] hover:shadow-lg overflow-hidden flex flex-col"
                         style={{ boxShadow: '0 4px 12px rgba(30, 41, 59, 0.08)' }}
                       >
                         {club.coverImage && (
@@ -391,207 +362,105 @@ export default function Campus() {
                           >
                             Since {club.foundedYear} · ~{club.memberCount} members
                           </p>
-                          <Link
-                            to={`/campus/${campusId}/clubs/${club.id}`}
-                            className="text-[#991b1b] text-sm font-medium hover:underline"
-                          >
+                          <span className="text-[#991b1b] text-sm font-medium hover:underline">
                             View details →
-                          </Link>
+                          </span>
                         </div>
-                      </div>
+                      </Link>
                     );
                   })}
                 </div>
                 <Link
                   to={`/campus/${campusId}/clubs`}
-                  className="inline-flex items-center px-4 py-2 border-2 border-[#991b1b] text-[#991b1b] font-medium rounded-lg hover:bg-[#991b1b] hover:text-white transition-colors"
+                  className="inline-flex items-center gap-1.5 px-4 py-2 border-2 border-[#991b1b] text-[#991b1b] font-medium rounded-lg hover:bg-[#991b1b] hover:text-white transition-colors"
                 >
-                  View all {campusClubs.length} clubs →
+                  Club directory <ChevronRight className="h-4 w-4" />
                 </Link>
               </>
             );
           })()}
         </section>
 
-        {/* Section: Faculty & Contacts */}
-        <section ref={sectionRefs.contacts} className="mb-16">
-          <div className="flex items-center mb-4">
-            <UserCheck className="h-6 w-6 text-[#991b1b] mr-3" />
-            <h2 className="font-display text-2xl font-bold text-black">
-              Faculty & Contacts
-            </h2>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {faculty.map((f, index) => (
-              <div key={index} className="bg-white rounded-lg shadow-card p-5">
-                <div className="flex items-start justify-between mb-3">
-                  <div>
-                    <h3 className="font-display text-lg font-bold text-black">{f.name}</h3>
-                    <span className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded-full">
-                      {f.designation}
-                    </span>
-                  </div>
-                  {(f.roleAtNiat === 'NIAT Coordinator' || f.roleAtNiat === 'IRC Mentor') && (
-                    <span className="niat-role-badge">{f.roleAtNiat}</span>
-                  )}
-                </div>
-
-                <p className="text-sm text-black mb-1">{f.department}</p>
-                <p className="text-sm text-black mb-3">
-                  <span className="font-medium">Specialization:</span> {f.specialization}
-                </p>
-                <p className="text-sm text-black mb-3">
-                  <span className="font-medium">Subjects:</span> {f.subjectsTeaching}
-                </p>
-
-                <div className="flex items-center gap-3 mb-3">
-                  <a
-                    href={`https://${f.linkedin}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center text-sm text-[#991b1b] hover:underline"
-                  >
-                    <Linkedin className="h-4 w-4 mr-1" />
-                    LinkedIn
-                  </a>
-                  <a
-                    href={`mailto:${f.email}`}
-                    className="flex items-center text-sm text-[#991b1b] hover:underline"
-                  >
-                    <Mail className="h-4 w-4 mr-1" />
-                    Email
-                  </a>
-                </div>
-
-                <span className="verified-badge">Verified {f.verifiedDate}</span>
-              </div>
-            ))}
-          </div>
-
-          {/* Important Note */}
-          <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mt-6">
-            <div className="flex items-center">
-              <AlertTriangle className="h-5 w-5 text-amber-600 mr-2" />
-              <p className="text-sm text-amber-700">
-                <span className="font-medium">Important:</span> No phone numbers listed — use official email only
-              </p>
-            </div>
-          </div>
-        </section>
-
-        {/* Section: Where to Live */}
-        <section ref={sectionRefs.living} className="mb-16">
-          <div className="flex items-center mb-4">
-            <Home className="h-6 w-6 text-[#991b1b] mr-3" />
-            <h2 className="font-display text-2xl font-bold text-black">
-              Where to Live
-            </h2>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {accommodation.map((acc, index) => (
-              <div key={index} className="bg-white rounded-xl shadow-card overflow-hidden">
-                <div className="h-40 w-full overflow-hidden">
-                  <ImageWithFallback src={acc.image} alt={acc.name} loading="lazy" className="w-full h-full object-cover" />
-                </div>
-                <div className="p-5">
-                  <div className="flex items-start justify-between mb-3">
-                    <div>
-                      <h3 className="font-display text-lg font-bold text-black">{acc.name}</h3>
-                      <span className="inline-block bg-[#7678ed] text-white text-xs px-2 py-1 rounded-full mt-1">
-                        {acc.type}
-                      </span>
-                    </div>
-                    <span className="verified-badge">Verified {acc.verifiedDate}</span>
-                  </div>
-
-                  <p className="text-sm text-black mb-3">{acc.area}</p>
-
-                  <div className="mb-3">
-                    <span className="text-2xl font-bold text-[#991b1b]">
-                      ₹{acc.priceMin.toLocaleString()}
-                      {acc.priceMax > acc.priceMin && `–${acc.priceMax.toLocaleString()}`}
-                    </span>
-                    <span className="text-sm text-black">/month</span>
-                  </div>
-
-                  <div className="flex flex-wrap gap-2 mb-3">
-                    {acc.tags.map((tag, i) => (
-                      <span
-                        key={i}
-                        className={`text-xs px-2 py-1 rounded-full ${tag === 'Budget' ? 'bg-green-100 text-green-700' : 'bg-[#7678ed] text-white'
-                          }`}
-                      >
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
-
-                  <div className="flex items-center gap-4 text-sm text-black">
-                    <span className="flex items-center">
-                      <UtensilsCrossed className="h-4 w-4 mr-1" />
-                      {acc.foodIncluded ? 'Food included' : 'No food'}
-                    </span>
-                    <span className="flex items-center">
-                      <Wifi className="h-4 w-4 mr-1" />
-                      {acc.wifiAvailable ? 'WiFi' : 'No WiFi'}
-                    </span>
-                  </div>
-
-                  <div className="mt-3 flex items-center text-sm text-green-600">
-                    <Shield className="h-4 w-4 mr-1" />
-                    {acc.safetyNote}
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        {/* Section: Food Scene */}
+        {/* Section: Food */}
         <section ref={sectionRefs.food} className="mb-16">
           <div className="flex items-center mb-4">
             <Utensils className="h-6 w-6 text-[#991b1b] mr-3" />
             <h2 className="font-display text-2xl font-bold text-black">
-              Food Scene
+              Food
             </h2>
           </div>
+          <p className="text-black mb-6">Where to eat at and around {displayCampus.name}</p>
+          {foodArticles.length === 0 ? (
+            <p className="text-black mb-4">No food articles yet.</p>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+              {foodArticles.map((article) => (
+                <Link
+                  key={article.id}
+                  to={article.campusId ? `/campus/${article.campusId}/article/${article.id}` : `/article/${article.id}`}
+                  className="block bg-white rounded-xl shadow-card overflow-hidden border border-transparent hover:border-[#991b1b]/30 transition-colors"
+                >
+                  {article.coverImage && (
+                    <div className="h-32 w-full overflow-hidden">
+                      <ImageWithFallback src={article.coverImage} alt={article.title} loading="lazy" className="w-full h-full object-cover" />
+                    </div>
+                  )}
+                  <div className="p-4">
+                    <h3 className="font-display font-medium text-[#1e293b] mb-1 line-clamp-2">{article.title}</h3>
+                    <p className="text-sm text-[#64748b] line-clamp-2 mb-2">{article.excerpt}</p>
+                    <span className="text-xs text-[#94a3b8]">👍 {article.helpful} helpful</span>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          )}
+          <Link
+            to={`/articles${campusId && Number.isFinite(campusId) ? `?campus=${campusId}` : ''}`}
+            className="inline-flex items-center gap-1.5 text-[#991b1b] font-medium text-sm hover:underline"
+          >
+            Know more <ChevronRight className="h-4 w-4" />
+          </Link>
+        </section>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {foodSpots.map((spot, index) => (
-              <div key={index} className="bg-white rounded-xl shadow-card p-5 flex gap-4">
-                <div className="w-20 h-20 rounded-lg overflow-hidden shrink-0">
-                  <ImageWithFallback src={spot.image} alt={spot.name} loading="lazy" className="w-full h-full object-cover" />
-                </div>
-                <div className="flex-1">
-                  <div className="flex items-start justify-between mb-2">
-                    <h3 className="font-bold text-black">{spot.name}</h3>
-                    <span className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded-full">
-                      {spot.type}
-                    </span>
-                  </div>
-                  <p className="text-sm text-black mb-2">{spot.area}</p>
-                  <p className="text-sm text-black mb-2">
-                    <span className="font-medium">Specialty:</span> {spot.specialty}
-                  </p>
-                  <div className="flex items-center gap-3">
-                    <span className="text-sm font-medium text-[#991b1b]">{spot.priceRange}</span>
-                    {spot.lateNight && (
-                      <span className="text-xs bg-amber-100 text-amber-700 px-2 py-1 rounded-full">
-                        Late Night
-                      </span>
-                    )}
-                    {spot.swiggy && (
-                      <span className="text-xs bg-orange-100 text-orange-700 px-2 py-1 rounded-full">
-                        Swiggy
-                      </span>
-                    )}
-                  </div>
-                </div>
-              </div>
-            ))}
+        {/* Section: Living */}
+        <section ref={sectionRefs.living} className="mb-16">
+          <div className="flex items-center mb-4">
+            <Home className="h-6 w-6 text-[#991b1b] mr-3" />
+            <h2 className="font-display text-2xl font-bold text-black">
+              Living
+            </h2>
           </div>
+          <p className="text-black mb-6">Hostel, PG, and accommodation near {displayCampus.name}</p>
+          {livingArticles.length === 0 ? (
+            <p className="text-black mb-4">No living articles yet.</p>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+              {livingArticles.map((article) => (
+                <Link
+                  key={article.id}
+                  to={article.campusId ? `/campus/${article.campusId}/article/${article.id}` : `/article/${article.id}`}
+                  className="block bg-white rounded-xl shadow-card overflow-hidden border border-transparent hover:border-[#991b1b]/30 transition-colors"
+                >
+                  {article.coverImage && (
+                    <div className="h-32 w-full overflow-hidden">
+                      <ImageWithFallback src={article.coverImage} alt={article.title} loading="lazy" className="w-full h-full object-cover" />
+                    </div>
+                  )}
+                  <div className="p-4">
+                    <h3 className="font-display font-medium text-[#1e293b] mb-1 line-clamp-2">{article.title}</h3>
+                    <p className="text-sm text-[#64748b] line-clamp-2 mb-2">{article.excerpt}</p>
+                    <span className="text-xs text-[#94a3b8]">👍 {article.helpful} helpful</span>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          )}
+          <Link
+            to={`/articles${campusId && Number.isFinite(campusId) ? `?campus=${campusId}` : ''}`}
+            className="inline-flex items-center gap-1.5 text-[#991b1b] font-medium text-sm hover:underline"
+          >
+            Know more <ChevronRight className="h-4 w-4" />
+          </Link>
         </section>
 
         {/* Section: Student Ratings & Reviews */}

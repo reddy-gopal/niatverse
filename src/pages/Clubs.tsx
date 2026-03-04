@@ -17,12 +17,12 @@ export default function Clubs() {
   const [openToAllOnly, setOpenToAllOnly] = useState(false);
 
   const campusClubsCount = useMemo(
-    () => allClubs.filter((c) => c.campusId === campusId).length,
+    () => allClubs.filter((c) => c.campusId === campusId || c.campusId === null).length,
     [campusId]
   );
 
   const filteredClubs = useMemo(() => {
-    let list = allClubs.filter((c) => c.campusId === campusId);
+    let list = allClubs.filter((c) => c.campusId === campusId || c.campusId === null);
     if (typeFilter !== 'All') list = list.filter((c) => c.type === typeFilter);
     if (openToAllOnly) list = list.filter((c) => c.openToAll);
     return list;

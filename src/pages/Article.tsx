@@ -24,21 +24,21 @@ function stripImageCardsFromHtml(html: string): string {
 const STATIC_BODY = (
   <article className="prose prose-lg max-w-none mb-8">
     <p className="text-black leading-relaxed mb-6">
-      The IRC (Industry Readiness Course) submission process at St. Mary&apos;s can feel overwhelming
-      at first. The official documentation is sparse, and every coordinator seems to have their
-      own interpretation of the rules. After going through this twice and helping dozens of
-      juniors, here&apos;s what actually works.
+      The IRC (Industry Readiness Course) is a core part of the NIAT programme. It helps you build
+      a real-world project and document your progress. Here&apos;s a general overview of how it works
+      across NIAT campuses.
     </p>
-    <h2 className="font-display text-xl md:text-2xl font-bold text-black mt-8 mb-4">The Official Process (What NIAT Says)</h2>
+    <h2 className="font-display text-xl md:text-2xl font-bold text-black mt-8 mb-4">How IRC Works</h2>
     <ol className="list-decimal list-inside space-y-2 text-black mb-6">
       <li>Register your project idea on the NIAT portal within the first month</li>
-      <li>Get mentor approval within 2 weeks of registration</li>
-      <li>Submit weekly progress reports every Friday</li>
-      <li>Present your final project in the evaluation week</li>
+      <li>Get mentor approval within the timeline set by your campus</li>
+      <li>Submit progress reports as required by your coordinator</li>
+      <li>Present your final project during the evaluation period</li>
     </ol>
-    <h2 className="font-display text-xl md:text-2xl font-bold text-black mt-8 mb-4">What Actually Happens (What Students Know)</h2>
+    <h2 className="font-display text-xl md:text-2xl font-bold text-black mt-8 mb-4">Tips for Success</h2>
     <p className="text-black leading-relaxed mb-6">
-      In reality, the process has a few unwritten rules that can make or break your timeline.
+      Lab timings, report formats, and evaluation dates can vary by campus. Check with your IRC
+      coordinator and seniors at your college for campus-specific details.
     </p>
   </article>
 );
@@ -343,7 +343,7 @@ export default function Article() {
           </span>
         </div>
 
-        {/* Article Body — image cards stripped so images show only in carousel above (no duplication) */}
+        {/* Article Body — API body, or IRC static body, or excerpt for other categories (e.g. Food, Living) */}
         {fromApi && apiArticle?.body ? (
           <div className="article-body-read-only">
             <article
@@ -351,8 +351,12 @@ export default function Article() {
               dangerouslySetInnerHTML={{ __html: stripImageCardsFromHtml(apiArticle.body) }}
             />
           </div>
-        ) : (
+        ) : article.category === 'irc' ? (
           STATIC_BODY
+        ) : (
+          <article className="prose prose-lg max-w-none mb-8">
+            <p className="text-black leading-relaxed">{article.excerpt}</p>
+          </article>
         )}
 
         {/* Delete confirmation modal */}

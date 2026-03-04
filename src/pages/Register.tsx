@@ -43,15 +43,17 @@ export default function Register() {
   const [otpError, setOtpError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
+  const phoneDigits = phone.replace(/\D/g, '');
+  const isPhoneValid = phoneDigits.length === 10;
   const passwordMatch = password === confirm && password.length >= 8;
   const canSubmit = phoneVerified && username.trim().length >= 2 && passwordMatch;
 
   const handleSendOtp = async () => {
-    const p = phone.trim();
-    if (!p || p.length < 10) {
-      setOtpError('Enter a valid mobile number.');
+    if (!isPhoneValid) {
+      setOtpError('Mobile number must be exactly 10 digits.');
       return;
     }
+    const p = phoneDigits;
     setOtpError(null);
     setOtpSending(true);
     try {
@@ -65,7 +67,7 @@ export default function Register() {
   };
 
   const handleVerifyOtp = async () => {
-    const p = phone.trim();
+    const p = phoneDigits;
     const code = otpCode.replace(/\D/g, '').slice(0, 4);
     if (!p || code.length !== 4) {
       setOtpError('Enter the 4-digit code.');
@@ -160,9 +162,13 @@ export default function Register() {
                   <input
                     id="reg-phone"
                     type="tel"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    maxLength={10}
                     value={phone}
                     onChange={(e) => {
-                      setPhone(e.target.value);
+                      const val = e.target.value.replace(/\D/g, '').slice(0, 10);
+                      setPhone(val);
                       setOtpError(null);
                     }}
                     readOnly={phoneVerified}
@@ -171,6 +177,9 @@ export default function Register() {
                     }`}
                     placeholder="9876543210"
                   />
+                  {!phoneVerified && phone.length > 0 && !isPhoneValid && (
+                    <p className="mt-1 text-xs text-red-600" role="alert">Mobile number must be exactly 10 digits.</p>
+                  )}
                   {phoneVerified && (
                     <span className="absolute right-3 top-1/2 -translate-y-1/2 text-green-600" aria-label="Verified">
                       <CheckCircle className="h-5 w-5" />
@@ -181,7 +190,7 @@ export default function Register() {
                   <button
                     type="button"
                     onClick={handleSendOtp}
-                    disabled={!phone.trim() || phone.trim().length < 10 || otpSending || otpSent}
+                    disabled={!isPhoneValid || otpSending || otpSent}
                     className="shrink-0 rounded-xl border border-[#991b1b] bg-[#991b1b] px-3 py-2 text-sm font-medium text-white hover:bg-[#b91c1c] disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {otpSending ? 'Sending…' : otpSent ? 'Sent' : 'Send OTP'}

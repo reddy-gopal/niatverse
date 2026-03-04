@@ -106,7 +106,7 @@ export type ClubType =
 
 export interface Club {
   id: number;
-  campusId: number;
+  campusId: number | null;
   name: string;
   type: ClubType;
   about: string;
@@ -164,6 +164,9 @@ export type GuideTopic =
   | 'GSoC'
   | 'Skills';
 
+/** Used on campus detail page to list articles in Food / Living / 30 days sections */
+export type CampusSectionTag = 'food' | 'living' | '30days';
+
 export interface ArticlePageArticle {
   id: number;
   campusId: number | null;
@@ -178,4 +181,6 @@ export interface ArticlePageArticle {
   coverImage?: string;
   isGlobalGuide?: boolean;
   topic?: GuideTopic;
+  /** Optional: show in Food or Living section on campus page */
+  campusSection?: CampusSectionTag;
 }

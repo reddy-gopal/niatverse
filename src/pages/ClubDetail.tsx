@@ -42,7 +42,7 @@ export default function ClubDetail() {
   const campusId = parseInt(id || '1');
   const clubId = parseInt(clubIdParam || '0');
   const campus = campuses.find((c) => c.id === campusId) || campuses[0];
-  const club = allClubs.find((c) => c.id === clubId && c.campusId === campusId);
+  const club = allClubs.find((c) => c.id === clubId && (c.campusId === campusId || c.campusId === null));
 
   const clubArticles = club ? getClubArticles(club.id, campusId) : [];
 
