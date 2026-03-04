@@ -109,7 +109,7 @@ export default function Navbar({ searchQuery = '', showSearch }: NavbarProps) {
         role="status"
         aria-live="polite"
       >
-        Submit your article — it goes under review, then goes live for the whole community. Be the first to publish. 🔥
+        Submit your article. It gets reviewed, then goes live for the whole community. Be the first to publish.
       </div>
       <nav
         className={`bg-navbar border-b border-[rgba(30,41,59,0.1)] transition-[box-shadow] duration-300 ease-out ${shouldShowNavShadow ? 'shadow-[0_2px_12px_rgba(30,41,59,0.10)]' : ''
