@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { Search, Menu, X, ChevronRight } from 'lucide-react';
+import { Search, Menu, X, ChevronRight, PenLine, UserCircle, LogOut } from 'lucide-react';
+import { clearTokens, fetchFoundingEditorProfile, isOnboardingComplete } from '../lib/authApi';
 import { allArticles } from '../data/mockData';
 import { CATEGORY_CONFIG } from '../data/articleCategories';
 
@@ -17,20 +18,54 @@ const CATEGORY_NAV_LINKS = [
 ];
 const HOW_TO_GUIDES_LINK = { label: 'How-To Guides', icon: '📘', path: '/how-to-guides' };
 
-/** Niat Reviews Platform URL — update after deployment */
-const REVIEWS_PLATFORM_URL = 'http://localhost:3000';
-
 export default function Navbar({ searchQuery = '', showSearch }: NavbarProps) {
   const [search, setSearch] = useState(searchQuery);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [articlesDropdownOpen, setArticlesDropdownOpen] = useState(false);
+  const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
+  const [hasToken, setHasToken] = useState(false);
+  const [onboardingComplete, setOnboardingComplete] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const profileDropdownRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
   const location = useLocation();
 
+  useEffect(() => {
+    const update = () => setHasToken(!!localStorage.getItem('niat_access'));
+    update();
+    window.addEventListener('niat:auth', update);
+    return () => window.removeEventListener('niat:auth', update);
+  }, []);
+
+  useEffect(() => {
+    if (!hasToken) {
+      setOnboardingComplete(false);
+      return;
+    }
+    fetchFoundingEditorProfile().then((profile) => {
+      setOnboardingComplete(isOnboardingComplete(profile));
+    }).catch(() => setOnboardingComplete(false));
+  }, [hasToken]);
+
+  useEffect(() => {
+    const onAuth = () => {
+      if (localStorage.getItem('niat_access')) {
+        fetchFoundingEditorProfile().then((profile) => {
+          setOnboardingComplete(isOnboardingComplete(profile));
+        }).catch(() => setOnboardingComplete(false));
+      } else {
+        setOnboardingComplete(false);
+      }
+    };
+    window.addEventListener('niat:auth', onAuth);
+    return () => window.removeEventListener('niat:auth', onAuth);
+  }, []);
+
+  const showFullNav = hasToken && onboardingComplete;
+
   const isHome = location.pathname === '/';
   const isOnArticles = location.pathname === '/articles';
-  const shouldShowSearch = !isHome || showSearch === true;
+  const shouldShowSearch = showFullNav && (!isHome || showSearch === true);
   const shouldShowNavShadow = isHome && showSearch === true;
 
   const featuredArticles = allArticles.filter((a) => a.featured);
@@ -48,30 +83,46 @@ export default function Navbar({ searchQuery = '', showSearch }: NavbarProps) {
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
-        setArticlesDropdownOpen(false);
-      }
+      const target = e.target as Node;
+      if (dropdownRef.current && !dropdownRef.current.contains(target)) setArticlesDropdownOpen(false);
+      if (profileDropdownRef.current && !profileDropdownRef.current.contains(target)) setProfileDropdownOpen(false);
     };
-    if (articlesDropdownOpen) {
+    if (articlesDropdownOpen || profileDropdownOpen) {
       document.addEventListener('mousedown', handleClickOutside);
     }
     return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [articlesDropdownOpen]);
+  }, [articlesDropdownOpen, profileDropdownOpen]);
+
+  const handleLogout = () => {
+    clearTokens();
+    window.dispatchEvent(new Event('niat:auth'));
+    setProfileDropdownOpen(false);
+    setMobileMenuOpen(false);
+    navigate('/');
+  };
 
   return (
-    <nav
-      className={`bg-navbar border-b border-[rgba(30,41,59,0.1)] sticky top-0 z-50 transition-[box-shadow] duration-300 ease-out ${shouldShowNavShadow ? 'shadow-[0_2px_12px_rgba(30,41,59,0.10)]' : ''
-        }`}
-    >
+    <header className="sticky top-0 z-50">
+      {/* In-progress banner — above Navbar */}
+      <div
+        className="bg-[#991b1b] text-white text-center text-xs sm:text-sm font-medium py-2 px-3 sm:px-4"
+        role="status"
+        aria-live="polite"
+      >
+        Submit your article — it goes under review, then goes live for the whole community. Be the first to publish. 🔥
+      </div>
+      <nav
+        className={`bg-navbar border-b border-[rgba(30,41,59,0.1)] transition-[box-shadow] duration-300 ease-out ${shouldShowNavShadow ? 'shadow-[0_2px_12px_rgba(30,41,59,0.10)]' : ''
+          }`}
+      >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <Link to="/" className="flex items-center">
-            <span className="font-display text-2xl font-bold text-[#991b1b]">NIAT</span>
-            <span className="font-body text-xl font-medium text-black ml-1">Verse</span>
+          <Link to="/" className="flex items-center shrink-0">
+            <span className="font-display text-xl sm:text-2xl font-bold text-[#991b1b]">NIAT</span>
+            <span className="font-body text-lg sm:text-xl font-medium text-black ml-1">Verse</span>
           </Link>
 
-          {/* Desktop Search - scroll-aware on Home, always visible elsewhere */}
           <form
             onSubmit={handleSearch}
             className={`hidden md:flex mx-8 transition-[opacity,transform,width] duration-[250ms] ease-out ${shouldShowSearch
@@ -92,34 +143,52 @@ export default function Navbar({ searchQuery = '', showSearch }: NavbarProps) {
           </form>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-4">
-            <Link
-              to="/campuses"
-              className="text-black hover:text-black text-sm font-medium transition-colors"
-            >
-              Campuses
-            </Link>
+          <div className="hidden md:flex items-center flex-wrap justify-end gap-2 lg:gap-4">
+            {hasToken && !onboardingComplete && (
+              <>
+                <Link
+                  to="/onboarding"
+                  className="text-[#991b1b] hover:text-[#7f1d1d] text-sm font-medium transition-colors"
+                >
+                  Complete profile
+                </Link>
+                <button
+                  type="button"
+                  onClick={handleLogout}
+                  className="text-black hover:text-black text-sm font-medium transition-colors"
+                >
+                  Logout
+                </button>
+              </>
+            )}
+            {showFullNav && (
+              <>
+                <Link
+                  to="/campuses"
+                  className="text-black hover:text-black text-sm font-medium transition-colors"
+                >
+                  Campuses
+                </Link>
 
-            {/* Articles with mega dropdown */}
-            <div
-              ref={dropdownRef}
-              className="relative"
-              onMouseEnter={() => setArticlesDropdownOpen(true)}
-              onMouseLeave={() => setArticlesDropdownOpen(false)}
-            >
-              <Link
-                to="/articles"
-                className={`text-sm font-medium transition-colors flex items-center ${isOnArticles ? 'text-[#991b1b] border-b-2 border-[#991b1b] pb-0.5' : 'text-black hover:text-black'
-                  }`}
-              >
-                Articles
-              </Link>
-
-              {/* Mega dropdown */}
-              {articlesDropdownOpen && (
+                {/* Articles with mega dropdown */}
                 <div
-                  className="absolute left-1/2 -translate-x-1/2 top-full pt-2"
-                  style={{ minWidth: '520px' }}
+                  ref={dropdownRef}
+                  className="relative"
+                  onMouseEnter={() => setArticlesDropdownOpen(true)}
+                  onMouseLeave={() => setArticlesDropdownOpen(false)}
+                >
+                  <Link
+                    to="/articles"
+                    className={`text-sm font-medium transition-colors flex items-center ${isOnArticles ? 'text-[#991b1b] border-b-2 border-[#991b1b] pb-0.5' : 'text-black hover:text-black'
+                      }`}
+                  >
+                    Articles
+                  </Link>
+
+                  {/* Mega dropdown */}
+                  {articlesDropdownOpen && (
+                <div
+                  className="absolute left-1/2 -translate-x-1/2 top-full pt-2 w-[min(520px,calc(100vw-2rem))] max-w-[calc(100vw-2rem)]"
                 >
                   <div
                     className="rounded-xl overflow-hidden"
@@ -130,9 +199,9 @@ export default function Navbar({ searchQuery = '', showSearch }: NavbarProps) {
                       borderTop: '3px solid #991b1b',
                     }}
                   >
-                    <div className="flex">
+                    <div className="flex flex-col sm:flex-row">
                       {/* Left column - Browse by Category */}
-                      <div className="w-1/2 p-5 border-r border-[rgba(30,41,59,0.08)]">
+                      <div className="w-full sm:w-1/2 p-4 sm:p-5 border-b sm:border-b-0 sm:border-r border-[rgba(30,41,59,0.08)]">
                         <h4 className="text-xs font-semibold text-[#64748b] uppercase tracking-wider mb-3">
                           Browse by Category
                         </h4>
@@ -161,7 +230,7 @@ export default function Navbar({ searchQuery = '', showSearch }: NavbarProps) {
                       </div>
 
                       {/* Right column - Featured + Recently Updated */}
-                      <div className="w-1/2 p-5">
+                      <div className="w-full sm:w-1/2 p-4 sm:p-5">
                         <h4 className="text-xs font-semibold text-[#64748b] uppercase tracking-wider mb-3">
                           ⭐ Featured
                         </h4>
@@ -263,20 +332,68 @@ export default function Navbar({ searchQuery = '', showSearch }: NavbarProps) {
                     </div>
                   </div>
                 </div>
-              )}
-            </div>
+                  )}
+                </div>
 
-            <a
-              href={REVIEWS_PLATFORM_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-black hover:text-black text-sm font-medium transition-colors"
-            >
-              Niat Reviews
-            </a>
-            <Link to="/contribute" className="btn-primary text-sm font-medium">
-              Contribute
-            </Link>
+                <Link to="/contribute/write" className="btn-primary text-sm font-medium inline-flex items-center gap-1.5">
+                  <PenLine className="h-4 w-4" />
+                  Write Article
+                </Link>
+              </>
+            )}
+            {showFullNav && (
+              <div ref={profileDropdownRef} className="relative">
+                <button
+                  type="button"
+                  onClick={() => setProfileDropdownOpen((o) => !o)}
+                  className="flex items-center gap-1.5 text-black hover:text-black text-sm font-medium transition-colors"
+                >
+                  <UserCircle className="h-5 w-5" />
+                  Profile
+                </button>
+                {profileDropdownOpen && (
+                  <div
+                    className="absolute right-0 top-full mt-1 py-1 min-w-[180px] rounded-lg border border-[rgba(30,41,59,0.1)] bg-white shadow-lg z-50"
+                    style={{ boxShadow: '0 4px 12px rgba(30,41,59,0.12)' }}
+                  >
+                    <Link
+                      to="/profile"
+                      onClick={() => setProfileDropdownOpen(false)}
+                      className="flex items-center gap-2 px-4 py-2.5 text-sm text-[#1e293b] hover:bg-[#fbf2f3] transition-colors"
+                    >
+                      <UserCircle className="h-4 w-4" />
+                      Profile
+                    </Link>
+                    <Link
+                      to="/my-articles"
+                      onClick={() => setProfileDropdownOpen(false)}
+                      className="flex items-center gap-2 px-4 py-2.5 text-sm text-[#1e293b] hover:bg-[#fbf2f3] transition-colors"
+                    >
+                      <PenLine className="h-4 w-4" />
+                      My Articles
+                    </Link>
+                    <button
+                      type="button"
+                      onClick={handleLogout}
+                      className="flex w-full items-center gap-2 px-4 py-2.5 text-sm text-red-700 hover:bg-red-50 transition-colors"
+                    >
+                      <LogOut className="h-4 w-4" />
+                      Logout
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
+            {!hasToken && (
+              <>
+                <Link to="/login" className="text-black hover:text-black text-sm font-medium transition-colors">
+                  Login
+                </Link>
+                <Link to="/register" className="text-black hover:text-black text-sm font-medium transition-colors">
+                  Register
+                </Link>
+              </>
+            )}
           </div>
 
           {/* Mobile Menu Button */}
@@ -291,53 +408,93 @@ export default function Navbar({ searchQuery = '', showSearch }: NavbarProps) {
         {/* Mobile Menu */}
         {mobileMenuOpen && (
           <div className="md:hidden py-4 border-t border-[rgba(30,41,59,0.1)]">
-            <form onSubmit={handleSearch} className="mb-4">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                <input
-                  type="text"
-                  placeholder="Search campus, topic, or article..."
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 bg-white border border-[rgba(30,41,59,0.1)] rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-[#991b1b]"
-                />
-              </div>
-            </form>
+            {showFullNav && (
+              <form onSubmit={handleSearch} className="mb-4">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                  <input
+                    type="text"
+                    placeholder="Search campus, topic, or article..."
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    className="w-full pl-10 pr-4 py-2 bg-white border border-[rgba(30,41,59,0.1)] rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-[#991b1b]"
+                  />
+                </div>
+              </form>
+            )}
             <div className="flex flex-col space-y-3">
-              <Link
-                to="/campuses"
-                onClick={() => setMobileMenuOpen(false)}
-                className="text-black hover:text-black text-sm font-medium"
-              >
-                Campuses
-              </Link>
-              <Link
-                to="/articles"
-                onClick={() => setMobileMenuOpen(false)}
-                className="text-black hover:text-black text-sm font-medium"
-              >
-                Articles
-              </Link>
-              <a
-                href={REVIEWS_PLATFORM_URL}
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={() => setMobileMenuOpen(false)}
-                className="text-black hover:text-black text-sm font-medium"
-              >
-                Niat Reviews
-              </a>
-              <Link
-                to="/contribute"
-                onClick={() => setMobileMenuOpen(false)}
-                className="btn-primary text-sm font-medium text-center"
-              >
-                Contribute
-              </Link>
+              {hasToken && !onboardingComplete && (
+                <>
+                  <Link
+                    to="/onboarding"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="text-[#991b1b] font-medium text-sm"
+                  >
+                    Complete profile
+                  </Link>
+                  <button
+                    type="button"
+                    onClick={() => { setMobileMenuOpen(false); handleLogout(); }}
+                    className="text-left text-sm font-medium text-red-700 hover:text-red-800"
+                  >
+                    Logout
+                  </button>
+                </>
+              )}
+              {showFullNav && (
+                <>
+                  <Link
+                    to="/campuses"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="text-black hover:text-black text-sm font-medium"
+                  >
+                    Campuses
+                  </Link>
+                  <Link
+                    to="/articles"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="text-black hover:text-black text-sm font-medium"
+                  >
+                    Articles
+                  </Link>
+                  <Link
+                    to="/contribute/write"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="btn-primary text-sm font-medium text-center inline-flex items-center justify-center gap-1.5"
+                  >
+                    <PenLine className="h-4 w-4" />
+                    Write Article
+                  </Link>
+                  <Link to="/profile" onClick={() => setMobileMenuOpen(false)} className="text-black hover:text-black text-sm font-medium">
+                    Profile
+                  </Link>
+                  <Link to="/my-articles" onClick={() => setMobileMenuOpen(false)} className="text-black hover:text-black text-sm font-medium">
+                    My Articles
+                  </Link>
+                  <button
+                    type="button"
+                    onClick={() => { setMobileMenuOpen(false); handleLogout(); }}
+                    className="text-left text-sm font-medium text-red-700 hover:text-red-800"
+                  >
+                    Logout
+                  </button>
+                </>
+              )}
+              {!hasToken && (
+                <>
+                  <Link to="/login" onClick={() => setMobileMenuOpen(false)} className="text-black hover:text-black text-sm font-medium">
+                    Login
+                  </Link>
+                  <Link to="/register" onClick={() => setMobileMenuOpen(false)} className="text-black hover:text-black text-sm font-medium">
+                    Register
+                  </Link>
+                </>
+              )}
             </div>
           </div>
         )}
       </div>
-    </nav>
+      </nav>
+    </header>
   );
 }

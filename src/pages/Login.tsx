@@ -1,0 +1,131 @@
+import { useState } from 'react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
+import Navbar from '../components/Navbar';
+import Footer from '../components/Footer';
+import { loginByPhonePassword, setTokens } from '../lib/authApi';
+
+function getErrorMessage(err: unknown): string {
+  if (err && typeof err === 'object' && 'response' in err) {
+    const res = (err as { response?: { data?: { detail?: string } } }).response;
+    if (res?.data?.detail && typeof res.data.detail === 'string') return res.data.detail;
+  }
+  return 'Something went wrong. Please try again.';
+}
+
+export default function Login() {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const [phone, setPhone] = useState('');
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const nextUrl = (location.state as { from?: string })?.from ?? '/';
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const p = phone.trim();
+    if (!p || p.length < 10) {
+      setError('Enter a valid mobile number.');
+      return;
+    }
+    if (!password) {
+      setError('Enter your password.');
+      return;
+    }
+    setError(null);
+    setLoading(true);
+    try {
+      const { access, refresh } = await loginByPhonePassword(p, password);
+      setTokens(access, refresh);
+      window.dispatchEvent(new Event('niat:auth'));
+      navigate(nextUrl.startsWith('/') ? nextUrl : '/', { replace: true });
+    } catch (e) {
+      setError(getErrorMessage(e));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-white overflow-x-hidden">
+      <Navbar />
+      <main className="max-w-md mx-auto px-4 sm:px-6 py-8 sm:py-12 w-full min-w-0">
+        <div
+          className="rounded-2xl border border-[rgba(30,41,59,0.1)] p-5 sm:p-8 shadow-sm"
+          style={{ backgroundColor: '#fff8eb' }}
+        >
+          <h1 className="font-playfair text-2xl font-bold text-[#1e293b] mb-2">
+            Welcome back
+          </h1>
+          <p className="text-sm text-[#64748b] mb-6">
+            Sign in with your mobile number and password.
+          </p>
+
+          <form onSubmit={handleLogin} className="space-y-4">
+            <div>
+              <label htmlFor="login-phone" className="block text-sm font-medium text-[#1e293b] mb-1.5">
+                Mobile number
+              </label>
+              <input
+                id="login-phone"
+                type="tel"
+                value={phone}
+                onChange={(e) => {
+                  setPhone(e.target.value);
+                  setError(null);
+                }}
+                placeholder="e.g. 9876543210"
+                autoComplete="tel"
+                className="w-full rounded-xl border border-[rgba(30,41,59,0.15)] bg-white px-3 py-2.5 text-sm text-[#1e293b] focus:outline-none focus:ring-2 focus:ring-[#991b1b] focus:border-[#991b1b]"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="login-password" className="block text-sm font-medium text-[#1e293b] mb-1.5">
+                Password
+              </label>
+              <input
+                id="login-password"
+                type="password"
+                value={password}
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                  setError(null);
+                }}
+                placeholder="Enter your password"
+                autoComplete="current-password"
+                className="w-full rounded-xl border border-[rgba(30,41,59,0.15)] bg-white px-3 py-2.5 text-sm text-[#1e293b] focus:outline-none focus:ring-2 focus:ring-[#991b1b] focus:border-[#991b1b]"
+              />
+            </div>
+
+            {error && (
+              <p
+                className="text-sm text-red-700 bg-red-50 border border-red-200 px-3 py-2.5 rounded-xl"
+                role="alert"
+              >
+                {error}
+              </p>
+            )}
+
+            <button
+              type="submit"
+              disabled={!phone.trim() || phone.trim().length < 10 || !password || loading}
+              className="w-full rounded-xl bg-[#991b1b] px-8 py-3 text-sm font-medium text-white hover:bg-[#b91c1c] disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {loading ? 'Signing in…' : 'Log in'}
+            </button>
+          </form>
+
+          <p className="mt-6 text-center text-sm text-[#64748b]">
+            Don't have an account?{' '}
+            <Link to="/register" className="font-medium text-[#991b1b] hover:underline">
+              Register
+            </Link>
+          </p>
+        </div>
+      </main>
+      <Footer />
+    </div>
+  );
+}

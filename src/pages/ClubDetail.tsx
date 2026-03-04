@@ -53,7 +53,7 @@ export default function ClubDetail() {
 
   if (!club) {
     return (
-      <div className="min-h-screen bg-white">
+      <div className="min-h-screen bg-white overflow-x-hidden">
         <Navbar />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 text-center">
           <p className="text-[#1e293b] mb-4">Club not found.</p>
@@ -69,7 +69,7 @@ export default function ClubDetail() {
   const badge = CLUB_TYPE_BADGE_STYLES[club.type];
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white overflow-x-hidden">
       <Navbar />
 
       {/* Page header with image */}

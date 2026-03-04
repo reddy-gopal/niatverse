@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import {
   Star, MapPin, Users, FileText, Clock, ChevronRight,
@@ -10,15 +10,52 @@ import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import ImageWithFallback from '../components/ImageWithFallback';
 import {
-  campuses, accommodation, foodSpots,
+  accommodation, foodSpots,
   faculty, experiences, ratings, clubs, allArticles
 } from '../data/mockData';
 import { CLUB_TYPE_BADGE_STYLES } from '../constants/clubBadges';
+import { useCampuses } from '../hooks/useCampuses';
+import { apiCampusToCampus } from '../lib/campusUtils';
+import { articleService } from '../lib/articleService';
+import type { Campus } from '../types';
 
 export default function Campus() {
   const { id } = useParams<{ id: string }>();
-  const campusId = parseInt(id || '1');
-  const campus = campuses.find(c => c.id === campusId) || campuses[0];
+  const campusId = parseInt(id || '0', 10);
+  const { campuses: apiCampuses, isLoading: campusesLoading } = useCampuses();
+  const [articleCount, setArticleCount] = useState<number>(0);
+
+  const campus: Campus | null = useMemo(() => {
+    if (!apiCampuses.length || !Number.isFinite(campusId)) return null;
+    const item = apiCampuses.find((c) => c.id === campusId);
+    if (!item) return null;
+    return apiCampusToCampus(item);
+  }, [apiCampuses, campusId]);
+
+  useEffect(() => {
+    if (!Number.isFinite(campusId) || campusId < 1) return;
+    articleService
+      .list({ campus: campusId })
+      .then((res) => setArticleCount((res.data as { count?: number })?.count ?? 0))
+      .catch(() => setArticleCount(0));
+  }, [campusId]);
+
+  const notFound = !campusesLoading && !campus && Number.isFinite(campusId) && campusId > 0;
+  const displayCampus: Campus = campus ?? {
+    id: campusId,
+    name: campusesLoading ? 'Loading…' : notFound ? 'Campus not found' : 'Loading…',
+    university: '',
+    city: '—',
+    state: '—',
+    niatSince: new Date().getFullYear(),
+    batchSize: 0,
+    articleCount: 0,
+    rating: null,
+    coverColor: '#991b1b',
+    coverImage: 'https://images.unsplash.com/photo-1562774053-701939374585?w=800&q=80',
+  };
+  const displayArticleCount = campus ? articleCount : displayCampus.articleCount;
+
   const [activeSection, setActiveSection] = useState('week1');
 
   const sectionRefs = {
@@ -58,15 +95,15 @@ export default function Campus() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white overflow-x-hidden">
       <Navbar />
 
-      {/* Campus Hero Header */}
+      {/* Campus Hero Header — cover and details from real API */}
       <section className="relative h-64 md:h-96 flex flex-col justify-end pb-8">
         <div className="absolute inset-0 z-0">
           <ImageWithFallback
-            src={campus.coverImage}
-            alt={campus.name}
+            src={displayCampus.coverImage}
+            alt={displayCampus.name}
             className="w-full h-full object-cover"
           />
           <div className="absolute inset-0 object-cover" style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.3) 100%)' }} />
@@ -78,33 +115,35 @@ export default function Campus() {
             <ChevronRight className="h-4 w-4 mx-2" />
             <Link to="/campuses" className="hover:text-white">Campuses</Link>
             <ChevronRight className="h-4 w-4 mx-2" />
-            <span className="text-white">{campus.name}</span>
+            <span className="text-white">{displayCampus.name}</span>
           </nav>
 
           {/* Campus Name */}
           <h1 className="font-display text-3xl md:text-4xl font-bold text-white mb-2">
-            {campus.name}
+            {displayCampus.name}
           </h1>
-          <p className="text-white/80 text-lg mb-4">{campus.university}</p>
+          <p className="text-white/80 text-lg mb-4">{displayCampus.university || displayCampus.name}</p>
 
-          {/* Stats Row */}
+          {/* Stats Row — real-time article count */}
           <div className="flex flex-wrap items-center gap-4 text-white/80 text-sm">
             <span className="flex items-center">
               <MapPin className="h-4 w-4 mr-1" />
-              {campus.city}, {campus.state}
+              {displayCampus.city}, {displayCampus.state}
             </span>
-            <span className="flex items-center">
-              <Users className="h-4 w-4 mr-1" />
-              ~{campus.batchSize} students
-            </span>
+            {displayCampus.batchSize > 0 && (
+              <span className="flex items-center">
+                <Users className="h-4 w-4 mr-1" />
+                ~{displayCampus.batchSize} students
+              </span>
+            )}
             <span className="flex items-center">
               <FileText className="h-4 w-4 mr-1" />
-              {campus.articleCount} articles
+              {displayArticleCount} articles
             </span>
-            {campus.rating && (
+            {displayCampus.rating != null && displayCampus.rating > 0 && (
               <span className="flex items-center">
                 <Star className="h-4 w-4 text-[#f7b801] fill-[#f7b801] mr-1" />
-                {campus.rating}
+                {displayCampus.rating}
               </span>
             )}
           </div>
@@ -120,7 +159,7 @@ export default function Campus() {
       </section>
 
       {/* Sticky Section Navigation */}
-      <div className="sticky top-16 z-40 bg-navbar border-b border-[rgba(30,41,59,0.1)]">
+      <div className="sticky top-[6.5rem] z-40 bg-navbar border-b border-[rgba(30,41,59,0.1)]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex overflow-x-auto scrollbar-hide gap-1 py-3">
             {[
@@ -157,7 +196,7 @@ export default function Campus() {
               Week 1 Survival Guide
             </h2>
           </div>
-          <p className="text-black mb-6">What to do in your first 7 days at {campus.name}</p>
+          <p className="text-black mb-6">What to do in your first 7 days at {displayCampus.name}</p>
 
           {/* Day cards */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
@@ -186,7 +225,7 @@ export default function Campus() {
 
           {/* WhatsApp CTA */}
           <button className="btn-primary mb-6">
-            Join the {campus.name} NIAT 2025 batch group →
+            Join the {displayCampus.name} NIAT 2025 batch group →
           </button>
 
           {/* Common mistakes */}
@@ -274,7 +313,7 @@ export default function Campus() {
             </h2>
           </div>
           <p className="text-black mb-6">
-            Active student clubs at {campus.name}
+            Active student clubs at {displayCampus.name}
           </p>
 
           {(() => {
@@ -560,7 +599,7 @@ export default function Campus() {
             <div className="flex items-center mb-6">
               <div className="text-center mr-8">
                 <span className="font-display text-5xl font-bold text-[#991b1b]">
-                  {campus.rating || 'N/A'}
+                  {displayCampus.rating ?? 'N/A'}
                 </span>
                 <p className="text-sm text-black">{ratings.totalReviews} reviews</p>
               </div>

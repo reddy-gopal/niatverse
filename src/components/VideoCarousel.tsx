@@ -102,9 +102,9 @@ const VideoCarousel: React.FC = () => {
                 <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-8">
                     <div>
                         <h2 className="font-display text-2xl md:text-3xl font-bold text-black mb-2 flex items-center gap-2">
-                            📺 Watch & Learn
+                            Life at NIAT
                         </h2>
-                        <p className="text-[#64748b]">Real students. Real experiences. No filter.</p>
+                        <p className="text-[#64748b]">Stories and experiences from NIAT campuses.</p>
                     </div>
                     <div className="hidden sm:flex items-center gap-3">
                         <button

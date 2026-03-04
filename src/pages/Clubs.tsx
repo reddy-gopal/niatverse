@@ -34,7 +34,7 @@ export default function Clubs() {
   };
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white overflow-x-hidden">
       <Navbar />
 
       {/* Page header with gradient */}

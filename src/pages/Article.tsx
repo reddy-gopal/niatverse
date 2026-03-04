@@ -1,55 +1,153 @@
-import { useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
-import { ChevronRight, ThumbsUp, Edit3, Clock, MessageSquare } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { Link, useParams, useNavigate } from 'react-router-dom';
+import { ChevronRight, ChevronLeft, Clock, Pencil, Trash2, MoreVertical } from 'lucide-react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import ImageWithFallback from '../components/ImageWithFallback';
-import { campuses, allArticles, articleComments, relatedArticles } from '../data/mockData';
+import { campuses, allArticles } from '../data/mockData';
 import { CATEGORY_CONFIG } from '../data/articleCategories';
+import { useArticleDetail } from '../hooks/useArticles';
+import { articleService } from '../lib/articleService';
+import { fetchMe } from '../lib/authApi';
+
+/** Remove article-image-card blocks so images are shown only in the carousel (no duplication). */
+function stripImageCardsFromHtml(html: string): string {
+  if (!html || typeof html !== 'string') return '';
+  if (typeof document === 'undefined') return html;
+  const div = document.createElement('div');
+  div.innerHTML = html;
+  const cards = div.querySelectorAll('.article-image-card');
+  cards.forEach((el) => el.remove());
+  return div.innerHTML.trim();
+}
+
+const STATIC_BODY = (
+  <article className="prose prose-lg max-w-none mb-8">
+    <p className="text-black leading-relaxed mb-6">
+      The IRC (Industry Readiness Course) submission process at St. Mary&apos;s can feel overwhelming
+      at first. The official documentation is sparse, and every coordinator seems to have their
+      own interpretation of the rules. After going through this twice and helping dozens of
+      juniors, here&apos;s what actually works.
+    </p>
+    <h2 className="font-display text-xl md:text-2xl font-bold text-black mt-8 mb-4">The Official Process (What NIAT Says)</h2>
+    <ol className="list-decimal list-inside space-y-2 text-black mb-6">
+      <li>Register your project idea on the NIAT portal within the first month</li>
+      <li>Get mentor approval within 2 weeks of registration</li>
+      <li>Submit weekly progress reports every Friday</li>
+      <li>Present your final project in the evaluation week</li>
+    </ol>
+    <h2 className="font-display text-xl md:text-2xl font-bold text-black mt-8 mb-4">What Actually Happens (What Students Know)</h2>
+    <p className="text-black leading-relaxed mb-6">
+      In reality, the process has a few unwritten rules that can make or break your timeline.
+    </p>
+  </article>
+);
 
 export default function Article() {
   const { id, articleId } = useParams<{ id?: string; articleId: string }>();
   const isGlobalRoute = !id;
   const campusId = id ? parseInt(id, 10) : null;
-  const articleIdNum = parseInt(articleId || '1', 10);
+  const articleIdNum = parseInt(articleId || '0', 10);
 
+  const { article: apiArticle, loading } = useArticleDetail(articleIdNum > 0 ? articleIdNum : null);
   const pageArticle = allArticles.find((a) => a.id === articleIdNum);
   const campus = campusId ? campuses.find((c) => c.id === campusId) || null : null;
 
-  const article = pageArticle
+  const fromApi = !!apiArticle;
+
+  const article = fromApi
     ? {
-      title: pageArticle.title,
-      excerpt: pageArticle.excerpt,
-      updatedDays: pageArticle.updatedDays,
-      helpful: pageArticle.helpful,
-      author: 'NIAT Student',
-      category: pageArticle.category,
-      campusName: pageArticle.campusName,
-      coverImage: pageArticle.coverImage,
+      title: apiArticle.title,
+      excerpt: apiArticle.excerpt,
+      updatedDays: apiArticle.updated_days,
+      helpful: apiArticle.helpful_count,
+      author: apiArticle.author_username,
+      category: apiArticle.category,
+      campusName: apiArticle.campus_name,
+      coverImage: apiArticle.cover_image || undefined,
+      status: apiArticle.status,
+      rejectionReason: apiArticle.rejection_reason,
     }
-    : {
-      title: 'Article not found',
-      excerpt: '',
-      updatedDays: 0,
-      helpful: 0,
-      author: 'NIAT Student',
-      category: 'irc' as const,
-      campusName: 'Global',
-      coverImage: undefined,
+    : pageArticle
+      ? {
+        title: pageArticle.title,
+        excerpt: pageArticle.excerpt,
+        updatedDays: pageArticle.updatedDays,
+        helpful: pageArticle.helpful,
+        author: 'NIAT Student',
+        category: pageArticle.category,
+        campusName: pageArticle.campusName,
+        coverImage: pageArticle.coverImage,
+        status: undefined as string | undefined,
+        rejectionReason: undefined as string | undefined,
+      }
+      : {
+        title: 'Article not found',
+        excerpt: '',
+        updatedDays: 0,
+        helpful: 0,
+        author: 'NIAT Student',
+        category: 'irc' as const,
+        campusName: 'Global',
+        coverImage: undefined,
+        status: undefined as string | undefined,
+        rejectionReason: undefined as string | undefined,
+      };
+
+  const categoryConfig = CATEGORY_CONFIG[article.category as keyof typeof CATEGORY_CONFIG];
+  const [currentUsername, setCurrentUsername] = useState<string | null>(null);
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+  const [optionsOpen, setOptionsOpen] = useState(false);
+  const optionsRef = useRef<HTMLDivElement>(null);
+  const [carouselIndex, setCarouselIndex] = useState(0);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!optionsOpen) return;
+    const handleClickOutside = (e: MouseEvent) => {
+      if (optionsRef.current && !optionsRef.current.contains(e.target as Node)) setOptionsOpen(false);
     };
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
+  }, [optionsOpen]);
 
-  const categoryConfig = CATEGORY_CONFIG[article.category];
-  const [showEditHistory, setShowEditHistory] = useState(false);
+  // All article images for carousel; avoid duplication with body (body will strip image cards)
+  const articleImages =
+    fromApi && apiArticle?.images?.length
+      ? apiArticle.images
+      : article.coverImage
+        ? [article.coverImage]
+        : [];
+  const hasMultipleImages = articleImages.length > 1;
 
-  const relatedLinkBase = isGlobalRoute || !campusId
-    ? (rid: number) => `/article/${rid}`
-    : (rid: number) => `/campus/${campusId}/article/${rid}`;
+  useEffect(() => {
+    fetchMe().then((me) => setCurrentUsername(me?.username ?? null));
+  }, []);
+
+  useEffect(() => {
+    setCarouselIndex(0);
+  }, [articleIdNum]);
+
+  const isAuthor = fromApi && apiArticle && currentUsername && apiArticle.author_username === currentUsername;
+
+  const handleDeleteArticle = () => {
+    if (!fromApi || !apiArticle || deleteLoading) return;
+    setDeleteLoading(true);
+    articleService
+      .delete(apiArticle.id)
+      .then(() => {
+        setDeleteConfirmOpen(false);
+        navigate(isGlobalRoute ? '/articles' : `/campus/${campusId}`);
+      })
+      .finally(() => setDeleteLoading(false));
+  };
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white overflow-x-hidden">
       <Navbar />
 
-      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 w-full min-w-0">
         {/* Breadcrumb */}
         <nav className="flex items-center text-black text-sm mb-6 flex-wrap gap-1">
           <Link to="/" className="hover:text-[#991b1b]">Home</Link>
@@ -115,17 +213,125 @@ export default function Article() {
           </span>
         </div>
 
-        {/* Article Title */}
-        <h1 className="font-display text-2xl md:text-4xl font-bold text-black mb-4">
-          {article.title}
-        </h1>
-
-        {article.coverImage && (
-          <div className="w-full h-64 md:h-80 rounded-xl overflow-hidden mb-6">
-            <ImageWithFallback src={article.coverImage} alt={article.title} className="w-full h-full object-cover" />
+        {/* Status banner for author viewing own article */}
+        {'status' in article && article.status && article.status !== 'published' && (
+          <div
+            className={`mb-4 p-4 rounded-xl border ${article.status === 'rejected' ? 'bg-red-50 border-red-200 text-red-800' : 'bg-amber-50 border-amber-200 text-amber-800'}`}
+          >
+            <p className="font-medium">{article.status === 'rejected' ? 'Rejected' : 'Under Review'}</p>
+            {'rejectionReason' in article && article.rejectionReason && (
+              <p className="text-sm mt-1">{article.rejectionReason}</p>
+            )}
           </div>
         )}
 
+        {/* Article Title + Options (top) */}
+        <div className="flex items-start justify-between gap-4 mb-4">
+          <h1 className="font-display text-2xl md:text-4xl font-bold text-black min-w-0 flex-1">
+            {article.title}
+          </h1>
+          {isAuthor && (
+            <div className="relative shrink-0" ref={optionsRef}>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setOptionsOpen((v) => !v);
+                }}
+                className="p-2 rounded-lg text-[#64748b] hover:bg-[rgba(30,41,59,0.08)] hover:text-[#1e293b] transition-colors"
+                aria-label="Article options"
+                aria-expanded={optionsOpen}
+              >
+                <MoreVertical className="h-5 w-5" />
+              </button>
+              {optionsOpen && (
+                <div
+                  className="absolute right-0 top-full mt-1 py-1 min-w-[180px] rounded-lg bg-white border shadow-lg z-10"
+                  style={{ borderColor: 'rgba(30,41,59,0.12)' }}
+                >
+                  <Link
+                    to={`/contribute/write?edit=${apiArticle!.id}`}
+                    className="flex items-center gap-2 w-full px-4 py-2.5 text-left text-sm text-[#1e293b] hover:bg-[#fbf2f3]"
+                    onClick={() => setOptionsOpen(false)}
+                  >
+                    <Pencil className="h-4 w-4 text-[#991b1b]" />
+                    Edit article
+                  </Link>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setOptionsOpen(false);
+                      setDeleteConfirmOpen(true);
+                    }}
+                    className="flex items-center gap-2 w-full px-4 py-2.5 text-left text-sm text-red-600 hover:bg-red-50"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                    Delete article
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+
+        {loading && (
+          <div className="h-64 rounded-xl bg-[rgba(30,41,59,0.08)] animate-pulse mb-8" />
+        )}
+
+        {!loading && articleImages.length > 0 && (
+          <div className="w-full mb-6 rounded-xl overflow-hidden bg-[rgba(30,41,59,0.06)]">
+            {hasMultipleImages ? (
+              <div className="relative">
+                <div className="flex items-center justify-center min-h-[200px] max-h-[70vh]">
+                  <ImageWithFallback
+                    key={carouselIndex}
+                    src={articleImages[carouselIndex]}
+                    alt={`${article.title} — image ${carouselIndex + 1}`}
+                    className="max-w-full max-h-[70vh] w-auto h-auto object-contain"
+                  />
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setCarouselIndex((i) => (i === 0 ? articleImages.length - 1 : i - 1))}
+                  className="absolute left-2 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/50 text-white flex items-center justify-center hover:bg-black/70 transition-colors"
+                  aria-label="Previous image"
+                >
+                  <ChevronLeft className="h-5 w-5" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setCarouselIndex((i) => (i === articleImages.length - 1 ? 0 : i + 1))}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/50 text-white flex items-center justify-center hover:bg-black/70 transition-colors"
+                  aria-label="Next image"
+                >
+                  <ChevronRight className="h-5 w-5" />
+                </button>
+                <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1.5">
+                  {articleImages.map((_, i) => (
+                    <button
+                      key={i}
+                      type="button"
+                      onClick={() => setCarouselIndex(i)}
+                      className={`w-2 h-2 rounded-full transition-colors ${i === carouselIndex ? 'bg-white' : 'bg-white/50 hover:bg-white/70'}`}
+                      aria-label={`Go to image ${i + 1}`}
+                    />
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <div className="flex items-center justify-center min-h-[240px] md:min-h-[320px] max-h-[70vh]">
+                <ImageWithFallback
+                  src={articleImages[0]}
+                  alt={article.title}
+                  className="max-w-full max-h-[70vh] w-auto h-auto object-contain"
+                />
+              </div>
+            )}
+          </div>
+        )}
+
+        {!loading && (
+          <>
         {/* Meta Row */}
         <div className="flex flex-wrap items-center gap-4 text-sm text-black mb-8 pb-6 border-b border-[rgba(30,41,59,0.1)]">
           <span>Written by {article.author}</span>
@@ -133,191 +339,49 @@ export default function Article() {
             <Clock className="h-4 w-4 mr-1" />
             Last updated {article.updatedDays} days ago
           </span>
-          <span className="flex items-center">
-            <ThumbsUp className="h-4 w-4 mr-1" />
-            {article.helpful} students found this helpful
-          </span>
         </div>
 
-        {/* Article Body */}
-        <article className="prose prose-lg max-w-none mb-8">
-          <p className="text-black leading-relaxed mb-6">
-            The IRC (Industry Readiness Course) submission process at St. Mary's can feel overwhelming
-            at first. The official documentation is sparse, and every coordinator seems to have their
-            own interpretation of the rules. After going through this twice and helping dozens of
-            juniors, here's what actually works.
-          </p>
-
-          <h2 className="font-display text-xl md:text-2xl font-bold text-black mt-8 mb-4">
-            The Official Process (What NIAT Says)
-          </h2>
-          <ol className="list-decimal list-inside space-y-2 text-black mb-6">
-            <li>Register your project idea on the NIAT portal within the first month</li>
-            <li>Get mentor approval within 2 weeks of registration</li>
-            <li>Submit weekly progress reports every Friday</li>
-            <li>Present your final project in the evaluation week</li>
-          </ol>
-
-          <h2 className="font-display text-xl md:text-2xl font-bold text-black mt-8 mb-4">
-            What Actually Happens (What Students Know)
-          </h2>
-          <p className="text-black leading-relaxed mb-4">
-            In reality, the process has a few unwritten rules that can make or break your timeline.
-            The portal is notorious for going down during the last week of every month — plan your
-            submissions for the middle of the month if possible.
-          </p>
-          <p className="text-black leading-relaxed mb-6">
-            Mentor availability is another bottleneck. Most mentors are full-time faculty with their
-            own research and teaching commitments. The best time to catch them is during their office
-            hours (usually posted on the department notice board) or right after their classes.
-          </p>
-
-          <div className="bg-[#fbf2f3] border-l-4 border-[#991b1b] p-4 mb-6">
-            <p className="text-sm text-black">
-              <span className="font-medium">Pro tip:</span> Book your lab slot for the entire semester
-              in the first week. The good slots (mornings, when mentors are fresh) fill up fast.
-            </p>
+        {/* Article Body — image cards stripped so images show only in carousel above (no duplication) */}
+        {fromApi && apiArticle?.body ? (
+          <div className="article-body-read-only">
+            <article
+              className="prose prose-lg max-w-none mb-8"
+              dangerouslySetInnerHTML={{ __html: stripImageCardsFromHtml(apiArticle.body) }}
+            />
           </div>
+        ) : (
+          STATIC_BODY
+        )}
 
-          <h2 className="font-display text-xl md:text-2xl font-bold text-black mt-8 mb-4">
-            The 3-Week Delay Trap
-          </h2>
-          <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6">
-            <div className="flex items-start">
-              <span className="text-amber-600 mr-2">⚠️</span>
-              <div>
-                <p className="font-medium text-amber-800 mb-1">Warning</p>
-                <p className="text-sm text-amber-700">
-                  The most common delay happens when students wait for mentor feedback before proceeding.
-                  Don't wait — keep working on parallel tracks while waiting for approvals. The mentors
-                  appreciate students who show initiative.
-                </p>
+        {/* Delete confirmation modal */}
+        {deleteConfirmOpen && (
+          <>
+            <div className="fixed inset-0 bg-black/50 z-50" onClick={() => !deleteLoading && setDeleteConfirmOpen(false)} aria-hidden />
+            <div className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-full max-w-sm mx-4 p-6 rounded-xl bg-white shadow-xl">
+              <h3 className="font-display text-lg font-bold text-black mb-2">Delete this article?</h3>
+              <p className="text-sm text-black/80 mb-6">This cannot be undone. The article will be permanently removed.</p>
+              <div className="flex gap-3 justify-end">
+                <button
+                  type="button"
+                  onClick={() => !deleteLoading && setDeleteConfirmOpen(false)}
+                  className="px-4 py-2 rounded-lg border border-gray-300 text-black hover:bg-gray-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={handleDeleteArticle}
+                  disabled={deleteLoading}
+                  className="px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 disabled:opacity-60"
+                >
+                  {deleteLoading ? 'Deleting…' : 'Delete'}
+                </button>
               </div>
             </div>
-          </div>
-
-          <h2 className="font-display text-xl md:text-2xl font-bold text-black mt-8 mb-4">
-            Timeline from Start to Finish
-          </h2>
-          <div className="overflow-x-auto mb-6">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="bg-[#fbf2f3]">
-                  <th className="text-left p-3 font-medium text-black">Phase</th>
-                  <th className="text-left p-3 font-medium text-black">Duration</th>
-                  <th className="text-left p-3 font-medium text-black">Key Milestone</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr className="border-b border-[rgba(30,41,59,0.1)]">
-                  <td className="p-3 text-black">Ideation</td>
-                  <td className="p-3 text-black">Week 1-2</td>
-                  <td className="p-3 text-black">Project idea finalized</td>
-                </tr>
-                <tr className="border-b border-[rgba(30,41,59,0.1)]">
-                  <td className="p-3 text-black">Registration</td>
-                  <td className="p-3 text-black">Week 3</td>
-                  <td className="p-3 text-black">Portal registration complete</td>
-                </tr>
-                <tr className="border-b border-[rgba(30,41,59,0.1)]">
-                  <td className="p-3 text-black">Development</td>
-                  <td className="p-3 text-black">Week 4-16</td>
-                  <td className="p-3 text-black">Weekly progress reports</td>
-                </tr>
-                <tr>
-                  <td className="p-3 text-black">Evaluation</td>
-                  <td className="p-3 text-black">Week 17-18</td>
-                  <td className="p-3 text-black">Final presentation</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </article>
-
-        {/* Helpful / Edit Strip */}
-        <div className="flex flex-wrap gap-3 mb-8 pb-8 border-b border-[rgba(30,41,59,0.1)]">
-          <button className="btn-secondary flex items-center">
-            <ThumbsUp className="h-4 w-4 mr-2" />
-            {article.helpful} students found this helpful
-          </button>
-          <button className="flex items-center px-4 py-2 border border-gray-300 rounded-md text-black hover:bg-gray-50 transition-colors">
-            <Edit3 className="h-4 w-4 mr-2" />
-            Suggest an Edit
-          </button>
-        </div>
-
-        {/* Discussion Section */}
-        <section className="mb-8">
-          <h3 className="font-display text-xl font-bold text-black mb-4 flex items-center">
-            <MessageSquare className="h-5 w-5 mr-2" />
-            Discussion ({articleComments.length} comments)
-          </h3>
-
-          <div className="space-y-4 mb-6">
-            {articleComments.map((comment) => (
-              <div key={comment.id} className="bg-section rounded-lg p-4">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="font-medium text-black">{comment.author}</span>
-                  <span className="text-xs text-black">{comment.date}</span>
-                </div>
-                <p className="text-sm text-black">{comment.content}</p>
-              </div>
-            ))}
-          </div>
-
-          <div className="bg-gray-50 rounded-lg p-4">
-            <p className="text-sm text-black mb-2">Join the discussion...</p>
-            <p className="text-xs text-black">Login required to comment</p>
-          </div>
-        </section>
-
-        {/* Related Articles */}
-        <section className="mb-8">
-          <h3 className="font-display text-xl font-bold text-black mb-4">
-            Related Articles
-          </h3>
-          <div className="space-y-3">
-            {relatedArticles.map((related) => (
-              <Link
-                key={related.id}
-                to={relatedLinkBase(related.id)}
-                className="block bg-white rounded-lg shadow-soft p-4 hover:shadow-card transition-shadow"
-              >
-                <h4 className="font-medium text-black mb-1">{related.title}</h4>
-                <div className="flex items-center text-xs text-black">
-                  <span className="flex items-center mr-3">
-                    <Clock className="h-3 w-3 mr-1" />
-                    Updated {related.updatedDays} days ago
-                  </span>
-                  <span className="flex items-center">
-                    <ThumbsUp className="h-3 w-3 mr-1" />
-                    {related.helpful} helpful
-                  </span>
-                </div>
-              </Link>
-            ))}
-          </div>
-        </section>
-
-        {/* Edit History */}
-        <section>
-          <button
-            onClick={() => setShowEditHistory(!showEditHistory)}
-            className="text-sm text-[#991b1b] hover:underline"
-          >
-            View edit history (3 edits)
-          </button>
-
-          {showEditHistory && (
-            <div className="mt-4 bg-gray-50 rounded-lg p-4">
-              <ul className="text-sm text-black space-y-2">
-                <li>• Jan 15, 2026 — Updated lab timings (Kiran T.)</li>
-                <li>• Jan 10, 2026 — Added timeline table (Kiran T.)</li>
-                <li>• Jan 5, 2026 — Initial version (Kiran T.)</li>
-              </ul>
-            </div>
-          )}
-        </section>
+          </>
+        )}
+          </>
+        )}
       </div>
 
       <Footer />

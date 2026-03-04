@@ -9,7 +9,7 @@ import { CATEGORY_CONFIG, CATEGORY_ORDER } from '../data/articleCategories';
 import type { ArticleCategory } from '../types';
 import type { ArticlePageArticle } from '../types';
 
-/** Campus-scoped articles only; global guides live on /how-to-guides */
+/** Campus-scoped articles only (mock data); global guides on /how-to-guides */
 const campusOnlyArticles = allArticles.filter(
   (a): a is ArticlePageArticle & { campusId: number } => a.campusId !== null
 );
@@ -80,17 +80,14 @@ export default function Articles() {
   const activeCategory = categoryParam && CATEGORY_ORDER.includes(categoryParam) ? categoryParam : null;
   const activeCampusId = campusParam ? parseInt(campusParam, 10) : null;
 
-  const filteredArticles = useMemo(() => {
+  const displayArticles = useMemo(() => {
     let result = campusOnlyArticles;
-    if (activeCategory) {
-      result = result.filter((a) => a.category === activeCategory);
-    }
-    if (activeCampusId != null && !isNaN(activeCampusId)) {
-      result = result.filter((a) => a.campusId === activeCampusId);
-    }
+    if (activeCategory) result = result.filter((a) => a.category === activeCategory);
+    if (activeCampusId != null && !isNaN(activeCampusId)) result = result.filter((a) => a.campusId === activeCampusId);
     return [...result].sort((a, b) => b.helpful - a.helpful);
   }, [activeCategory, activeCampusId]);
 
+  const filteredArticles = displayArticles;
   const topArticles = useMemo(
     () => [...campusOnlyArticles].sort((a, b) => b.helpful - a.helpful).slice(0, 5),
     []
@@ -98,9 +95,7 @@ export default function Articles() {
 
   const campusArticleCounts = useMemo(() => {
     const counts = new Map<number, number>();
-    for (const a of campusOnlyArticles) {
-      counts.set(a.campusId, (counts.get(a.campusId) || 0) + 1);
-    }
+    for (const a of campusOnlyArticles) counts.set(a.campusId, (counts.get(a.campusId) || 0) + 1);
     return counts;
   }, []);
 
@@ -119,11 +114,11 @@ export default function Articles() {
     setCampusDropdownOpen(false);
   };
 
-  const totalCount = campusOnlyArticles.length;
-  const campusCount = 22;
+  const totalCount = displayArticles.length;
+  const campusCount = campuses.length;
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white overflow-x-hidden">
       <Navbar />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -240,11 +235,13 @@ export default function Articles() {
                 </div>
               </div>
             ) : (
-              <div className="divide-y divide-[rgba(30,41,59,0.08)]">
-                {filteredArticles.map((a) => (
-                  <ArticleRow key={a.id} article={a} />
-                ))}
-              </div>
+              <>
+                <div className="divide-y divide-[rgba(30,41,59,0.08)]">
+                  {filteredArticles.map((a: ArticlePageArticle) => (
+                    <ArticleRow key={a.id} article={a} />
+                  ))}
+                </div>
+              </>
             )}
           </main>
 
@@ -255,7 +252,7 @@ export default function Articles() {
               <div className="bg-white rounded-lg border border-[rgba(30,41,59,0.1)] p-4 shadow-[0_4px_12px_rgba(30,41,59,0.08)]">
                 <h3 className="font-playfair font-bold text-[#1e293b] mb-3">Top Articles This Week</h3>
                 <ul className="space-y-3">
-                  {topArticles.map((a) => {
+                  {topArticles.map((a: ArticlePageArticle) => {
                     const url = a.campusId
                       ? `/campus/${a.campusId}/article/${a.id}`
                       : `/article/${a.id}`;
@@ -301,7 +298,7 @@ export default function Articles() {
                   Can't find what you need? Write it.
                 </p>
                 <Link
-                  to="/contribute"
+                  to="/contribute/write"
                   className="inline-flex items-center gap-2 bg-[#991b1b] text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-[#b91c1c] transition-colors"
                 >
                   <PenLine className="h-4 w-4" />

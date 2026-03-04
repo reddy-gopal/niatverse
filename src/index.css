@@ -54,10 +54,11 @@
   
   html {
     scroll-behavior: smooth;
+    overflow-x: hidden;
   }
-  
+
   body {
-    @apply bg-white text-black antialiased;
+    @apply bg-white text-black antialiased overflow-x-hidden;
     font-family: 'Inter', sans-serif;
   }
   
@@ -155,6 +156,68 @@
   
   .article-card {
     @apply bg-white shadow-card border-l-4 border-transparent hover:border-[#991b1b] transition-all;
+  }
+
+  /* Article body image cards: borderless, full-width; remove button (hidden in read-only) + img + caption */
+  .article-image-card {
+    position: relative;
+    margin: 24px 0;
+    display: block;
+    border: none;
+    background: transparent;
+    padding: 0;
+  }
+  .article-image-card__img {
+    display: block;
+    max-width: 100%;
+    width: 100%;
+    height: auto;
+    object-fit: contain;
+    border-radius: 4px;
+  }
+  .article-image-card__remove {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: rgba(0, 0, 0, 0.55);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 28px;
+    height: 28px;
+    cursor: pointer;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+    opacity: 0;
+    transition: opacity 0.15s ease;
+  }
+  .article-image-card:hover .article-image-card__remove {
+    opacity: 1;
+  }
+  .article-body-read-only .article-image-card__remove {
+    display: none;
+  }
+  .article-image-card__caption {
+    margin-top: 8px;
+    font-size: 13px;
+    color: #9ca3af;
+    text-align: center;
+    outline: none;
+    min-height: 20px;
+  }
+  .article-image-card__caption:empty::before {
+    content: attr(data-placeholder);
+    color: #d1d5db;
+    pointer-events: none;
+  }
+
+  /* Body editor placeholder (e.g. Write Article page) */
+  .article-body-editor {
+    outline: none;
+    min-height: 300px;
   }
 }
 

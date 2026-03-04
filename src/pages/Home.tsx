@@ -1,11 +1,14 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Search, ChevronRight, Calendar, Wrench, Edit3 } from 'lucide-react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import CampusCard from '../components/CampusCard';
 import VideoCarousel from '../components/VideoCarousel';
-import { campuses, stateCounts, allArticles } from '../data/mockData';
+import { allArticles } from '../data/mockData';
+import { useCampuses } from '../hooks/useCampuses';
+import { apiCampusToCampus } from '../lib/campusUtils';
+import { fetchFoundingEditorProfile, type FoundingEditorProfile } from '../lib/authApi';
 
 const HOW_TO_GUIDES_URL = '/how-to-guides';
 
@@ -16,11 +19,35 @@ function getGlobalGuides(limit: number) {
     .slice(0, limit);
 }
 
+const HOME_CAMPUS_PREVIEW_COUNT = 6;
+
 export default function Home() {
+  const { campuses: apiCampuses } = useCampuses();
+  const campuses = useMemo(() => (apiCampuses ?? []).map(apiCampusToCampus), [apiCampuses]);
+  const campusPreview = useMemo(() => campuses.slice(0, HOME_CAMPUS_PREVIEW_COUNT), [campuses]);
   const [heroSearch, setHeroSearch] = useState('');
-  const [activeState, setActiveState] = useState('All');
   const [showNavSearch, setShowNavSearch] = useState(false);
+  const [hasToken, setHasToken] = useState(false);
+  const [profile, setProfile] = useState<FoundingEditorProfile | null>(null);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const token = !!localStorage.getItem('niat_access');
+    setHasToken(token);
+    if (token) {
+      fetchFoundingEditorProfile().then(setProfile);
+    } else {
+      setProfile(null);
+    }
+    const onAuth = () => {
+      const t = !!localStorage.getItem('niat_access');
+      setHasToken(t);
+      if (t) fetchFoundingEditorProfile().then(setProfile);
+      else setProfile(null);
+    };
+    window.addEventListener('niat:auth', onAuth);
+    return () => window.removeEventListener('niat:auth', onAuth);
+  }, []);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -39,14 +66,8 @@ export default function Home() {
     }
   };
 
-  const filteredCampuses = activeState === 'All'
-    ? campuses
-    : campuses.filter(c => c.state === activeState);
-
-  const states = ['All', 'Telangana', 'Andhra Pradesh', 'Tamil Nadu', 'Karnataka', 'Maharashtra'];
-
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white overflow-x-hidden">
       <Navbar showSearch={showNavSearch} />
 
       {/* Hero Section */}
@@ -56,7 +77,7 @@ export default function Home() {
             Every NIAT Campus. Mapped by students who've been there.
           </h1>
           <p className="text-white/80 text-base md:text-lg mb-8 max-w-2xl mx-auto">
-            22 campuses. Real information. Written by students who figured it out the hard way.
+            Every NIAT campus in one place. Real information from students who&apos;ve been there.
           </p>
 
           {/* Hero Search */}
@@ -73,76 +94,72 @@ export default function Home() {
             </div>
           </form>
 
-          {/* State Filter Pills */}
-          <div className="flex flex-wrap justify-center gap-2">
-            {states.map((state) => (
-              <button
-                key={state}
-                onClick={() => setActiveState(state)}
-                className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${activeState === state
-                    ? 'bg-white text-[#991b1b]'
-                    : 'bg-white/20 text-white hover:bg-white/30'
-                  }`}
-              >
-                {state}
-              </button>
-            ))}
-          </div>
+          <Link
+            to="/campuses"
+            className="inline-flex items-center gap-1.5 mt-4 text-white font-medium hover:underline"
+          >
+            Explore all Campuses <ChevronRight className="h-4 w-4" />
+          </Link>
         </div>
       </section>
 
-      {/* Your Campus Card - Welcome Back */}
-      <section className="bg-section py-8">
+      {/* Your Campus Card - Welcome Back (only when logged in and profile has campus) */}
+      {hasToken && profile?.campus_id != null && (
+        <section className="bg-section py-8">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            {(() => {
+              const campus = campuses.find((c) => c.id === profile.campus_id);
+              const campusName = campus ? `${campus.name}, ${campus.city}` : 'My campus';
+              const articleCount = allArticles.filter((a) => a.campusId === profile.campus_id).length;
+              return (
+                <div className="bg-white rounded-lg shadow-card border-l-4 border-[#991b1b] p-6">
+                  <p className="text-sm text-black mb-1">Welcome back</p>
+                  <h2 className="font-display text-xl font-bold text-black mb-1">
+                    {campusName}
+                  </h2>
+                  <p className="text-sm text-black mb-4">{articleCount} articles</p>
+                  <Link
+                    to={`/campus/${profile.campus_id}`}
+                    className="inline-flex items-center text-[#991b1b] font-medium hover:underline"
+                  >
+                    Go to my campus <ChevronRight className="h-4 w-4 ml-1" />
+                  </Link>
+                </div>
+              );
+            })()}
+          </div>
+        </section>
+      )}
+
+      {/* Campuses — 6 preview + CTA to directory */}
+      <section className="py-12 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="bg-white rounded-lg shadow-card border-l-4 border-[#991b1b] p-6">
-            <p className="text-sm text-black mb-1">Welcome back</p>
-            <h2 className="font-display text-xl font-bold text-black mb-1">
-              St. Mary's College, Hyderabad
-            </h2>
-            <p className="text-sm text-black mb-4">47 articles · 3 new this week</p>
+          <h2 className="font-display text-2xl md:text-3xl font-bold text-black mb-6">
+            Campuses
+          </h2>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {campusPreview.length === 0 ? (
+              <p className="col-span-full text-[#64748b] text-center py-8">Loading campuses…</p>
+            ) : (
+              campusPreview.map((campus) => (
+                <CampusCard key={campus.id} campus={campus} />
+              ))
+            )}
+          </div>
+
+          <div className="mt-8 text-center">
             <Link
-              to="/campus/1"
-              className="inline-flex items-center text-[#991b1b] font-medium hover:underline"
+              to="/campuses"
+              className="inline-flex items-center gap-1.5 rounded-lg bg-[#991b1b] px-5 py-2.5 text-sm font-medium text-white hover:bg-[#7f1d1d] transition-colors"
             >
-              Go to my campus <ChevronRight className="h-4 w-4 ml-1" />
+              Explore all Campuses <ChevronRight className="h-4 w-4" />
             </Link>
           </div>
         </div>
       </section>
 
-      {/* Explore by State */}
-      <section className="py-12 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="font-display text-2xl md:text-3xl font-bold text-black mb-6">
-            Explore All 22 Campuses
-          </h2>
-
-          {/* State Tabs */}
-          <div className="flex flex-wrap gap-2 mb-8 border-b border-[rgba(30,41,59,0.1)] pb-4">
-            {stateCounts.map((state) => (
-              <button
-                key={state.name}
-                onClick={() => setActiveState(state.name)}
-                className={`px-4 py-2 text-sm font-medium transition-colors ${activeState === state.name
-                    ? 'text-[#991b1b] border-b-2 border-[#991b1b]'
-                    : 'text-black hover:text-black'
-                  }`}
-              >
-                {state.name} ({state.count})
-              </button>
-            ))}
-          </div>
-
-          {/* Campus Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredCampuses.map((campus) => (
-              <CampusCard key={campus.id} campus={campus} />
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Watch & Learn: videos + How-to Guides */}
+      {/* Life in or At NIAT: videos + How-to Guides */}
       <section className="bg-section">
         <VideoCarousel />
         <div className="py-12 px-4 sm:px-6 lg:px-8" style={{ backgroundColor: '#fefce8' }}>
