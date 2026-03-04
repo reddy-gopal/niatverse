@@ -47,10 +47,8 @@ export default function MyArticles() {
           </div>
         )}
         {loading ? (
-          <div className="space-y-3">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="h-16 rounded-xl bg-[rgba(30,41,59,0.08)] animate-pulse" />
-            ))}
+          <div className="flex justify-center py-16">
+            <div className="animate-spin rounded-full border-2 border-[#fbf2f3] size-10 border-t-[#991b1b]" role="status" aria-label="Loading" />
           </div>
         ) : articles.length === 0 ? (
           <p className="text-[#64748b] py-8">You haven’t submitted any articles yet.</p>

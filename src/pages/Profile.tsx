@@ -106,10 +106,8 @@ export default function Profile() {
           <section className="p-6 rounded-xl border border-[rgba(30,41,59,0.1)]">
             <h2 className="font-display text-lg font-semibold text-[#1e293b] mb-4">Profile details</h2>
             {profileLoading ? (
-              <div className="space-y-3">
-                <div className="h-10 rounded bg-[rgba(30,41,59,0.08)] animate-pulse" />
-                <div className="h-10 rounded bg-[rgba(30,41,59,0.08)] animate-pulse" />
-                <div className="h-10 rounded bg-[rgba(30,41,59,0.08)] animate-pulse" />
+              <div className="flex justify-center py-8">
+                <div className="animate-spin rounded-full border-2 border-[#fbf2f3] size-10 border-t-[#991b1b]" role="status" aria-label="Loading" />
               </div>
             ) : (
               <form onSubmit={handleSave} className="space-y-4">

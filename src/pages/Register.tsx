@@ -272,7 +272,16 @@ export default function Register() {
               disabled={!canSubmit || loading}
               className="w-full rounded-xl bg-[#991b1b] py-3 text-sm font-medium text-white hover:bg-[#b91c1c] disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? 'Creating account…' : phoneVerified ? 'Register' : 'Verify phone to continue'}
+              {loading ? (
+                <span className="inline-flex items-center gap-2">
+                  <span className="animate-spin rounded-full border-2 border-white/40 border-t-white size-4 shrink-0" role="status" aria-label="Creating account" />
+                  Creating account…
+                </span>
+              ) : phoneVerified ? (
+                'Register'
+              ) : (
+                'Verify phone to continue'
+              )}
             </button>
           </form>
 

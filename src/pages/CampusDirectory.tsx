@@ -33,19 +33,8 @@ export default function CampusDirectory() {
 
       {isLoading && (
         <section className="py-12">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {[1, 2, 3, 4, 5, 6].map((i) => (
-                <div key={i} className="bg-section rounded-lg overflow-hidden animate-pulse">
-                  <div className="h-48 bg-[rgba(30,41,59,0.1)]" />
-                  <div className="p-5 space-y-2">
-                    <div className="h-5 w-3/4 rounded bg-[rgba(30,41,59,0.1)]" />
-                    <div className="h-4 w-1/2 rounded bg-[rgba(30,41,59,0.08)]" />
-                    <div className="h-4 w-1/3 rounded bg-[rgba(30,41,59,0.08)]" />
-                  </div>
-                </div>
-              ))}
-            </div>
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-center">
+            <div className="animate-spin rounded-full border-2 border-[#fbf2f3] size-10 border-t-[#991b1b]" role="status" aria-label="Loading" />
           </div>
         </section>
       )}

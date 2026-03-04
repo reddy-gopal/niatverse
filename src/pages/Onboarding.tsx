@@ -90,7 +90,9 @@ export default function Onboarding() {
     return (
       <div className="min-h-screen bg-white overflow-x-hidden">
         <Navbar />
-        <div className="max-w-xl mx-auto px-4 py-16 text-center text-[#64748b]">Loading…</div>
+        <div className="max-w-xl mx-auto px-4 py-16 flex justify-center">
+          <div className="animate-spin rounded-full border-2 border-[#fbf2f3] size-10 border-t-[#991b1b]" role="status" aria-label="Loading" />
+        </div>
         <Footer />
       </div>
     );

@@ -51,8 +51,8 @@ export function CampusSelector({ value, onChange }: CampusSelectorProps) {
 
   if (isLoading) {
     return (
-      <div className="space-y-2">
-        <div className="h-12 rounded-xl bg-[rgba(30,41,59,0.08)] animate-pulse" />
+      <div className="flex items-center justify-center py-6">
+        <div className="animate-spin rounded-full border-2 border-[#fbf2f3] size-8 border-t-[#991b1b]" role="status" aria-label="Loading" />
       </div>
     );
   }

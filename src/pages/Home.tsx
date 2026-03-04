@@ -140,7 +140,9 @@ export default function Home() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {campusPreview.length === 0 ? (
-              <p className="col-span-full text-[#64748b] text-center py-8">Loading campuses…</p>
+              <div className="col-span-full flex justify-center py-12">
+                <div className="animate-spin rounded-full border-2 border-[#fbf2f3] size-10 border-t-[#991b1b]" role="status" aria-label="Loading" />
+              </div>
             ) : (
               campusPreview.map((campus) => (
                 <CampusCard key={campus.id} campus={campus} />

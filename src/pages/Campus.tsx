@@ -43,7 +43,7 @@ export default function Campus() {
   const notFound = !campusesLoading && !campus && Number.isFinite(campusId) && campusId > 0;
   const displayCampus: Campus = campus ?? {
     id: campusId,
-    name: campusesLoading ? 'Loading…' : notFound ? 'Campus not found' : 'Loading…',
+    name: notFound ? 'Campus not found' : '',
     university: '',
     city: '—',
     state: '—',
@@ -118,11 +118,19 @@ export default function Campus() {
             <span className="text-white">{displayCampus.name}</span>
           </nav>
 
-          {/* Campus Name */}
+          {/* Campus Name — spinner when loading */}
           <h1 className="font-display text-3xl md:text-4xl font-bold text-white mb-2">
-            {displayCampus.name}
+            {campusesLoading && !campus ? (
+              <span className="inline-flex items-center gap-2">
+                <span className="animate-spin rounded-full border-2 border-white/30 border-t-white size-8" role="status" aria-label="Loading" />
+              </span>
+            ) : (
+              displayCampus.name
+            )}
           </h1>
-          <p className="text-white/80 text-lg mb-4">{displayCampus.university || displayCampus.name}</p>
+          {!(campusesLoading && !campus) && (
+            <p className="text-white/80 text-lg mb-4">{displayCampus.university || displayCampus.name}</p>
+          )}
 
           {/* Stats Row — real-time article count */}
           <div className="flex flex-wrap items-center gap-4 text-white/80 text-sm">

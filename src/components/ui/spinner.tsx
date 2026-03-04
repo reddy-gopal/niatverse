@@ -1,16 +1,33 @@
-import { Loader2Icon } from "lucide-react"
-
 import { cn } from "@/lib/utils"
 
-function Spinner({ className, ...props }: React.ComponentProps<"svg">) {
+const SPINNER_COLOR = "var(--niat-maroon, #991b1b)"
+
+interface SpinnerProps extends React.ComponentProps<"div"> {
+  /** Size: sm (inline/buttons), default (medium), lg (page-level) */
+  size?: "sm" | "default" | "lg"
+}
+
+function Spinner({ className, size = "default", ...props }: SpinnerProps) {
+  const sizeClass =
+    size === "sm" ? "size-4" : size === "lg" ? "size-10" : "size-6"
   return (
-    <Loader2Icon
+    <div
       role="status"
       aria-label="Loading"
-      className={cn("size-4 animate-spin", className)}
+      className={cn("animate-spin rounded-full border-2 border-[#fbf2f3]", sizeClass, className)}
+      style={{ borderTopColor: SPINNER_COLOR }}
       {...props}
     />
   )
 }
 
-export { Spinner }
+/** Centered full-page or block-level loading state with spinner (no text) */
+function LoadingScreen({ className }: { className?: string }) {
+  return (
+    <div className={cn("flex items-center justify-center py-12", className)}>
+      <Spinner size="lg" />
+    </div>
+  )
+}
+
+export { Spinner, LoadingScreen }

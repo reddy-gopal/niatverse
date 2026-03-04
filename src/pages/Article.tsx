@@ -275,7 +275,9 @@ export default function Article() {
         </div>
 
         {loading && (
-          <div className="h-64 rounded-xl bg-[rgba(30,41,59,0.08)] animate-pulse mb-8" />
+          <div className="flex justify-center py-16 mb-8">
+            <div className="animate-spin rounded-full border-2 border-[#fbf2f3] size-10 border-t-[#991b1b]" role="status" aria-label="Loading" />
+          </div>
         )}
 
         {!loading && articleImages.length > 0 && (
@@ -374,7 +376,14 @@ export default function Article() {
                   disabled={deleteLoading}
                   className="px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 disabled:opacity-60"
                 >
-                  {deleteLoading ? 'Deleting…' : 'Delete'}
+                  {deleteLoading ? (
+                <span className="inline-flex items-center gap-2">
+                  <span className="animate-spin rounded-full border-2 border-white/40 border-t-white size-4 shrink-0" role="status" aria-label="Deleting" />
+                  Deleting…
+                </span>
+              ) : (
+                'Delete'
+              )}
                 </button>
               </div>
             </div>

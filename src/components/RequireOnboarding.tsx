@@ -41,7 +41,7 @@ export default function RequireOnboarding({ children }: RequireOnboardingProps) 
   if (status === 'loading') {
     return (
       <div className="min-h-screen flex items-center justify-center bg-white">
-        <p className="text-[#64748b]">Loading…</p>
+        <div className="animate-spin rounded-full border-2 border-[#fbf2f3] size-10 border-t-[#991b1b]" role="status" aria-label="Loading" />
       </div>
     );
   }

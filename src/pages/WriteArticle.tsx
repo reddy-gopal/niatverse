@@ -586,6 +586,14 @@ export default function WriteArticle() {
         <div className="mx-4 mt-4 p-4 rounded-lg bg-red-50 border border-red-200 text-red-800 text-sm" role="alert">
           <p className="font-medium mb-1">Submission issue</p>
           <p>{loadEditError ?? submitError}</p>
+          {(submitError?.toLowerCase().includes('log in') ?? false) && (
+            <Link
+              to="/login"
+              className="inline-flex items-center justify-center mt-3 px-4 py-2 rounded-lg bg-[#991b1b] text-white text-sm font-medium hover:bg-[#b91c1c] transition-colors"
+            >
+              Log in
+            </Link>
+          )}
         </div>
       )}
 
@@ -619,7 +627,14 @@ export default function WriteArticle() {
               disabled={submitLoading}
               className="px-3 sm:px-4 py-1.5 sm:py-2 rounded-md bg-[#991b1b] text-white hover:bg-[#b91c1c] transition-colors text-xs sm:text-sm font-medium disabled:opacity-60"
             >
-              {submitLoading ? 'Submitting…' : 'Submit for Review'}
+              {submitLoading ? (
+                <span className="inline-flex items-center gap-2">
+                  <span className="animate-spin rounded-full border-2 border-white/40 border-t-white size-4 shrink-0" role="status" aria-label="Submitting" />
+                  Submitting…
+                </span>
+              ) : (
+                'Submit for Review'
+              )}
             </button>
           </div>
         </div>
@@ -748,7 +763,12 @@ export default function WriteArticle() {
         {/* Section + subcategory — show selected section as text with Change; or dropdown to select */}
         <div className="mb-4 flex flex-wrap items-end gap-3">
           <div className="min-w-0 flex-1" style={{ maxWidth: 220 }}>
-            <span className="block text-[13px] font-medium text-[#1e293b] mb-1.5">Section</span>
+            <span className="flex items-center gap-2 text-[13px] font-medium text-[#1e293b] mb-1.5">
+              Section
+              {categoriesLoading && (
+                <span className="animate-spin rounded-full border-2 border-[#fbf2f3] border-t-[#991b1b] size-4 shrink-0" role="status" aria-label="Loading" />
+              )}
+            </span>
             {categoryId != null && selectedCategoryName && !showSectionSelect ? (
               <div className="flex items-center gap-2 flex-wrap">
                 <span className="px-[14px] py-2 rounded-lg text-[13px] bg-[#fbf2f3] border border-[rgba(30,41,59,0.15)] text-[#1e293b]">
@@ -1003,7 +1023,10 @@ export default function WriteArticle() {
                   aria-busy={imageUploading}
                 >
                   {imageUploading ? (
-                    <p className="text-sm" style={{ color: 'rgba(30, 41, 59, 0.7)' }}>Uploading…</p>
+                    <span className="flex items-center justify-center gap-2 text-sm" style={{ color: 'rgba(30, 41, 59, 0.7)' }}>
+                      <span className="animate-spin rounded-full border-2 border-[#fbf2f3] border-t-[#991b1b] size-5 shrink-0" role="status" aria-label="Uploading" />
+                      Uploading…
+                    </span>
                   ) : (
                     <>
                       <Image className="h-12 w-12 mx-auto mb-2 text-[rgba(30,41,59,0.4)]" />
