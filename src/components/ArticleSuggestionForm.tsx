@@ -34,7 +34,7 @@ interface ArticleSuggestionFormProps {
   triggerLabel?: string;
 }
 
-export function ArticleSuggestionForm({ articleId, onSubmit, triggerLabel = 'Suggest an Improvement' }: ArticleSuggestionFormProps) {
+export function ArticleSuggestionForm({ articleId: _articleId, onSubmit, triggerLabel = 'Suggest an Improvement' }: ArticleSuggestionFormProps) {
   const [open, setOpen] = useState(false);
   const [type, setType] = useState<SuggestionType | ''>('');
   const [content, setContent] = useState('');
