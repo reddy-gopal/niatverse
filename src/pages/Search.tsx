@@ -13,13 +13,11 @@ export default function Search() {
   const [selectedCampus, setSelectedCampus] = useState('All Campuses');
   const [selectedDate, setSelectedDate] = useState('Any time');
 
-  const categories = ['All', 'Campus Life', 'IRC', 'Experiences', 'Academics', 'How-To'];
+  const categories = ['All', 'Campus Life', 'Experiences', 'Academics', 'How-To'];
   const dates = ['Any time', 'Last month', 'Last 6 months'];
 
   const getCategoryClass = (category: string) => {
     switch (category) {
-      case 'IRC':
-        return 'tag-irc';
       case 'Campus Life':
         return 'tag-campus-life';
       case 'Experiences':
@@ -121,7 +119,7 @@ export default function Search() {
                 {result.title}
               </h3>
               <div className="flex flex-wrap items-center gap-2 mb-2">
-                <span className="tag-irc">{result.campus}</span>
+                <span className="tag-campus-life">{result.campus}</span>
                 <span className={getCategoryClass(result.category)}>{result.category}</span>
               </div>
               <p className="text-sm text-black mb-2">{result.excerpt}</p>

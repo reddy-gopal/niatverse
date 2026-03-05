@@ -126,10 +126,6 @@
     @apply bg-[#fbf2f3];
   }
   
-  .tag-irc {
-    @apply bg-[#991b1b] text-white px-2 py-1 rounded-full text-xs font-medium;
-  }
-  
   .tag-campus-life {
     @apply bg-[#7678ed] text-white px-2 py-1 rounded-full text-xs font-medium;
   }
@@ -229,5 +225,21 @@
   
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
+  }
+
+  /* Infinite scroll for Campus Life video strip */
+  @keyframes campus-life-scroll {
+    0% {
+      transform: translateX(0);
+    }
+    100% {
+      transform: translateX(-50%);
+    }
+  }
+  .animate-campus-life-scroll {
+    animation: campus-life-scroll 45s linear infinite;
+  }
+  .animate-campus-life-scroll:hover {
+    animation-play-state: paused;
   }
 }

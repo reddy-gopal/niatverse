@@ -20,13 +20,13 @@ const TOPICS: { value: GuideTopic | 'All'; label: string }[] = [
 function getGlobalGuides(): ArticlePageArticle[] {
   return allArticles
     .filter((a) => a.isGlobalGuide === true)
-    .sort((a, b) => b.helpful - a.helpful);
+    .sort((a, b) => b.upvoteCount - a.upvoteCount);
 }
 
 function getFeaturedGuide(): ArticlePageArticle | null {
   const featured = allArticles
     .filter((a) => a.isGlobalGuide === true && a.featured === true)
-    .sort((a, b) => b.helpful - a.helpful);
+    .sort((a, b) => b.upvoteCount - a.upvoteCount);
   return featured[0] ?? null;
 }
 
@@ -108,7 +108,7 @@ export default function HowToGuides() {
                     {featuredGuide.excerpt}
                   </p>
                   <p className="text-sm text-[#94a3b8] mb-4">
-                    👍 {featuredGuide.helpful} found this helpful
+                    👍 {featuredGuide.upvoteCount} upvoted this
                   </p>
                   <span className="inline-flex items-center text-[#991b1b] font-medium hover:underline">
                     Read Guide <ChevronRight className="h-4 w-4 ml-1" />
@@ -171,7 +171,7 @@ export default function HowToGuides() {
                       {guide.excerpt}
                     </p>
                     <p className="text-xs text-[#94a3b8] mb-2">
-                      👍 {guide.helpful} found this helpful
+                      👍 {guide.upvoteCount} upvoted this
                     </p>
                     <span className="inline-flex items-center text-[#991b1b] text-sm font-medium hover:underline">
                       Read Guide <ChevronRight className="h-4 w-4 ml-0.5" />

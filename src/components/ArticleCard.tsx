@@ -38,7 +38,7 @@ export default function ArticleCard({ article, campusId }: ArticleCardProps) {
           </div>
           <div className="flex items-center">
             <ThumbsUp className="h-3 w-3 mr-1" />
-            <span>{article.helpful} helpful</span>
+            <span>{article.upvoteCount} upvote{article.upvoteCount !== 1 ? 's' : ''}</span>
           </div>
         </div>
       </div>

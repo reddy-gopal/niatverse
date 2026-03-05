@@ -4,13 +4,6 @@ export const CATEGORY_CONFIG: Record<
   ArticleCategory,
   { label: string; icon: string; bg: string; text: string; border: string }
 > = {
-  irc: {
-    label: 'IRC & Skills',
-    icon: '🔬',
-    bg: '#fbf2f3',
-    text: '#991b1b',
-    border: '#991b1b',
-  },
   'campus-life': {
     label: 'Campus Life',
     icon: '🏠',
@@ -42,7 +35,6 @@ export const CATEGORY_CONFIG: Record<
 };
 
 export const CATEGORY_ORDER: ArticleCategory[] = [
-  'irc',
   'campus-life',
   'experiences',
   'academics',

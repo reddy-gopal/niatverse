@@ -1,12 +1,14 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
-import { ChevronRight, ChevronLeft, Clock, Pencil, Trash2, MoreVertical } from 'lucide-react';
+import { ChevronRight, ChevronLeft, Clock, Pencil, Trash2, MoreVertical, ThumbsUp, Eye } from 'lucide-react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import ImageWithFallback from '../components/ImageWithFallback';
+import { ArticleSuggestionForm } from '../components/ArticleSuggestionForm';
 import { campuses, allArticles } from '../data/mockData';
 import { CATEGORY_CONFIG } from '../data/articleCategories';
 import { useArticleDetail } from '../hooks/useArticles';
+import { useUpvote } from '../hooks/useUpvote';
 import { articleService } from '../lib/articleService';
 import { fetchMe } from '../lib/authApi';
 
@@ -20,28 +22,6 @@ function stripImageCardsFromHtml(html: string): string {
   cards.forEach((el) => el.remove());
   return div.innerHTML.trim();
 }
-
-const STATIC_BODY = (
-  <article className="prose prose-lg max-w-none mb-8">
-    <p className="text-black leading-relaxed mb-6">
-      The IRC (Industry Readiness Course) is a core part of the NIAT programme. It helps you build
-      a real-world project and document your progress. Here&apos;s a general overview of how it works
-      across NIAT campuses.
-    </p>
-    <h2 className="font-display text-xl md:text-2xl font-bold text-black mt-8 mb-4">How IRC Works</h2>
-    <ol className="list-decimal list-inside space-y-2 text-black mb-6">
-      <li>Register your project idea on the NIAT portal within the first month</li>
-      <li>Get mentor approval within the timeline set by your campus</li>
-      <li>Submit progress reports as required by your coordinator</li>
-      <li>Present your final project during the evaluation period</li>
-    </ol>
-    <h2 className="font-display text-xl md:text-2xl font-bold text-black mt-8 mb-4">Tips for Success</h2>
-    <p className="text-black leading-relaxed mb-6">
-      Lab timings, report formats, and evaluation dates can vary by campus. Check with your IRC
-      coordinator and seniors at your college for campus-specific details.
-    </p>
-  </article>
-);
 
 export default function Article() {
   const { id, articleId } = useParams<{ id?: string; articleId: string }>();
@@ -60,7 +40,8 @@ export default function Article() {
       title: apiArticle.title,
       excerpt: apiArticle.excerpt,
       updatedDays: apiArticle.updated_days,
-      helpful: apiArticle.helpful_count,
+      upvoteCount: apiArticle.upvote_count,
+      viewCount: apiArticle.view_count,
       author: apiArticle.author_username,
       category: apiArticle.category,
       campusName: apiArticle.campus_name,
@@ -73,7 +54,8 @@ export default function Article() {
         title: pageArticle.title,
         excerpt: pageArticle.excerpt,
         updatedDays: pageArticle.updatedDays,
-        helpful: pageArticle.helpful,
+        upvoteCount: pageArticle.upvoteCount ?? 0,
+        viewCount: 0,
         author: 'NIAT Student',
         category: pageArticle.category,
         campusName: pageArticle.campusName,
@@ -85,14 +67,35 @@ export default function Article() {
         title: 'Article not found',
         excerpt: '',
         updatedDays: 0,
-        helpful: 0,
+        upvoteCount: 0,
+        viewCount: 0,
         author: 'NIAT Student',
-        category: 'irc' as const,
+        category: 'academics' as const,
         campusName: 'Global',
         coverImage: undefined,
         status: undefined as string | undefined,
         rejectionReason: undefined as string | undefined,
       };
+
+  const articleIdForEngagement = fromApi && apiArticle ? apiArticle.id : null;
+  const { upvoteCount, upvoted, toggle } = useUpvote(articleIdForEngagement);
+
+  const displayUpvoteCount = fromApi ? upvoteCount : article.upvoteCount;
+  const [viewIncremented, setViewIncremented] = useState(false);
+  const displayViewCount = (article.viewCount ?? 0) + (viewIncremented ? 1 : 0);
+
+  useEffect(() => {
+    if (articleIdForEngagement == null) return;
+    const key = `viewed_article_${articleIdForEngagement}`;
+    try {
+      if (sessionStorage.getItem(key)) return;
+      sessionStorage.setItem(key, '1');
+      setViewIncremented(true);
+      articleService.incrementView(articleIdForEngagement).catch(() => {});
+    } catch {
+      articleService.incrementView(articleIdForEngagement).catch(() => {});
+    }
+  }, [articleIdForEngagement]);
 
   const categoryConfig = CATEGORY_CONFIG[article.category as keyof typeof CATEGORY_CONFIG];
   const [currentUsername, setCurrentUsername] = useState<string | null>(null);
@@ -199,7 +202,7 @@ export default function Article() {
               border: `1px solid ${categoryConfig?.border ?? '#991b1b'}`,
             }}
           >
-            {categoryConfig?.label ?? 'IRC & Skills'}
+            {categoryConfig?.label ?? 'Article'}
           </span>
           <span
             className="text-xs font-medium px-2 py-1 rounded-full"
@@ -335,15 +338,49 @@ export default function Article() {
         {!loading && (
           <>
         {/* Meta Row */}
-        <div className="flex flex-wrap items-center gap-4 text-sm text-black mb-8 pb-6 border-b border-[rgba(30,41,59,0.1)]">
+        <div className="flex flex-wrap items-center gap-4 text-sm text-black mb-6 pb-6 border-b border-[rgba(30,41,59,0.1)]">
           <span>Written by {article.author}</span>
           <span className="flex items-center">
             <Clock className="h-4 w-4 mr-1" />
             Last updated {article.updatedDays} days ago
           </span>
+          <span className="flex items-center gap-1">
+            <ThumbsUp className="h-4 w-4" />
+            {displayUpvoteCount} upvote{displayUpvoteCount !== 1 ? 's' : ''}
+          </span>
+          <span className="flex items-center gap-1">
+            <Eye className="h-4 w-4" />
+            {displayViewCount} view{displayViewCount !== 1 ? 's' : ''}
+          </span>
         </div>
 
-        {/* Article Body — API body, or IRC static body, or excerpt for other categories (e.g. Food, Living) */}
+        {/* Upvote + Suggest (API articles only) */}
+        {fromApi && articleIdForEngagement != null && (
+          <div className="flex flex-wrap items-center gap-3 mb-8">
+            {currentUsername != null && (
+              <button
+                type="button"
+                onClick={toggle}
+                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-sm font-medium transition-colors ${
+                  upvoted
+                    ? 'bg-[#991b1b] border-[#991b1b] text-white'
+                    : 'border-[#991b1b] text-[#991b1b] hover:bg-[#fbf2f3]'
+                }`}
+              >
+                <ThumbsUp className="h-4 w-4" />
+                {upvoted ? 'Upvoted' : 'Upvote'}
+              </button>
+            )}
+            {currentUsername != null && (
+              <ArticleSuggestionForm
+                articleId={articleIdForEngagement}
+                onSubmit={(payload) => articleService.submitSuggestion(articleIdForEngagement, payload).then(() => undefined)}
+              />
+            )}
+          </div>
+        )}
+
+        {/* Article Body — API body or excerpt */}
         {fromApi && apiArticle?.body ? (
           <div className="article-body-read-only">
             <article
@@ -351,8 +388,6 @@ export default function Article() {
               dangerouslySetInnerHTML={{ __html: stripImageCardsFromHtml(apiArticle.body) }}
             />
           </div>
-        ) : article.category === 'irc' ? (
-          STATIC_BODY
         ) : (
           <article className="prose prose-lg max-w-none mb-8">
             <p className="text-black leading-relaxed">{article.excerpt}</p>

@@ -27,7 +27,6 @@ export default function Contribute() {
     'Week 1',
     'Living',
     'Food',
-    'IRC',
     'Experiences',
     'Academics',
     'How-To'

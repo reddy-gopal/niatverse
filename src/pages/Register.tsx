@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { CheckCircle } from 'lucide-react';
+import { CheckCircle, Eye, EyeOff } from 'lucide-react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import {
@@ -34,6 +34,8 @@ export default function Register() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
   const [phoneVerified, setPhoneVerified] = useState(false);
   const [otpCode, setOtpCode] = useState('');
   const [otpSent, setOtpSent] = useState(false);
@@ -247,30 +249,50 @@ export default function Register() {
               <label htmlFor="reg-password" className="block text-sm font-medium text-[#1e293b] mb-1.5">
                 Password
               </label>
-              <input
-                id="reg-password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                autoComplete="new-password"
-                className="w-full rounded-xl border border-[rgba(30,41,59,0.15)] bg-white px-3 py-2 text-sm text-[#1e293b] focus:outline-none focus:ring-2 focus:ring-[#991b1b]"
-                placeholder="At least 8 characters"
-              />
+              <div className="relative">
+                <input
+                  id="reg-password"
+                  type={showPassword ? 'text' : 'password'}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  autoComplete="new-password"
+                  className="w-full rounded-xl border border-[rgba(30,41,59,0.15)] bg-white px-3 py-2 pr-10 text-sm text-[#1e293b] focus:outline-none focus:ring-2 focus:ring-[#991b1b]"
+                  placeholder="At least 8 characters"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((p) => !p)}
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 p-1 text-[#64748b] hover:text-[#1e293b] focus:outline-none rounded"
+                  aria-label={showPassword ? 'Hide password' : 'Show password'}
+                >
+                  {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                </button>
+              </div>
             </div>
 
             <div>
               <label htmlFor="reg-confirm" className="block text-sm font-medium text-[#1e293b] mb-1.5">
                 Confirm password
               </label>
-              <input
-                id="reg-confirm"
-                type="password"
-                value={confirm}
-                onChange={(e) => setConfirm(e.target.value)}
-                autoComplete="new-password"
-                className="w-full rounded-xl border border-[rgba(30,41,59,0.15)] bg-white px-3 py-2 text-sm text-[#1e293b] focus:outline-none focus:ring-2 focus:ring-[#991b1b]"
-                placeholder="Repeat password"
-              />
+              <div className="relative">
+                <input
+                  id="reg-confirm"
+                  type={showConfirm ? 'text' : 'password'}
+                  value={confirm}
+                  onChange={(e) => setConfirm(e.target.value)}
+                  autoComplete="new-password"
+                  className="w-full rounded-xl border border-[rgba(30,41,59,0.15)] bg-white px-3 py-2 pr-10 text-sm text-[#1e293b] focus:outline-none focus:ring-2 focus:ring-[#991b1b]"
+                  placeholder="Repeat password"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirm((c) => !c)}
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 p-1 text-[#64748b] hover:text-[#1e293b] focus:outline-none rounded"
+                  aria-label={showConfirm ? 'Hide password' : 'Show password'}
+                >
+                  {showConfirm ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                </button>
+              </div>
               {confirm && password !== confirm && (
                 <p className="mt-1 text-sm text-red-600">Passwords don’t match.</p>
               )}

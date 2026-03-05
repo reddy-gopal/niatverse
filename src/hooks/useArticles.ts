@@ -1,11 +1,10 @@
 import { useState, useEffect, useCallback } from 'react';
 import { articleService } from '../lib/articleService';
-import type { ApiArticle, ApiComment } from '../types/articleApi';
+import type { ApiArticle } from '../types/articleApi';
 import type { PaginatedResponse } from '../types/articleApi';
 
 type ListResponse = { data: PaginatedResponse<ApiArticle> };
 type DetailResponse = { data: ApiArticle };
-type CommentsResponse = { data: ApiComment[] };
 
 export function usePublishedArticles(params?: Record<string, string | number | boolean>) {
   const [articles, setArticles] = useState<ApiArticle[]>([]);
@@ -65,7 +64,6 @@ export function usePublishedArticles(params?: Record<string, string | number | b
 
 export function useArticleDetail(id: number | null) {
   const [article, setArticle] = useState<ApiArticle | null>(null);
-  const [comments, setComments] = useState<ApiComment[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -73,16 +71,13 @@ export function useArticleDetail(id: number | null) {
     if (id == null) return;
     setLoading(true);
     setError(null);
-    Promise.all([articleService.detail(id), articleService.getComments(id)])
-      .then(([detailRes, commentsRes]: [DetailResponse, CommentsResponse]) => {
-        setArticle(detailRes.data);
-        setComments(Array.isArray(commentsRes.data) ? commentsRes.data : []);
-      })
+    articleService
+      .detail(id)
+      .then((res: DetailResponse) => setArticle(res.data))
       .catch((e: unknown) => {
         const err = e as { response?: { data?: { detail?: string } }; message?: string };
         setError(err?.response?.data?.detail ?? err?.message ?? 'Failed to load');
         setArticle(null);
-        setComments([]);
       })
       .finally(() => setLoading(false));
   }, [id]);
@@ -90,14 +85,13 @@ export function useArticleDetail(id: number | null) {
   useEffect(() => {
     if (id == null) {
       setArticle(null);
-      setComments([]);
       setLoading(false);
       return;
     }
     refetch();
   }, [id, refetch]);
 
-  return { article, comments, loading, error, refetch };
+  return { article, loading, error, refetch };
 }
 
 export function usePendingArticles() {

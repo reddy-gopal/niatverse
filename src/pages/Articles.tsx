@@ -15,7 +15,6 @@ const campusOnlyArticles = allArticles.filter(
 
 const CATEGORY_LINKS = [
   { key: 'campus-life' as const, label: "Campus Life" },
-  { key: 'irc' as const, label: "IRC & Skills" },
   { key: 'experiences' as const, label: "Experiences" },
   { key: 'academics' as const, label: "Academics" },
   { key: 'howto' as const, label: "How-To Guides" },
@@ -63,7 +62,7 @@ function ArticleRow({ article }: { article: ArticlePageArticle }) {
           {article.excerpt}
         </p>
         <p className="font-dm-sans text-[12px] text-[#94a3b8]">
-          Updated {article.updatedDays} days ago · 👍 {article.helpful} helpful
+          Updated {article.updatedDays} days ago · 👍 {article.upvoteCount} upvotes
         </p>
       </div>
     </Link>
@@ -83,12 +82,12 @@ export default function Articles() {
     let result = campusOnlyArticles;
     if (activeCategory) result = result.filter((a) => a.category === activeCategory);
     if (activeCampusId != null && !isNaN(activeCampusId)) result = result.filter((a) => a.campusId === activeCampusId);
-    return [...result].sort((a, b) => b.helpful - a.helpful);
+    return [...result].sort((a, b) => b.upvoteCount - a.upvoteCount);
   }, [activeCategory, activeCampusId]);
 
   const filteredArticles = displayArticles;
   const topArticles = useMemo(
-    () => [...campusOnlyArticles].sort((a, b) => b.helpful - a.helpful).slice(0, 5),
+    () => [...campusOnlyArticles].sort((a, b) => b.upvoteCount - a.upvoteCount).slice(0, 5),
     []
   );
 
@@ -263,7 +262,7 @@ export default function Articles() {
                         >
                           {a.title}
                         </Link>
-                        <span className="text-xs text-[#64748b]">👍 {a.helpful} helpful</span>
+                        <span className="text-xs text-[#64748b]">👍 {a.upvoteCount} upvotes</span>
                       </li>
                     );
                   })}

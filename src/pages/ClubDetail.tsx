@@ -10,7 +10,7 @@ import type { ArticlePageArticle } from '../types';
 function getClubArticles(clubId: number, campusId: number): ArticlePageArticle[] {
   return allArticles
     .filter((a) => a.clubId === clubId && a.campusId === campusId)
-    .sort((a, b) => b.helpful - a.helpful);
+    .sort((a, b) => b.upvoteCount - a.upvoteCount);
 }
 
 function articleTypeBadge(category: ArticlePageArticle['category']): { label: string; bg: string; text: string } {
@@ -28,7 +28,6 @@ function articleTypeBadge(category: ArticlePageArticle['category']): { label: st
 
 function categoryLabel(category: ArticlePageArticle['category']): string {
   const labels: Record<ArticlePageArticle['category'], string> = {
-    irc: 'IRC',
     'campus-life': 'Campus Life',
     experiences: 'Experiences',
     academics: 'Academics',
@@ -256,7 +255,7 @@ export default function ClubDetail() {
                       {article.excerpt}
                     </p>
                     <p className="text-[11px] text-[rgba(30,41,59,0.5)]" style={{ fontFamily: 'DM Sans, sans-serif' }}>
-                      👍 {article.helpful} helpful · Updated {article.updatedDays} days ago
+                      👍 {article.upvoteCount} upvotes · Updated {article.updatedDays} days ago
                     </p>
                   </Link>
                 );

@@ -6,7 +6,7 @@ const HOW_TO_GUIDES_URL = '/how-to-guides';
 function getGlobalGuides(limit: number) {
   return allArticles
     .filter((a) => a.isGlobalGuide === true)
-    .sort((a, b) => b.helpful - a.helpful)
+    .sort((a, b) => b.upvoteCount - a.upvoteCount)
     .slice(0, limit);
 }
 

@@ -68,7 +68,7 @@ export default function MyArticles() {
                   </span>
                 </div>
                 <p className="text-sm text-[#64748b] mt-1">
-                  {a.category} · {a.campus_name || 'Global'} · Updated {a.updated_days} days ago · 👍 {a.helpful_count}
+                  {a.category} · {a.campus_name || 'Global'} · Updated {a.updated_days} days ago · 👍 {a.upvote_count}
                 </p>
                 {a.status === 'rejected' && a.rejection_reason && (
                   <div className="mt-2">

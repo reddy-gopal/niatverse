@@ -15,7 +15,7 @@ const HOW_TO_GUIDES_URL = '/how-to-guides';
 function getGlobalGuides(limit: number) {
   return allArticles
     .filter((a) => a.isGlobalGuide === true)
-    .sort((a, b) => b.helpful - a.helpful)
+    .sort((a, b) => b.upvoteCount - a.upvoteCount)
     .slice(0, limit);
 }
 
@@ -74,10 +74,10 @@ export default function Home() {
       <section className="hero-gradient py-16 md:py-24">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h1 className="font-display text-3xl md:text-5xl font-bold text-white mb-4 leading-tight">
-            Every NIAT Campus. Mapped by students who've been there.
+            Don&apos;t guess. Ask someone who&apos;s been there.
           </h1>
           <p className="text-white/80 text-base md:text-lg mb-8 max-w-2xl mx-auto">
-            Every NIAT campus in one place. Real information from students who&apos;ve been there.
+            Real stories, real campuses — from students who actually lived it.
           </p>
 
           {/* Hero Search */}
@@ -186,7 +186,7 @@ export default function Home() {
                     {guide.excerpt}
                   </p>
                   <p className="text-xs text-[#94a3b8] mb-2">
-                    👍 {guide.helpful} found this helpful
+                    👍 {guide.upvoteCount} upvoted this
                   </p>
                   <span className="inline-flex items-center text-[#991b1b] text-sm font-medium hover:underline">
                     Read <ChevronRight className="h-4 w-4 ml-0.5" />

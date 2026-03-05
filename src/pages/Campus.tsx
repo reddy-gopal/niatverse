@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useMemo } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import {
   Star, MapPin, Users, FileText, Clock, ChevronRight,
-  Calendar, MessageSquare, Award, Utensils, Home
+  Calendar, MessageSquare, Award, Utensils, Home, Play, Info
 } from 'lucide-react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
@@ -56,18 +56,26 @@ export default function Campus() {
   const sectionRefs = {
     topVoted: useRef<HTMLDivElement>(null),
     week1: useRef<HTMLDivElement>(null),
+    campusLife: useRef<HTMLDivElement>(null),
     clubs: useRef<HTMLDivElement>(null),
     food: useRef<HTMLDivElement>(null),
     living: useRef<HTMLDivElement>(null),
     reviews: useRef<HTMLDivElement>(null),
   };
 
+  const campusLifeVideos = [
+    { id: '4XMwDh8BsSA', url: 'https://youtu.be/4XMwDh8BsSA?si=66y6Xlndg8C6y5yY' },
+    { id: '7JObBe_knlU', url: 'https://youtu.be/7JObBe_knlU?si=azrfEDKJN5Izw4Ah' },
+    { id: 'LVaKm48qTMw', url: 'https://youtu.be/LVaKm48qTMw?si=aDaEbmyi6gr_IKjN' },
+    { id: '8JhNZhq-HRU', url: 'https://youtu.be/8JhNZhq-HRU?si=eMpZcL9qWGxobV6F' },
+  ];
+
   const campusArticles = useMemo(
     () => allArticles.filter((a) => a.campusId === campusId || a.campusId === null),
     [campusId]
   );
   const topVotedArticles = useMemo(
-    () => [...campusArticles].sort((a, b) => b.helpful - a.helpful).slice(0, 6),
+    () => [...campusArticles].sort((a, b) => b.upvoteCount - a.upvoteCount).slice(0, 6),
     [campusArticles]
   );
   const foodArticles = useMemo(
@@ -188,6 +196,7 @@ export default function Campus() {
             {[
               { id: 'topVoted', label: 'Top voted', icon: Award },
               { id: 'week1', label: '30 days', icon: Calendar },
+              { id: 'campusLife', label: 'Campus Life', icon: Play },
               { id: 'clubs', label: 'Clubs', icon: Users },
               { id: 'food', label: 'Food', icon: Utensils },
               { id: 'living', label: 'Living', icon: Home },
@@ -218,7 +227,7 @@ export default function Campus() {
               Top voted articles
             </h2>
           </div>
-          <p className="text-black mb-6">Most helpful articles at {displayCampus.name}</p>
+          <p className="text-black mb-6">Most upvotes articles at {displayCampus.name}</p>
           {topVotedArticles.length === 0 ? (
             <p className="text-black mb-4">No articles yet. Be the first to write one.</p>
           ) : (
@@ -237,7 +246,7 @@ export default function Campus() {
                   <div className="p-4">
                     <h3 className="font-display font-medium text-[#1e293b] mb-1 line-clamp-2">{article.title}</h3>
                     <p className="text-sm text-[#64748b] line-clamp-2 mb-2">{article.excerpt}</p>
-                    <span className="text-xs text-[#94a3b8]">👍 {article.helpful} helpful</span>
+                    <span className="text-xs text-[#94a3b8]">👍 {article.upvoteCount} upvotes</span>
                   </div>
                 </Link>
               ))}
@@ -280,6 +289,64 @@ export default function Campus() {
           >
             Know more <ChevronRight className="h-4 w-4" />
           </Link>
+        </section>
+
+        {/* Section: Campus Life — videos (demo, infinite scroll) */}
+        <section ref={sectionRefs.campusLife} className="mb-16">
+          <div className="flex items-center gap-3 mb-2">
+            <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-[#991b1b]/10">
+              <Play className="h-5 w-5 text-[#991b1b]" />
+            </div>
+            <h2 className="font-display text-2xl font-bold text-black">
+              Campus Life
+            </h2>
+          </div>
+
+          <p className="text-[#64748b] text-sm mb-4 max-w-2xl">
+            Get a feel for life at <span className="font-medium text-[#1e293b]">{displayCampus.name}</span> and across NIAT.
+          </p>
+
+          <div className="flex items-start gap-3 p-4 mb-6 rounded-xl border border-[#991b1b]/15 bg-[#fbf2f3]/50">
+            <Info className="h-5 w-5 text-[#991b1b] shrink-0 mt-0.5" />
+            <p className="text-sm text-[#475569]">
+              For this demo we’re showing the same videos on every campus. Once we have real campus-specific content, we’ll swap these out so each campus has its own vibe and stories.
+            </p>
+          </div>
+
+          {/* Infinite scrolling video strip — duplicate list for seamless loop */}
+          <div className="relative -mx-4 sm:-mx-6 lg:-mx-8 overflow-hidden">
+            <div className="flex w-[200%] animate-campus-life-scroll">
+              {[...campusLifeVideos, ...campusLifeVideos].map((video, index) => (
+                <a
+                  key={`${video.id}-${index}`}
+                  href={video.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="group flex-[0_0_12.5%] shrink-0 pr-4 pl-1"
+                >
+                  <div className="rounded-xl overflow-hidden border border-[rgba(30,41,59,0.08)] bg-white shadow-[0_2px_8px_rgba(30,41,59,0.06)] hover:border-[#991b1b]/30 hover:shadow-[0_8px_24px_rgba(30,41,59,0.12)] transition-all duration-300">
+                    <div className="relative aspect-video bg-[#1e293b]">
+                      <img
+                        src={`https://img.youtube.com/vi/${video.id}/mqdefault.jpg`}
+                        alt=""
+                        className="w-full h-full object-cover"
+                      />
+                      <div className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-black/35 transition-colors">
+                        <span className="flex items-center justify-center w-12 h-12 rounded-full bg-[#991b1b] text-white shadow-lg group-hover:scale-110 transition-transform">
+                          <Play className="h-6 w-6 ml-0.5" fill="currentColor" />
+                        </span>
+                      </div>
+                    </div>
+                    <div className="p-3 text-center">
+                      <span className="text-xs font-medium text-[#991b1b] group-hover:underline uppercase tracking-wide">
+                        Watch on YouTube
+                      </span>
+                    </div>
+                  </div>
+                </a>
+              ))}
+            </div>
+          </div>
         </section>
 
         {/* Section: Clubs & Communities */}
@@ -408,7 +475,7 @@ export default function Campus() {
                   <div className="p-4">
                     <h3 className="font-display font-medium text-[#1e293b] mb-1 line-clamp-2">{article.title}</h3>
                     <p className="text-sm text-[#64748b] line-clamp-2 mb-2">{article.excerpt}</p>
-                    <span className="text-xs text-[#94a3b8]">👍 {article.helpful} helpful</span>
+                    <span className="text-xs text-[#94a3b8]">👍 {article.upvoteCount} upvotes</span>
                   </div>
                 </Link>
               ))}
@@ -449,7 +516,7 @@ export default function Campus() {
                   <div className="p-4">
                     <h3 className="font-display font-medium text-[#1e293b] mb-1 line-clamp-2">{article.title}</h3>
                     <p className="text-sm text-[#64748b] line-clamp-2 mb-2">{article.excerpt}</p>
-                    <span className="text-xs text-[#94a3b8]">👍 {article.helpful} helpful</span>
+                    <span className="text-xs text-[#94a3b8]">👍 {article.upvoteCount} upvotes</span>
                   </div>
                 </Link>
               ))}
@@ -483,7 +550,6 @@ export default function Campus() {
 
               <div className="flex-1 space-y-2">
                 {[
-                  { label: 'IRC Support', value: ratings.ircSupport },
                   { label: 'Hostel', value: ratings.hostel },
                   { label: 'Infrastructure', value: ratings.infrastructure },
                   { label: 'Social Life', value: ratings.socialLife },
@@ -512,12 +578,12 @@ export default function Campus() {
         {/* Global guides — also useful for you */}
         <section className="mb-16 py-8 px-6 rounded-xl bg-[#f8fafc]">
           <h3 className="font-display text-lg font-semibold text-[#64748b] mb-4">
-            📘 Global Guides — helpful at any campus
+            📘 Global Guides — upvotes at any campus
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
             {allArticles
               .filter((a) => a.isGlobalGuide === true)
-              .sort((a, b) => b.helpful - a.helpful)
+              .sort((a, b) => b.upvoteCount - a.upvoteCount)
               .slice(0, 3)
               .map((guide) => (
                 <Link

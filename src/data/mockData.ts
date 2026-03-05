@@ -97,7 +97,7 @@ export const articles: Article[] = [
     excerpt: "Everything you need to do in your first 7 days. From registration to finding your IRC coordinator.",
     author: "Priya S.",
     updatedDays: 3,
-    helpful: 47,
+    upvoteCount: 47,
     coverImage: "https://images.unsplash.com/photo-1511818966892-d7d671e672a2?w=800&q=80"
   },
   {
@@ -108,18 +108,18 @@ export const articles: Article[] = [
     excerpt: "Honest reviews of 8 PG options within 15 minutes of campus. Prices, safety, and what seniors actually recommend.",
     author: "Rahul M.",
     updatedDays: 12,
-    helpful: 38,
+    upvoteCount: 38,
     coverImage: "https://images.unsplash.com/photo-1501504905252-473c47e087f8?w=800&q=80"
   },
   {
     id: 3,
     campusId: 1,
-    section: "irc",
+    section: "academics",
     title: "How IRC Submission Actually Works at St. Mary's",
     excerpt: "The official process is confusing. Here's what actually happens — lab timings, who to approach, and how to avoid the common 3-week delay.",
     author: "Kiran T.",
     updatedDays: 7,
-    helpful: 61,
+    upvoteCount: 61,
     coverImage: "https://images.unsplash.com/photo-1517430816045-df4b7de11d1d?w=800&q=80"
   },
   {
@@ -130,7 +130,7 @@ export const articles: Article[] = [
     excerpt: "From the mess (which is actually decent on Tuesdays) to late-night biryani at Raju's. Budget options under ₹100.",
     author: "Sneha R.",
     updatedDays: 5,
-    helpful: 29,
+    upvoteCount: 29,
     coverImage: "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=800&q=80"
   },
   {
@@ -141,7 +141,7 @@ export const articles: Article[] = [
     excerpt: "How I got my first internship in 2nd year, what the selection process looked like, and what skills actually helped.",
     author: "Anonymous",
     updatedDays: 21,
-    helpful: 54,
+    upvoteCount: 54,
     coverImage: "https://images.unsplash.com/photo-1521737711867-e3b97375f902?w=800&q=80"
   }
 ];
@@ -284,7 +284,6 @@ export const ratings: Ratings = {
   hostel: 4.3,
   food: 3.8,
   infrastructure: 4.1,
-  ircSupport: 4.5,
   socialLife: 4.0,
   totalReviews: 34
 };
@@ -342,24 +341,24 @@ export const articleComments: Comment[] = [
 ];
 
 // Related articles for article page
-export const relatedArticles: { id: number; title: string; updatedDays: number; helpful: number }[] = [
+export const relatedArticles: { id: number; title: string; updatedDays: number; upvoteCount: number }[] = [
   {
     id: 1,
     title: "IRC Project Ideas That Got Selected in 2024",
     updatedDays: 14,
-    helpful: 42
+    upvoteCount: 42
   },
   {
     id: 2,
     title: "How to Choose the Right IRC Mentor",
     updatedDays: 21,
-    helpful: 35
+    upvoteCount: 35
   },
   {
     id: 3,
     title: "IRC Presentation Tips from Coordinators",
     updatedDays: 28,
-    helpful: 28
+    upvoteCount: 28
   }
 ];
 
@@ -375,29 +374,29 @@ export const stateCounts: StateCount[] = [
 
 // Articles page - full list with categories (featured: true for ids 3, 7, 8)
 export const allArticles: ArticlePageArticle[] = [
-  // IRC & Skills
+  // Academics
   {
     id: 1, campusId: 1, campusName: "St. Mary's",
-    category: "irc", clubId: null,
+    category: "academics", clubId: null,
     title: "How IRC Submission Actually Works at St. Mary's",
     excerpt: "The official process is confusing. Here's what actually happens — lab timings, who to approach, and the 3-week delay trap.",
-    updatedDays: 7, helpful: 61,
+    updatedDays: 7, upvoteCount: 61,
     coverImage: "https://images.unsplash.com/photo-1511818966892-d7d671e672a2?w=800&q=80"
   },
   {
     id: 2, campusId: 2, campusName: "Aurora",
-    category: "irc", clubId: null,
+    category: "academics", clubId: null,
     title: "IRC Lab Access Guide — Aurora Hyderabad",
     excerpt: "Lab timings, slot booking process, and which mentor to approach for project review at Aurora.",
-    updatedDays: 14, helpful: 43,
+    updatedDays: 14, upvoteCount: 43,
     coverImage: "https://images.unsplash.com/photo-1501504905252-473c47e087f8?w=800&q=80"
   },
   {
     id: 3, campusId: 4, campusName: "BS Abdur Rahman",
-    category: "irc", clubId: null,
+    category: "academics", clubId: null,
     title: "Completing IRC in 4 Months — A Realistic Timeline",
     excerpt: "Most students take 6+ months. Here's how 3 students from our campus did it in 4. The actual schedule they followed.",
-    updatedDays: 21, helpful: 78, featured: true,
+    updatedDays: 21, upvoteCount: 78, featured: true,
     coverImage: "https://images.unsplash.com/photo-1517430816045-df4b7de11d1d?w=800&q=80"
   },
 
@@ -407,7 +406,7 @@ export const allArticles: ArticlePageArticle[] = [
     category: "campus-life", clubId: null,
     title: "Best PG Options Near St. Mary's — 2025 Guide",
     excerpt: "Honest reviews of 8 PG options within 15 minutes of campus. Prices, safety, and what seniors actually recommend.",
-    updatedDays: 12, helpful: 38,
+    updatedDays: 12, upvoteCount: 38,
     coverImage: "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=800&q=80"
   },
   {
@@ -415,7 +414,7 @@ export const allArticles: ArticlePageArticle[] = [
     category: "campus-life", clubId: null,
     title: "Where to Eat Near Aurora — The Definitive List",
     excerpt: "From the mess (which is actually decent) to late-night biryani. Budget options under ₹100.",
-    updatedDays: 5, helpful: 29,
+    updatedDays: 5, upvoteCount: 29,
     coverImage: "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=800&q=80"
   },
   {
@@ -423,7 +422,7 @@ export const allArticles: ArticlePageArticle[] = [
     category: "campus-life", clubId: null,
     title: "Off-Campus Living in Bangalore on a Student Budget",
     excerpt: "Bangalore PG prices shock most students from other states. Here's how to find good options under ₹6,000/month near RNS.",
-    updatedDays: 9, helpful: 52,
+    updatedDays: 9, upvoteCount: 52,
     coverImage: "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=800&q=80"
   },
 
@@ -433,7 +432,7 @@ export const allArticles: ArticlePageArticle[] = [
     category: "experiences", clubId: null,
     title: "My Internship Journey — Product Startup, Hyderabad",
     excerpt: "How I got my first internship in 2nd year through LinkedIn cold outreach. The exact message I used.",
-    updatedDays: 21, helpful: 54, featured: true,
+    updatedDays: 21, upvoteCount: 54, featured: true,
     coverImage: "https://images.unsplash.com/photo-1521737711867-e3b97375f902?w=800&q=80"
   },
   {
@@ -441,7 +440,7 @@ export const allArticles: ArticlePageArticle[] = [
     category: "experiences", clubId: null,
     title: "Campus Drive at BS Abdur Rahman — What the Test Looked Like",
     excerpt: "TCS came to campus in March 2025. 2nd year NIAT students only. 3 sections, 90 minutes. Here's exactly what each section had.",
-    updatedDays: 30, helpful: 67, featured: true,
+    updatedDays: 30, upvoteCount: 67, featured: true,
     coverImage: "https://images.unsplash.com/photo-1511818966892-d7d671e672a2?w=800&q=80"
   },
   {
@@ -449,7 +448,7 @@ export const allArticles: ArticlePageArticle[] = [
     category: "experiences", clubId: null,
     title: "Remote Internship While in College — How I Managed It",
     excerpt: "Got a remote internship while still attending college. Time management, what my college allowed, IRC impact.",
-    updatedDays: 18, helpful: 41,
+    updatedDays: 18, upvoteCount: 41,
     coverImage: "https://images.unsplash.com/photo-1501504905252-473c47e087f8?w=800&q=80"
   },
 
@@ -459,7 +458,7 @@ export const allArticles: ArticlePageArticle[] = [
     category: "academics", clubId: null,
     title: "Balancing NIAT IRC and University Exams — Survival Guide",
     excerpt: "Exam season + IRC deadlines hit at the same time. Here's how seniors at St. Mary's manage both without losing marks.",
-    updatedDays: 45, helpful: 33,
+    updatedDays: 45, upvoteCount: 33,
     coverImage: "https://images.unsplash.com/photo-1517430816045-df4b7de11d1d?w=800&q=80"
   },
   {
@@ -467,7 +466,7 @@ export const allArticles: ArticlePageArticle[] = [
     category: "academics", clubId: null,
     title: "Attendance Policy at Aurora — What You Actually Need",
     excerpt: "75% is the rule. But here's how the portal calculates it, and the 3 things that can save you if you're borderline.",
-    updatedDays: 60, helpful: 44,
+    updatedDays: 60, upvoteCount: 44,
     coverImage: "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=800&q=80"
   },
 
@@ -477,7 +476,7 @@ export const allArticles: ArticlePageArticle[] = [
     category: "howto", clubId: null,
     title: "How to Write a Good NIATVerse Article",
     excerpt: "The difference between an article that gets 2 helpful votes and one that gets 60. Structure, tone, what to include.",
-    updatedDays: 15, helpful: 28,
+    updatedDays: 15, upvoteCount: 28,
     coverImage: "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=800&q=80"
   },
   {
@@ -485,7 +484,7 @@ export const allArticles: ArticlePageArticle[] = [
     category: "howto", clubId: null,
     title: "How to Find Your IRC Coordinator — Any Campus",
     excerpt: "The official contact list is always outdated. Here's the reliable way to find the right person at any NIAT campus.",
-    updatedDays: 25, helpful: 36,
+    updatedDays: 25, upvoteCount: 36,
     coverImage: "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=800&q=80"
   },
 
@@ -495,7 +494,7 @@ export const allArticles: ArticlePageArticle[] = [
     category: "howto", clubId: 1,
     title: "How to Start Competitive Programming — CodeCraft's Beginner Roadmap",
     excerpt: "The exact roadmap CodeCraft gives every new member. Week 1 to Week 12, all resources included.",
-    updatedDays: 8, helpful: 44, featured: false,
+    updatedDays: 8, upvoteCount: 44, featured: false,
     coverImage: "https://images.unsplash.com/photo-1521737711867-e3b97375f902?w=800&q=80"
   },
   {
@@ -503,7 +502,7 @@ export const allArticles: ArticlePageArticle[] = [
     category: "howto", clubId: 1,
     title: "Getting Your First Open Source Contribution — From CodeCraft's Workshop",
     excerpt: "Step-by-step from finding a repo to your first merged PR. Notes from October workshop.",
-    updatedDays: 22, helpful: 31, featured: false,
+    updatedDays: 22, upvoteCount: 31, featured: false,
     coverImage: "https://images.unsplash.com/photo-1511818966892-d7d671e672a2?w=800&q=80"
   },
   {
@@ -511,7 +510,7 @@ export const allArticles: ArticlePageArticle[] = [
     category: "experiences", clubId: 1,
     title: "How Winning the Inter-College Hackathon Changed Our Team",
     excerpt: "A recap of the hackathon we won in 2024. What we built, how we prepared, what broke at 3am.",
-    updatedDays: 30, helpful: 38, featured: false,
+    updatedDays: 30, upvoteCount: 38, featured: false,
     coverImage: "https://images.unsplash.com/photo-1501504905252-473c47e087f8?w=800&q=80"
   },
   {
@@ -519,7 +518,7 @@ export const allArticles: ArticlePageArticle[] = [
     category: "experiences", clubId: 3,
     title: "How Kaggle Competitions Helped Me Get My Internship",
     excerpt: "Joined AI & ML Circle in semester 1. By semester 3 I had 2 Kaggle medals and an internship offer.",
-    updatedDays: 15, helpful: 58, featured: true,
+    updatedDays: 15, upvoteCount: 58, featured: true,
     coverImage: "https://images.unsplash.com/photo-1517430816045-df4b7de11d1d?w=800&q=80"
   },
   {
@@ -527,7 +526,7 @@ export const allArticles: ArticlePageArticle[] = [
     category: "howto", clubId: 3,
     title: "The AI/ML Circle Weekly Session Format — How We Run It",
     excerpt: "One paper, one project, one presentation per week. The exact format and how to join mid-semester.",
-    updatedDays: 10, helpful: 27, featured: false,
+    updatedDays: 10, upvoteCount: 27, featured: false,
     coverImage: "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=800&q=80"
   },
   {
@@ -535,7 +534,7 @@ export const allArticles: ArticlePageArticle[] = [
     category: "campus-life", clubId: 2,
     title: "Spectrum Fest 2024 — Behind the Scenes",
     excerpt: "Event recap: 6 weeks of rehearsals, 400 attendees, and what actually happened backstage.",
-    updatedDays: 45, helpful: 19, featured: false,
+    updatedDays: 45, upvoteCount: 19, featured: false,
     coverImage: "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=800&q=80"
   },
   {
@@ -543,7 +542,7 @@ export const allArticles: ArticlePageArticle[] = [
     category: "campus-life", clubId: 2,
     title: "What Performing at Spectrum Fest Actually Looks Like",
     excerpt: "Auditions, rehearsal schedule, and why it's worth doing even if you're not a 'cultural person'.",
-    updatedDays: 60, helpful: 14, featured: false,
+    updatedDays: 60, upvoteCount: 14, featured: false,
     coverImage: "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=800&q=80"
   },
   {
@@ -551,7 +550,7 @@ export const allArticles: ArticlePageArticle[] = [
     category: "howto", clubId: 6,
     title: "Aurora Dev Club's Full Stack Learning Path — 16 Weeks",
     excerpt: "The exact curriculum followed each semester. React, Node, PostgreSQL, deployment. All free resources.",
-    updatedDays: 6, helpful: 52, featured: true,
+    updatedDays: 6, upvoteCount: 52, featured: true,
     coverImage: "https://images.unsplash.com/photo-1521737711867-e3b97375f902?w=800&q=80"
   },
   {
@@ -559,7 +558,7 @@ export const allArticles: ArticlePageArticle[] = [
     category: "campus-life", clubId: 6,
     title: "How Aurora Dev Club Shipped 3 Open Source Tools in One Year",
     excerpt: "Project retrospective. What we built, who contributed, what we'd do differently.",
-    updatedDays: 18, helpful: 33, featured: false,
+    updatedDays: 18, upvoteCount: 33, featured: false,
     coverImage: "https://images.unsplash.com/photo-1511818966892-d7d671e672a2?w=800&q=80"
   },
 
@@ -569,7 +568,7 @@ export const allArticles: ArticlePageArticle[] = [
     category: "howto", clubId: null,
     title: "How to Register for Google Summer of Code (GSoC)?",
     excerpt: "Step-by-step guide: eligibility, finding orgs, proposal tips, and what NIAT students who got selected did differently.",
-    updatedDays: 12, helpful: 287, featured: true, isGlobalGuide: true, topic: "GSoC",
+    updatedDays: 12, upvoteCount: 287, featured: true, isGlobalGuide: true, topic: "GSoC",
     coverImage: "https://images.unsplash.com/photo-1542831371-29b0f74f9713?w=800&q=80"
   },
   {
@@ -577,15 +576,15 @@ export const allArticles: ArticlePageArticle[] = [
     category: "howto", clubId: null,
     title: "How to Land a 10 LPA Placement from NIAT?",
     excerpt: "Real strategies from students who cracked 10+ LPA offers. Skills, timeline, campus vs off-campus, and what actually moved the needle.",
-    updatedDays: 8, helpful: 256, featured: true, isGlobalGuide: true, topic: "Placements",
-    coverImage: "https://images.unsplash.com/photo-1573164713619-24f4efb36d8d?w=800&q=80"
+    updatedDays: 8, upvoteCount: 256, featured: true, isGlobalGuide: true, topic: "Placements",
+    coverImage: "https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=800&q=80"
   },
   {
     id: 25, campusId: null, campusName: "Global",
     category: "howto", clubId: null,
     title: "How to Start Contributing to Open Source as a Student?",
     excerpt: "From zero to first merged PR. Picking projects, good first issues, and how to balance with college workload.",
-    updatedDays: 20, helpful: 198, featured: false, isGlobalGuide: true, topic: "Open Source",
+    updatedDays: 20, upvoteCount: 198, featured: false, isGlobalGuide: true, topic: "Open Source",
     coverImage: "https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=800&q=80"
   },
   {
@@ -593,7 +592,7 @@ export const allArticles: ArticlePageArticle[] = [
     category: "howto", clubId: null,
     title: "How to Crack Competitive Programming from Scratch?",
     excerpt: "Roadmap, platforms, and the exact practice schedule that helped NIAT students reach CodeChef 3-star and beyond.",
-    updatedDays: 15, helpful: 224, featured: false, isGlobalGuide: true, topic: "Competitive Programming",
+    updatedDays: 15, upvoteCount: 224, featured: false, isGlobalGuide: true, topic: "Competitive Programming",
     coverImage: "https://images.unsplash.com/photo-1504639725590-34d0984388bd?w=800&q=80"
   },
   {
@@ -601,15 +600,15 @@ export const allArticles: ArticlePageArticle[] = [
     category: "howto", clubId: null,
     title: "How to Apply for International Internships?",
     excerpt: "Visa, funding, where to look, and how students from Indian campuses landed roles in the US, EU, and Singapore.",
-    updatedDays: 22, helpful: 172, featured: false, isGlobalGuide: true, topic: "Internships",
-    coverImage: "https://images.unsplash.com/photo-1552581234-261540e5ed11?w=800&q=80"
+    updatedDays: 22, upvoteCount: 172, featured: false, isGlobalGuide: true, topic: "Internships",
+    coverImage: "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=800&q=80"
   },
   {
     id: 28, campusId: null, campusName: "Global",
     category: "howto", clubId: null,
     title: "How to Build a Resume That Gets Shortlisted?",
     excerpt: "Sections that matter, ATS-friendly format, and what NIAT students who got 10+ shortlists did differently.",
-    updatedDays: 10, helpful: 189, featured: false, isGlobalGuide: true, topic: "Skills",
+    updatedDays: 10, upvoteCount: 189, featured: false, isGlobalGuide: true, topic: "Skills",
     coverImage: "https://images.unsplash.com/photo-1586281380117-5a60ae2050cc?w=800&q=80"
   },
 
@@ -619,7 +618,7 @@ export const allArticles: ArticlePageArticle[] = [
     category: "experiences", clubId: null,
     title: "I Broke My Code 10 Times. Then It Finally Worked.",
     excerpt: "Nobody told me that breaking things is actually how you learn to build them.",
-    updatedDays: 5, helpful: 92, featured: true,
+    updatedDays: 5, upvoteCount: 92, featured: true,
     coverImage: "https://images.unsplash.com/photo-1587620962725-abab7fe55159?w=800&q=80"
   },
   {
@@ -627,7 +626,7 @@ export const allArticles: ArticlePageArticle[] = [
     category: "experiences", clubId: null,
     title: "We Had Zero Clients. We Sent 30 DMs. One Said Yes.",
     excerpt: "Starting something with no experience, no portfolio, and no clue — and doing it anyway.",
-    updatedDays: 12, helpful: 88, featured: true,
+    updatedDays: 12, upvoteCount: 88, featured: true,
     coverImage: "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=800&q=80"
   },
 
@@ -637,7 +636,7 @@ export const allArticles: ArticlePageArticle[] = [
     category: "campus-life", clubId: null,
     title: "Your First 30 Days at NIAT — What to Do Week by Week",
     excerpt: "A practical week-by-week guide: registration, IRC intro, accommodation, clubs, and how to feel at home by day 30.",
-    updatedDays: 4, helpful: 56, featured: true,
+    updatedDays: 4, upvoteCount: 56, featured: true,
     coverImage: "https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=800&q=80"
   },
   {
@@ -645,7 +644,7 @@ export const allArticles: ArticlePageArticle[] = [
     category: "campus-life", clubId: null,
     title: "30 Days at St. Mary's: Registration, Lab Access, and Finding Your Feet",
     excerpt: "What I did in my first month — admin queue hacks, meeting my IRC mentor, and the one thing I wish I'd known earlier.",
-    updatedDays: 10, helpful: 44, featured: false,
+    updatedDays: 10, upvoteCount: 44, featured: false,
     coverImage: "https://images.unsplash.com/photo-1511818966892-d7d671e672a2?w=800&q=80"
   },
 
@@ -655,7 +654,7 @@ export const allArticles: ArticlePageArticle[] = [
     category: "howto", clubId: 1,
     title: "CodeCraft's Weekly Practice Schedule — How to Stay Consistent",
     excerpt: "How the club runs weekly contests and mock interviews. The calendar that actually works for busy semesters.",
-    updatedDays: 7, helpful: 39, featured: false,
+    updatedDays: 7, upvoteCount: 39, featured: false,
     coverImage: "https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=800&q=80"
   },
   {
@@ -663,7 +662,7 @@ export const allArticles: ArticlePageArticle[] = [
     category: "campus-life", clubId: 2,
     title: "How to Prepare for Spectrum Fest Auditions — From Someone Who Got In",
     excerpt: "What the judges look for, which slots fill first, and how to pick a piece that stands out without overreaching.",
-    updatedDays: 14, helpful: 28, featured: false,
+    updatedDays: 14, upvoteCount: 28, featured: false,
     coverImage: "https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?w=800&q=80"
   },
 
@@ -673,7 +672,7 @@ export const allArticles: ArticlePageArticle[] = [
     category: "campus-life", clubId: null,
     title: "Best Food Spots Near St. Mary's — Mess, Cafes, and Late-Night Options",
     excerpt: "From the campus canteen to biryani under ₹100. Where to eat when you're broke, in a rush, or celebrating.",
-    updatedDays: 6, helpful: 62, featured: true,
+    updatedDays: 6, upvoteCount: 62, featured: true,
     coverImage: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=800&q=80",
     campusSection: "food"
   },
@@ -682,8 +681,8 @@ export const allArticles: ArticlePageArticle[] = [
     category: "campus-life", clubId: null,
     title: "Where to Eat on a Student Budget — Under ₹50 a Meal",
     excerpt: "Chai, samosa, and full meals that won't break the bank. Verified by 2nd year students who've been there.",
-    updatedDays: 11, helpful: 48, featured: false,
-    coverImage: "https://images.unsplash.com/photo-1589302168068-964664d93cb0?w=800&q=80",
+    updatedDays: 11, upvoteCount: 48, featured: false,
+    coverImage: "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=800&q=80&fit=crop",
     campusSection: "food"
   },
 
@@ -693,7 +692,7 @@ export const allArticles: ArticlePageArticle[] = [
     category: "campus-life", clubId: null,
     title: "Hostel vs PG Near St. Mary's — Honest Comparison 2025",
     excerpt: "Costs, food, WiFi, curfew, and what seniors actually recommend. Plus which hostels have the best IRC crowd.",
-    updatedDays: 8, helpful: 55, featured: true,
+    updatedDays: 8, upvoteCount: 55, featured: true,
     coverImage: "https://images.unsplash.com/photo-1555854877-bab0e564b8d5?w=800&q=80",
     campusSection: "living"
   },
@@ -702,7 +701,7 @@ export const allArticles: ArticlePageArticle[] = [
     category: "campus-life", clubId: null,
     title: "Finding a PG in Your First Week — What Worked for Me",
     excerpt: "I had no local contacts. Here's how I shortlisted 5 PGs, checked safety, and moved in within 6 days.",
-    updatedDays: 15, helpful: 41, featured: false,
+    updatedDays: 15, upvoteCount: 41, featured: false,
     coverImage: "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=800&q=80",
     campusSection: "living"
   },
@@ -713,7 +712,7 @@ export const allArticles: ArticlePageArticle[] = [
     category: "campus-life", clubId: null,
     title: "Your first month at NIAT — Week 1",
     excerpt: "Register, get your ID and lab access, meet your IRC coordinator, and attend orientation. Find accommodation and join the batch WhatsApp group.",
-    updatedDays: 3, helpful: 72, featured: true,
+    updatedDays: 3, upvoteCount: 72, featured: true,
     coverImage: "https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=800&q=80",
     campusSection: "30days"
   },
@@ -722,7 +721,7 @@ export const allArticles: ArticlePageArticle[] = [
     category: "campus-life", clubId: null,
     title: "Your first month at NIAT — Week 2",
     excerpt: "Settle into a routine: lab slots, first mentor meeting, and exploring food spots. Start shortlisting IRC project ideas and check out campus clubs.",
-    updatedDays: 3, helpful: 68, featured: true,
+    updatedDays: 3, upvoteCount: 68, featured: true,
     coverImage: "https://images.unsplash.com/photo-1511818966892-d7d671e672a2?w=800&q=80",
     campusSection: "30days"
   },
@@ -731,7 +730,7 @@ export const allArticles: ArticlePageArticle[] = [
     category: "campus-life", clubId: null,
     title: "Your first month at NIAT — Week 3–4",
     excerpt: "Lock your IRC topic with your mentor, join at least one club, and connect with seniors. By day 30 you should feel part of the campus.",
-    updatedDays: 3, helpful: 65, featured: true,
+    updatedDays: 3, upvoteCount: 65, featured: true,
     coverImage: "https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?w=800&q=80",
     campusSection: "30days"
   },
@@ -742,7 +741,7 @@ export const allArticles: ArticlePageArticle[] = [
     category: "experiences", clubId: null,
     title: "I Broke My Code 10 Times. Then It Finally Worked.",
     excerpt: "Nobody told me that breaking things is actually how you learn to build them.",
-    updatedDays: 5, helpful: 92, featured: true,
+    updatedDays: 5, upvoteCount: 92, featured: true,
     coverImage: "https://images.unsplash.com/photo-1587620962725-abab7fe55159?w=800&q=80"
   },
   {
@@ -750,7 +749,7 @@ export const allArticles: ArticlePageArticle[] = [
     category: "experiences", clubId: null,
     title: "We Had Zero Clients. We Sent 30 DMs. One Said Yes.",
     excerpt: "Starting something with no experience, no portfolio, and no clue — and doing it anyway.",
-    updatedDays: 12, helpful: 88, featured: true,
+    updatedDays: 12, upvoteCount: 88, featured: true,
     coverImage: "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=800&q=80"
   },
   {
@@ -758,7 +757,7 @@ export const allArticles: ArticlePageArticle[] = [
     category: "campus-life", clubId: null,
     title: "Best Food Spots — Mess, Cafes, and Late-Night Options",
     excerpt: "From the campus canteen to biryani under ₹100. Where to eat when you're broke, in a rush, or celebrating.",
-    updatedDays: 6, helpful: 62, featured: true,
+    updatedDays: 6, upvoteCount: 62, featured: true,
     coverImage: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=800&q=80",
     campusSection: "food"
   },
@@ -767,8 +766,8 @@ export const allArticles: ArticlePageArticle[] = [
     category: "campus-life", clubId: null,
     title: "Where to Eat on a Student Budget — Under ₹50 a Meal",
     excerpt: "Chai, samosa, and full meals that won't break the bank. Verified by 2nd year students who've been there.",
-    updatedDays: 11, helpful: 48, featured: false,
-    coverImage: "https://images.unsplash.com/photo-1589302168068-964664d93cb0?w=800&q=80",
+    updatedDays: 11, upvoteCount: 48, featured: false,
+    coverImage: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=800&q=80",
     campusSection: "food"
   },
   {
@@ -776,7 +775,7 @@ export const allArticles: ArticlePageArticle[] = [
     category: "campus-life", clubId: null,
     title: "Hostel vs PG — Honest Comparison 2025",
     excerpt: "Costs, food, WiFi, curfew, and what seniors actually recommend. Plus which hostels have the best IRC crowd.",
-    updatedDays: 8, helpful: 55, featured: true,
+    updatedDays: 8, upvoteCount: 55, featured: true,
     coverImage: "https://images.unsplash.com/photo-1555854877-bab0e564b8d5?w=800&q=80",
     campusSection: "living"
   },
@@ -785,7 +784,7 @@ export const allArticles: ArticlePageArticle[] = [
     category: "campus-life", clubId: null,
     title: "Finding a PG in Your First Week — What Worked for Me",
     excerpt: "I had no local contacts. Here's how I shortlisted 5 PGs, checked safety, and moved in within 6 days.",
-    updatedDays: 15, helpful: 41, featured: false,
+    updatedDays: 15, upvoteCount: 41, featured: false,
     coverImage: "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=800&q=80",
     campusSection: "living"
   },
@@ -800,16 +799,16 @@ export const allArticles: ArticlePageArticle[] = [
       { id: 6, name: "RNS Bangalore" },
     ];
     const topVotedTemplates: Omit<ArticlePageArticle, 'id' | 'campusId' | 'campusName'>[] = [
-      { category: "experiences", clubId: null, title: "I Broke My Code 10 Times. Then It Finally Worked.", excerpt: "Nobody told me that breaking things is actually how you learn to build them.", updatedDays: 5, helpful: 92, featured: true, coverImage: "https://images.unsplash.com/photo-1587620962725-abab7fe55159?w=800&q=80" },
-      { category: "experiences", clubId: null, title: "We Had Zero Clients. We Sent 30 DMs. One Said Yes.", excerpt: "Starting something with no experience, no portfolio, and no clue — and doing it anyway.", updatedDays: 12, helpful: 88, featured: true, coverImage: "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=800&q=80" },
+      { category: "experiences", clubId: null, title: "I Broke My Code 10 Times. Then It Finally Worked.", excerpt: "Nobody told me that breaking things is actually how you learn to build them.", updatedDays: 5, upvoteCount: 92, featured: true, coverImage: "https://images.unsplash.com/photo-1587620962725-abab7fe55159?w=800&q=80" },
+      { category: "experiences", clubId: null, title: "We Had Zero Clients. We Sent 30 DMs. One Said Yes.", excerpt: "Starting something with no experience, no portfolio, and no clue — and doing it anyway.", updatedDays: 12, upvoteCount: 88, featured: true, coverImage: "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=800&q=80" },
     ];
     const foodTemplates: Omit<ArticlePageArticle, 'id' | 'campusId' | 'campusName'>[] = [
-      { category: "campus-life", clubId: null, title: "Best Food Spots — Mess, Cafes, and Late-Night Options", excerpt: "From the campus canteen to biryani under ₹100. Where to eat when you're broke, in a rush, or celebrating.", updatedDays: 6, helpful: 62, featured: true, coverImage: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=800&q=80", campusSection: "food" },
-      { category: "campus-life", clubId: null, title: "Where to Eat on a Student Budget — Under ₹50 a Meal", excerpt: "Chai, samosa, and full meals that won't break the bank. Verified by 2nd year students who've been there.", updatedDays: 11, helpful: 48, featured: false, coverImage: "https://images.unsplash.com/photo-1589302168068-964664d93cb0?w=800&q=80", campusSection: "food" },
+      { category: "campus-life", clubId: null, title: "Best Food Spots — Mess, Cafes, and Late-Night Options", excerpt: "From the campus canteen to biryani under ₹100. Where to eat when you're broke, in a rush, or celebrating.", updatedDays: 6, upvoteCount: 62, featured: true, coverImage: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=800&q=80", campusSection: "food" },
+      { category: "campus-life", clubId: null, title: "Where to Eat on a Student Budget — Under ₹50 a Meal", excerpt: "Chai, samosa, and full meals that won't break the bank. Verified by 2nd year students who've been there.", updatedDays: 11, upvoteCount: 48, featured: false, coverImage: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=800&q=80", campusSection: "food" },
     ];
     const livingTemplates: Omit<ArticlePageArticle, 'id' | 'campusId' | 'campusName'>[] = [
-      { category: "campus-life", clubId: null, title: "Hostel vs PG — Honest Comparison 2025", excerpt: "Costs, food, WiFi, curfew, and what seniors actually recommend. Plus which hostels have the best IRC crowd.", updatedDays: 8, helpful: 55, featured: true, coverImage: "https://images.unsplash.com/photo-1555854877-bab0e564b8d5?w=800&q=80", campusSection: "living" },
-      { category: "campus-life", clubId: null, title: "Finding a PG in Your First Week — What Worked for Me", excerpt: "I had no local contacts. Here's how I shortlisted 5 PGs, checked safety, and moved in within 6 days.", updatedDays: 15, helpful: 41, featured: false, coverImage: "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=800&q=80", campusSection: "living" },
+      { category: "campus-life", clubId: null, title: "Hostel vs PG — Honest Comparison 2025", excerpt: "Costs, food, WiFi, curfew, and what seniors actually recommend. Plus which hostels have the best IRC crowd.", updatedDays: 8, upvoteCount: 55, featured: true, coverImage: "https://images.unsplash.com/photo-1555854877-bab0e564b8d5?w=800&q=80", campusSection: "living" },
+      { category: "campus-life", clubId: null, title: "Finding a PG in Your First Week — What Worked for Me", excerpt: "I had no local contacts. Here's how I shortlisted 5 PGs, checked safety, and moved in within 6 days.", updatedDays: 15, upvoteCount: 41, featured: false, coverImage: "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=800&q=80", campusSection: "living" },
     ];
     let id = 39;
     const out: ArticlePageArticle[] = [];

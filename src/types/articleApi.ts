@@ -1,5 +1,5 @@
 export type ArticleStatus = 'draft' | 'pending_review' | 'published' | 'rejected';
-export type ArticleCategory = 'irc' | 'campus-life' | 'experiences' | 'academics' | 'howto';
+export type ArticleCategory = 'campus-life' | 'experiences' | 'academics' | 'howto';
 export type GuideTopic =
   | 'Placements'
   | 'Open Source'
@@ -21,7 +21,8 @@ export interface ApiArticle {
   images?: string[];
   status: ArticleStatus;
   featured: boolean;
-  helpful_count: number;
+  upvote_count: number;
+  view_count: number;
   is_global_guide: boolean;
   topic: GuideTopic | '';
   club_id: number | null;
@@ -33,16 +34,26 @@ export interface ApiArticle {
   updated_days: number;
   body?: string;
   rejection_reason?: string;
-  comments_count?: number;
   reviewed_at?: string | null;
   created_at?: string;
 }
 
-export interface ApiComment {
-  id: number;
-  author_username: string;
-  body: string;
-  created_at: string;
+export interface UpvoteStatus {
+  upvote_count: number;
+  upvoted: boolean;
+}
+
+export type SuggestionType =
+  | 'missing_info'
+  | 'outdated_content'
+  | 'wrong_info'
+  | 'add_club_or_facility'
+  | 'other';
+
+export interface SuggestionPayload {
+  type: SuggestionType;
+  content: string;
+  is_anonymous?: boolean;
 }
 
 export interface PaginatedResponse<T> {

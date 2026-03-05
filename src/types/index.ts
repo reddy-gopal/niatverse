@@ -22,7 +22,8 @@ export interface Article {
   excerpt: string;
   author: string;
   updatedDays: number;
-  helpful: number;
+  /** Display as upvote count (replaces former "helpful") */
+  upvoteCount: number;
   coverImage?: string;
 }
 
@@ -49,19 +50,6 @@ export interface FoodSpot {
   lateNight: boolean;
   swiggy: boolean;
   image?: string;
-}
-
-export interface IRCInfo {
-  labName: string;
-  labLocation: string;
-  labTimings: string;
-  closedOn: string;
-  submissionMode: string;
-  coordinatorName: string;
-  coordinatorEmail: string;
-  avgCompletionMonths: string;
-  commonDelays: string;
-  campusTips: string[];
 }
 
 export interface Faculty {
@@ -128,7 +116,6 @@ export interface Ratings {
   hostel: number;
   food: number;
   infrastructure: number;
-  ircSupport: number;
   socialLife: number;
   totalReviews: number;
 }
@@ -154,7 +141,7 @@ export interface StateCount {
   count: number;
 }
 
-export type ArticleCategory = 'irc' | 'campus-life' | 'experiences' | 'academics' | 'howto';
+export type ArticleCategory = 'campus-life' | 'experiences' | 'academics' | 'howto';
 
 export type GuideTopic =
   | 'Placements'
@@ -175,7 +162,7 @@ export interface ArticlePageArticle {
   title: string;
   excerpt: string;
   updatedDays: number;
-  helpful: number;
+  upvoteCount: number;
   featured?: boolean;
   clubId?: number | null;
   coverImage?: string;

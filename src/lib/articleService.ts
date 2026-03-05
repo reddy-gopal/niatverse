@@ -1,11 +1,12 @@
 import { articlesApi } from './articlesApi';
 import type {
   ApiArticle,
-  ApiComment,
   ArticleUpdatePayload,
   ArticleWritePayload,
   ModerationPayload,
   PaginatedResponse,
+  SuggestionPayload,
+  UpvoteStatus,
 } from '../types/articleApi';
 
 export interface ApiCategory {
@@ -39,8 +40,17 @@ export const articleService = {
   detail(id: number) {
     return articlesApi.get<ApiArticle>(`articles/${id}/`);
   },
-  getComments(articleId: number) {
-    return articlesApi.get<ApiComment[]>(`articles/${articleId}/comments/`);
+  getUpvoteStatus(articleId: number) {
+    return articlesApi.get<UpvoteStatus>(`articles/${articleId}/upvote-status/`);
+  },
+  toggleUpvote(articleId: number) {
+    return articlesApi.post<{ upvote_count: number; upvoted: boolean }>(`articles/${articleId}/upvote/`);
+  },
+  submitSuggestion(articleId: number, payload: SuggestionPayload) {
+    return articlesApi.post<{ success: boolean }>(`articles/${articleId}/suggest/`, payload);
+  },
+  incrementView(articleId: number) {
+    return articlesApi.post<{ ok: boolean }>(`articles/${articleId}/view/`);
   },
   /** POST to http://localhost:8000/api/articles/articles/ — creates article with status pending_review when save_as_draft is false */
   create(payload: ArticleWritePayload) {
@@ -51,15 +61,6 @@ export const articleService = {
   },
   delete(id: number) {
     return articlesApi.delete(`articles/${id}/`);
-  },
-  toggleHelpful(id: number) {
-    return articlesApi.post<{ helpful_count: number; marked: boolean }>(`articles/${id}/helpful/`);
-  },
-  addComment(articleId: number, body: string) {
-    return articlesApi.post<ApiComment>(`articles/${articleId}/comments/`, { body });
-  },
-  deleteComment(articleId: number, commentId: number) {
-    return articlesApi.delete(`articles/${articleId}/comments/${commentId}/`);
   },
   myArticles() {
     return articlesApi.get<PaginatedResponse<ApiArticle>>('articles/my_articles/');
