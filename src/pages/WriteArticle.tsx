@@ -455,16 +455,21 @@ export default function WriteArticle() {
       const payload = {
         campus_id: safeCampusId,
         campus_name: campusName,
-        category_id: safeCategoryId ?? undefined,
+        ...(safeCategoryId !== null && { category_id: safeCategoryId }),
         title: title.trim(),
         excerpt: subtitle.trim() || title.trim().slice(0, 200),
         body: bodyHtml || bodyContent,
-        cover_image: coverImage,
+        cover_image: coverImage || '',
         images,
         is_global_guide: false,
         save_as_draft: false,
         ...subcategoryPayload,
       };
+      
+      // Debug logging
+      console.log('[DEBUG] Frontend payload:', payload);
+      console.log('[DEBUG] categoryId:', categoryId, 'safeCategoryId:', safeCategoryId);
+      console.log('[DEBUG] campusId:', campusId, 'safeCampusId:', safeCampusId);
       if (editId) {
         await articleService.update(editId, { ...payload, status: 'pending_review' });
         setSubmittedArticleId(editId);

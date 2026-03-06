@@ -33,49 +33,65 @@ export default function Article() {
   const pageArticle = allArticles.find((a) => a.id === articleIdNum);
   const campus = campusId ? campuses.find((c) => c.id === campusId) || null : null;
 
-  const fromApi = !!apiArticle;
+  // Only fall back to mock data AFTER the DB fetch is complete (not while loading)
+  const fromApi = !loading && !!apiArticle;
 
-  const article = fromApi
+  const article = loading
     ? {
-      title: apiArticle.title,
-      excerpt: apiArticle.excerpt,
-      updatedDays: apiArticle.updated_days,
-      upvoteCount: apiArticle.upvote_count,
-      viewCount: apiArticle.view_count,
-      author: apiArticle.author_username,
-      category: apiArticle.category,
-      campusName: apiArticle.campus_name,
-      coverImage: apiArticle.cover_image || undefined,
-      status: apiArticle.status,
-      rejectionReason: apiArticle.rejection_reason,
-    }
-    : pageArticle
-      ? {
-        title: pageArticle.title,
-        excerpt: pageArticle.excerpt,
-        updatedDays: pageArticle.updatedDays,
-        upvoteCount: pageArticle.upvoteCount ?? 0,
-        viewCount: 0,
-        author: 'NIAT Student',
-        category: pageArticle.category,
-        campusName: pageArticle.campusName,
-        coverImage: pageArticle.coverImage,
-        status: undefined as string | undefined,
-        rejectionReason: undefined as string | undefined,
-      }
-      : {
-        title: 'Article not found',
+        // Placeholder while loading — prevents premature mock data render
+        title: '',
         excerpt: '',
         updatedDays: 0,
         upvoteCount: 0,
         viewCount: 0,
-        author: 'NIAT Student',
-        category: 'academics' as const,
-        campusName: 'Global',
+        author: '',
+        category: 'onboarding-kit' as const,
+        campusName: '',
         coverImage: undefined,
         status: undefined as string | undefined,
         rejectionReason: undefined as string | undefined,
-      };
+      }
+    : fromApi
+      ? {
+          title: apiArticle.title,
+          excerpt: apiArticle.excerpt,
+          updatedDays: apiArticle.updated_days,
+          upvoteCount: apiArticle.upvote_count,
+          viewCount: apiArticle.view_count,
+          author: apiArticle.author_username,
+          category: apiArticle.category,
+          campusName: apiArticle.campus_name,
+          coverImage: apiArticle.cover_image || undefined,
+          status: apiArticle.status,
+          rejectionReason: apiArticle.rejection_reason,
+        }
+      : pageArticle
+        ? {
+            title: pageArticle.title,
+            excerpt: pageArticle.excerpt,
+            updatedDays: pageArticle.updatedDays,
+            upvoteCount: pageArticle.upvoteCount ?? 0,
+            viewCount: 0,
+            author: 'NIAT Student',
+            category: pageArticle.category,
+            campusName: pageArticle.campusName,
+            coverImage: pageArticle.coverImage,
+            status: undefined as string | undefined,
+            rejectionReason: undefined as string | undefined,
+          }
+        : {
+            title: 'Article not found',
+            excerpt: '',
+            updatedDays: 0,
+            upvoteCount: 0,
+            viewCount: 0,
+            author: 'NIAT Student',
+            category: 'academics' as const,
+            campusName: 'Global',
+            coverImage: undefined,
+            status: undefined as string | undefined,
+            rejectionReason: undefined as string | undefined,
+          };
 
   const articleIdForEngagement = fromApi && apiArticle ? apiArticle.id : null;
   const { upvoteCount, upvoted, toggle } = useUpvote(articleIdForEngagement);

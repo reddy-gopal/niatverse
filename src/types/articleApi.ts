@@ -1,5 +1,5 @@
 export type ArticleStatus = 'draft' | 'pending_review' | 'published' | 'rejected';
-export type ArticleCategory = 'campus-life' | 'experiences' | 'academics' | 'howto';
+export type ArticleCategory = 'onboarding-kit' | 'survival-food' | 'club-directory' | 'career-wins' | 'local-travel' | 'amenities';
 export type GuideTopic =
   | 'Placements'
   | 'Open Source'
