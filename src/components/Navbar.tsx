@@ -112,7 +112,7 @@ export default function Navbar({ searchQuery = '', showSearch }: NavbarProps) {
             {/* Logo */}
             <Link to="/" className="flex items-center shrink-0">
               <span className="font-display text-xl sm:text-2xl font-bold text-[#991b1b]">NIAT</span>
-              <span className="font-body text-lg sm:text-xl font-medium text-black ml-1">Verse</span>
+              <span className="font-body text-lg sm:text-xl font-medium text-black ml-1">Insider</span>
             </Link>
 
             <form
