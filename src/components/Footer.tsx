@@ -20,7 +20,7 @@ export default function Footer() {
           <div>
             <div className="flex items-center mb-3">
               <span className="font-display text-2xl font-bold text-white">NIAT</span>
-              <span className="font-body text-xl font-medium text-white/80 ml-1">Verse</span>
+              <span className="font-body text-xl font-medium text-white/80 ml-1">Insider</span>
             </div>
             <p className="text-white/60 text-sm">
               Every NIAT campus. Mapped by students.

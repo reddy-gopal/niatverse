@@ -127,7 +127,7 @@ export default function Register() {
             Register — Founding Editor
           </h1>
           <p className="text-sm text-[#64748b] mb-6">
-            Create an account with your mobile number. You’ll be registered as a Founding Editor on NIATVerse.
+            Create an account with your mobile number. You’ll be registered as a Founding Editor on NIAT Insider.
           </p>
 
           <form onSubmit={handleSubmit} className="space-y-4">

@@ -1,4 +1,4 @@
-// Mock Data for NIATVerse
+// Mock Data for NIAT Insider
 import type { Campus, Article,Club, Ratings, SearchResult, Comment, StateCount, ArticlePageArticle } from '../types';
 
 export const campuses: Campus[] = [
@@ -474,7 +474,7 @@ export const allArticles: ArticlePageArticle[] = [
   {
     id: 12, campusId: null, campusName: "Global",
     category: "howto", clubId: null,
-    title: "How to Write a Good NIATVerse Article",
+    title: "How to Write a Good NIAT Insider Article",
     excerpt: "The difference between an article that gets 2 helpful votes and one that gets 60. Structure, tone, what to include.",
     updatedDays: 15, upvoteCount: 28,
     coverImage: "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=800&q=80"

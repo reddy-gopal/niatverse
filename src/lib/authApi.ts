@@ -138,7 +138,7 @@ export async function loginByPhonePassword(
   return data;
 }
 
-/** Register (NIATVerse: source=niatverse → role founding_editor). */
+/** Register (NIAT Insider: source=niatverse → role founding_editor). */
 export async function registerNiatverse(payload: {
   username: string;
   phone: string;

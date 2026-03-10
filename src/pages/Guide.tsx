@@ -18,9 +18,9 @@ const SECTIONS = [
   {
     id: 'overview',
     icon: BookOpen,
-    title: 'What is NIATVerse?',
+    title: 'What is NIAT Insider?',
     description:
-      'NIATVerse maps every NIAT campus with real information from students: week-one guides, living, food, clubs, experiences, and how-to guides. Use it to find your campus, prepare for joining, or explore others.',
+      'NIAT Insider maps every NIAT campus with real information from students: week-one guides, living, food, clubs, experiences, and how-to guides. Use it to find your campus, prepare for joining, or explore others.',
     links: [
       { label: 'Browse all 22 campuses', to: '/campuses' },
       { label: 'Search campus, topic, or article', to: '/search' },
@@ -64,7 +64,7 @@ const SECTIONS = [
     icon: MessageCircle,
     title: 'NIAT Q&A System',
     description:
-      'A dedicated place where prospective students ask questions and seniors answer. The Q&A site is built and we’re integrating it into NIATVerse soon—you’ll be able to ask and answer from here.',
+      'A dedicated place where prospective students ask questions and seniors answer. The Q&A site is built and we’re integrating it into NIAT Insider soon—you’ll be able to ask and answer from here.',
     links: [
       { label: 'Q&A integration coming soon', to: '#' },
     ],
@@ -96,7 +96,7 @@ export default function Guide() {
             New to NIAT? Start here.
           </h1>
           <p className="text-black/80 text-base md:text-lg">
-            A single guide to the whole NIATVerse app—campuses, experiences, contributing, and the Q&A system.
+            A single guide to the whole NIAT Insider app—campuses, experiences, contributing, and the Q&A system.
           </p>
         </div>
       </section>

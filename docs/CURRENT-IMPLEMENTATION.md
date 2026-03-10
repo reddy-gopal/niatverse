@@ -1,6 +1,6 @@
-# NIATVerse — Current Implementation (Single Doc)
+# NIAT Insider — Current Implementation (Single Doc)
 
-This document describes the **current front-end implementation** of the NIATVerse application. It is intended as a reference for wiring a real-time backend later. **Articles are documented in detail**; other features are summarized.
+This document describes the **current front-end implementation** of the NIAT Insider application. It is intended as a reference for wiring a real-time backend later. **Articles are documented in detail**; other features are summarized.
 
 ---
 

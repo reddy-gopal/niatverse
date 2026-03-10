@@ -46,7 +46,7 @@ export default function Contribute() {
       <section className="bg-section py-12">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h1 className="font-display text-3xl md:text-4xl font-bold text-black mb-3">
-            Contribute to NIATVerse
+            Contribute to NIAT Insider
           </h1>
           <p className="text-black text-lg">
             Share what you know. Help the next student.

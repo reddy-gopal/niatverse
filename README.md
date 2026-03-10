@@ -1,4 +1,4 @@
-# NIATVerse
+# NIAT Insider
 
 A React web app for NIAT (Narayana IIT Academy Trust) students: campus guides, clubs, articles, and community-contributed content.
 

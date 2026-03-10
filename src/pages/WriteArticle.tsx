@@ -612,7 +612,7 @@ export default function WriteArticle() {
           className="flex items-center gap-1.5 text-[#1e293b] hover:opacity-90 transition-opacity shrink-0"
         >
           <span className="font-display text-lg sm:text-xl font-bold text-[#991b1b]">NIAT</span>
-          <span className="font-body text-base sm:text-lg font-medium text-black">Verse</span>
+          <span className="font-body text-base sm:text-lg font-medium text-black">Insider</span>
         </Link>
 
         <div className="flex items-center gap-2 sm:gap-4 flex-wrap">

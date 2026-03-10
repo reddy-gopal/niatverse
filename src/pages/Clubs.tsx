@@ -127,7 +127,7 @@ export default function Clubs() {
                 → Clear filters
               </button>
               <Link to="#" className="text-[#991b1b] hover:underline">
-                → Know a club? Add it to NIATVerse
+                → Know a club? Add it to NIAT Insider
               </Link>
             </div>
           </div>
