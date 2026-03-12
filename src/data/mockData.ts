@@ -4,6 +4,7 @@ import type { Campus, Article,Club, Ratings, SearchResult, Comment, StateCount, 
 export const campuses: Campus[] = [
   {
     id: 1,
+    slug: "st-marys-college",
     name: "St. Mary's College",
     university: "St. Mary's Group of Institutions",
     city: "Hyderabad",
@@ -19,6 +20,7 @@ export const campuses: Campus[] = [
   },
   {
     id: 2,
+    slug: "aurora-engineering-college",
     name: "Aurora Engineering College",
     university: "Aurora Group of Institutions",
     city: "Hyderabad",
@@ -34,6 +36,7 @@ export const campuses: Campus[] = [
   },
   {
     id: 3,
+    slug: "nsrit",
     name: "NSRIT",
     university: "Narasimha Reddy Engineering College",
     city: "Vizag",
@@ -48,6 +51,7 @@ export const campuses: Campus[] = [
   },
   {
     id: 4,
+    slug: "bs-abdur-rahman",
     name: "BS Abdur Rahman",
     university: "B.S. Abdur Rahman Crescent Institute",
     city: "Chennai",
@@ -62,6 +66,7 @@ export const campuses: Campus[] = [
   },
   {
     id: 5,
+    slug: "alard-college",
     name: "Alard College",
     university: "Alard College of Engineering",
     city: "Pune",
@@ -75,6 +80,7 @@ export const campuses: Campus[] = [
   },
   {
     id: 6,
+    slug: "rns-institute-of-technology",
     name: "RNS Institute of Technology",
     university: "RNS Educational Institutions",
     city: "Bangalore",
