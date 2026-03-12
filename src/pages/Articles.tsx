@@ -4,14 +4,12 @@ import { ChevronDown, PenLine } from 'lucide-react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import ImageWithFallback from '../components/ImageWithFallback';
-import { allArticles, campuses } from '../data/mockData';
-import { CATEGORY_CONFIG, CATEGORY_ORDER } from '../data/articleCategories';
+import { useCampuses } from '../hooks/useCampuses';
+import { usePublishedArticles } from '../hooks/useArticles';
+import { CATEGORY_ORDER, backendCategoryToFrontend, getCategoryConfig } from '../data/articleCategories';
 import type { ArticleCategory } from '../types';
 import type { ArticlePageArticle } from '../types';
-
-const campusOnlyArticles = allArticles.filter(
-  (a): a is ArticlePageArticle & { campusId: number } => a.campusId !== null
-);
+import type { ApiArticle } from '../types/articleApi';
 
 const CATEGORY_LINKS = [
   { key: 'campus-life' as const, label: "Campus Life" },
@@ -20,10 +18,10 @@ const CATEGORY_LINKS = [
   { key: 'howto' as const, label: "How-To Guides" },
 ];
 
-function ArticleRow({ article }: { article: ArticlePageArticle }) {
-  const config = CATEGORY_CONFIG[article.category];
+function ArticleRow({ article, getCampusSlug }: { article: ArticlePageArticle; getCampusSlug: (id: number) => string }) {
+  const config = getCategoryConfig(article.category);
   const articleUrl = article.campusId
-    ? `/campus/${article.campusId}/article/${article.id}`
+    ? `/campus/${getCampusSlug(article.campusId)}/article/${article.id}`
     : `/article/${article.id}`;
 
   return (
@@ -69,6 +67,20 @@ function ArticleRow({ article }: { article: ArticlePageArticle }) {
   );
 }
 
+function apiArticleToPageArticle(a: ApiArticle): ArticlePageArticle {
+  return {
+    id: a.id,
+    campusId: a.campus_id,
+    campusName: a.campus_name ?? 'Global',
+    category: a.category as ArticlePageArticle['category'],
+    title: a.title,
+    excerpt: a.excerpt,
+    coverImage: a.cover_image || undefined,
+    updatedDays: a.updated_days,
+    upvoteCount: a.upvote_count,
+  };
+}
+
 export default function Articles() {
   const [searchParams, setSearchParams] = useSearchParams();
   const categoryParam = searchParams.get('category') as ArticleCategory | null;
@@ -77,25 +89,34 @@ export default function Articles() {
 
   const activeCategory = categoryParam && CATEGORY_ORDER.includes(categoryParam) ? categoryParam : null;
   const activeCampusId = campusParam ? parseInt(campusParam, 10) : null;
+  const validCampusId = activeCampusId != null && !isNaN(activeCampusId) ? activeCampusId : undefined;
+
+  const { campuses: apiCampuses } = useCampuses();
+  const { articles: apiArticles, loading: articlesLoading, error: articlesError, isNetworkError } = usePublishedArticles(
+    validCampusId != null ? { campus: validCampusId } : undefined
+  );
 
   const displayArticles = useMemo(() => {
-    let result = campusOnlyArticles;
-    if (activeCategory) result = result.filter((a) => a.category === activeCategory);
-    if (activeCampusId != null && !isNaN(activeCampusId)) result = result.filter((a) => a.campusId === activeCampusId);
+    let result = apiArticles.map(apiArticleToPageArticle);
+    if (activeCategory) result = result.filter((a) => backendCategoryToFrontend(a.category) === activeCategory);
+    if (validCampusId != null) result = result.filter((a) => a.campusId === validCampusId);
     return [...result].sort((a, b) => b.upvoteCount - a.upvoteCount);
-  }, [activeCategory, activeCampusId]);
+  }, [apiArticles, activeCategory, validCampusId]);
 
   const filteredArticles = displayArticles;
   const topArticles = useMemo(
-    () => [...campusOnlyArticles].sort((a, b) => b.upvoteCount - a.upvoteCount).slice(0, 5),
-    []
+    () => [...apiArticles].map(apiArticleToPageArticle).sort((a, b) => b.upvoteCount - a.upvoteCount).slice(0, 5),
+    [apiArticles]
   );
 
   const campusArticleCounts = useMemo(() => {
     const counts = new Map<number, number>();
-    for (const a of campusOnlyArticles) counts.set(a.campusId, (counts.get(a.campusId) || 0) + 1);
+    for (const a of apiArticles) {
+      const cid = a.campus_id;
+      if (cid != null) counts.set(cid, (counts.get(cid) || 0) + 1);
+    }
     return counts;
-  }, []);
+  }, [apiArticles]);
 
   const setCategory = (cat: ArticleCategory | null) => {
     const next = new URLSearchParams(searchParams);
@@ -111,9 +132,10 @@ export default function Articles() {
     setSearchParams(next);
     setCampusDropdownOpen(false);
   };
+  const getCampusSlug = (id: number) => apiCampuses.find((c) => c.id === id)?.slug ?? String(id);
 
   const totalCount = displayArticles.length;
-  const campusCount = campuses.length;
+  const campusCount = apiCampuses.length;
 
   return (
     <div className="min-h-screen bg-white overflow-x-hidden">
@@ -168,7 +190,7 @@ export default function Articles() {
                 className="flex items-center gap-2 px-4 py-2 bg-white border border-[rgba(30,41,59,0.1)] rounded-md text-sm font-medium text-[#1e293b] hover:bg-gray-50"
               >
                 {activeCampusId != null
-                  ? campuses.find((c) => c.id === activeCampusId)?.name ?? 'All Campuses'
+                  ? apiCampuses.find((c) => c.id === activeCampusId)?.name ?? 'All Campuses'
                   : 'All Campuses'}
                 <ChevronDown className="h-4 w-4" />
               </button>
@@ -186,7 +208,7 @@ export default function Articles() {
                     >
                       All Campuses
                     </button>
-                    {campuses.map((c) => (
+                    {apiCampuses.map((c) => (
                       <button
                         key={c.id}
                         onClick={() => setCampus(c.id)}
@@ -209,12 +231,24 @@ export default function Articles() {
           <main className="flex-1 min-w-0">
             <p className="font-dm-sans text-sm text-[#64748b] mb-2">
               {activeCategory
-                ? `Showing ${filteredArticles.length} articles in ${CATEGORY_CONFIG[activeCategory].label}`
+                ? `Showing ${filteredArticles.length} articles in ${getCategoryConfig(activeCategory).label}`
                 : `Showing ${filteredArticles.length} articles`}
             </p>
             <div className="border-b border-[rgba(30,41,59,0.08)] mb-0" />
 
-            {filteredArticles.length === 0 ? (
+            {articlesLoading ? (
+              <div className="py-12 flex items-center justify-center gap-2 text-[#64748b]">
+                <span className="animate-spin rounded-full border-2 border-[#991b1b]/30 border-t-[#991b1b] size-6" aria-hidden />
+                Loading articles…
+              </div>
+            ) : articlesError && !isNetworkError ? (
+              <div className="py-12 text-center">
+                <p className="text-red-600 mb-2">{articlesError}</p>
+                <button type="button" onClick={() => window.location.reload()} className="text-[#991b1b] font-medium hover:underline">
+                  Try again
+                </button>
+              </div>
+            ) : filteredArticles.length === 0 ? (
               <div className="py-12 text-center">
                 <p className="font-dm-sans text-[#64748b] mb-4">
                   No articles found for this filter.
@@ -236,7 +270,7 @@ export default function Articles() {
               <>
                 <div className="divide-y divide-[rgba(30,41,59,0.08)]">
                   {filteredArticles.map((a: ArticlePageArticle) => (
-                    <ArticleRow key={a.id} article={a} />
+                    <ArticleRow key={a.id} article={a} getCampusSlug={getCampusSlug} />
                   ))}
                 </div>
               </>
@@ -252,7 +286,7 @@ export default function Articles() {
                 <ul className="space-y-3">
                   {topArticles.map((a: ArticlePageArticle) => {
                     const url = a.campusId
-                      ? `/campus/${a.campusId}/article/${a.id}`
+                      ? `/campus/${getCampusSlug(a.campusId)}/article/${a.id}`
                       : `/article/${a.id}`;
                     return (
                       <li key={a.id}>
@@ -273,10 +307,10 @@ export default function Articles() {
               <div className="bg-white rounded-lg border border-[rgba(30,41,59,0.1)] p-4 shadow-[0_4px_12px_rgba(30,41,59,0.08)]">
                 <h3 className="font-playfair font-bold text-[#1e293b] mb-3">Browse by Campus</h3>
                 <ul className="space-y-3">
-                  {campuses.map((c) => (
+                  {apiCampuses.map((c) => (
                     <li key={c.id}>
                       <Link
-                        to={`/campus/${c.id}`}
+                        to={`/campus/${c.slug}`}
                         className="block text-sm text-[#1e293b] hover:text-[#991b1b] hover:underline"
                       >
                         {c.name}

@@ -33,10 +33,10 @@ function App() {
         <Route path="/campuses" element={<RequireOnboarding><CampusDirectory /></RequireOnboarding>} />
         <Route path="/articles" element={<RequireOnboarding><Articles /></RequireOnboarding>} />
         <Route path="/how-to-guides" element={<RequireOnboarding><HowToGuides /></RequireOnboarding>} />
-        <Route path="/campus/:id" element={<RequireOnboarding><Campus /></RequireOnboarding>} />
-        <Route path="/campus/:id/clubs" element={<RequireOnboarding><Clubs /></RequireOnboarding>} />
-        <Route path="/campus/:id/clubs/:clubId" element={<RequireOnboarding><ClubDetail /></RequireOnboarding>} />
-        <Route path="/campus/:id/article/:articleId" element={<RequireOnboarding><Article /></RequireOnboarding>} />
+        <Route path="/campus/:slug" element={<RequireOnboarding><Campus /></RequireOnboarding>} />
+        <Route path="/campus/:slug/clubs" element={<RequireOnboarding><Clubs /></RequireOnboarding>} />
+        <Route path="/campus/:slug/clubs/:clubId" element={<RequireOnboarding><ClubDetail /></RequireOnboarding>} />
+        <Route path="/campus/:slug/article/:articleId" element={<RequireOnboarding><Article /></RequireOnboarding>} />
         <Route path="/article/:articleId" element={<RequireOnboarding><Article /></RequireOnboarding>} />
         <Route path="/search" element={<RequireOnboarding><Search /></RequireOnboarding>} />
         <Route path="/contribute" element={<RequireOnboarding><Contribute /></RequireOnboarding>} />

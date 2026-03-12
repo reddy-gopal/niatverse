@@ -119,7 +119,7 @@ export default function Home() {
                   </h2>
                   <p className="text-sm text-black mb-4">{articleCount} articles</p>
                   <Link
-                    to={`/campus/${profile.campus_id}`}
+                    to={campus ? `/campus/${campus.slug}` : '/campuses'}
                     className="inline-flex items-center text-[#991b1b] font-medium hover:underline"
                   >
                     Go to my campus <ChevronRight className="h-4 w-4 ml-1" />

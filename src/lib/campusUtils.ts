@@ -7,6 +7,7 @@ const DEFAULT_COVER = 'https://images.unsplash.com/photo-1562774053-701939374585
 export function apiCampusToCampus(item: CampusListItem): Campus {
   return {
     id: item.id,
+    slug: item.slug,
     name: item.name,
     university: item.shortName ?? item.name,
     city: item.location || '—',

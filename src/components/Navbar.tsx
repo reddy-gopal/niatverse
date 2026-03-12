@@ -3,6 +3,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Search, Menu, X, ChevronRight, PenLine, UserCircle, LogOut } from 'lucide-react';
 import { clearTokens, fetchFoundingEditorProfile, isOnboardingComplete } from '../lib/authApi';
 import { allArticles } from '../data/mockData';
+import { useCampuses } from '../hooks/useCampuses';
 import { CATEGORY_CONFIG } from '../data/articleCategories';
 
 interface NavbarProps {
@@ -29,6 +30,8 @@ export default function Navbar({ searchQuery = '', showSearch }: NavbarProps) {
   const profileDropdownRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
   const location = useLocation();
+  const { campuses: apiCampuses } = useCampuses();
+  const getCampusSlug = (campusId: number) => apiCampuses.find((c) => c.id === campusId)?.slug ?? String(campusId);
 
   useEffect(() => {
     const update = () => {
@@ -238,7 +241,7 @@ export default function Navbar({ searchQuery = '', showSearch }: NavbarProps) {
                                   {recentlyUpdated.map((a) => {
                                     const config = CATEGORY_CONFIG[a.category];
                                     const url = a.campusId
-                                      ? `/campus/${a.campusId}/article/${a.id}`
+                                      ? `/campus/${getCampusSlug(a.campusId)}/article/${a.id}`
                                       : `/article/${a.id}`;
                                     return (
                                       <Link

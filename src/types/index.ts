@@ -1,5 +1,6 @@
 export interface Campus {
   id: number;
+  slug: string;
   name: string;
   university: string;
   city: string;

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
+import { useCampuses } from '../hooks/useCampuses';
 import { fetchMe } from '../lib/authApi';
 import { useMyArticles } from '../hooks/useArticles';
 import type { ArticleStatus } from '../types/articleApi';
@@ -18,6 +19,8 @@ export default function MyArticles() {
   const [allowed, setAllowed] = useState<boolean | null>(null);
   const { articles, loading, error, refetch } = useMyArticles();
   const [expandedId, setExpandedId] = useState<number | null>(null);
+  const { campuses: apiCampuses } = useCampuses();
+  const getCampusSlug = (id: number) => apiCampuses.find((c) => c.id === id)?.slug ?? String(id);
 
   useEffect(() => {
     fetchMe().then((profile) => {
@@ -58,7 +61,7 @@ export default function MyArticles() {
               <li key={a.id} className="p-4 rounded-xl border border-[rgba(30,41,59,0.1)]">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <Link
-                    to={a.campus_id ? `/campus/${a.campus_id}/article/${a.id}` : `/article/${a.id}`}
+                    to={a.campus_id ? `/campus/${getCampusSlug(a.campus_id)}/article/${a.id}` : `/article/${a.id}`}
                     className="font-medium text-[#991b1b] hover:underline"
                   >
                     {a.title}

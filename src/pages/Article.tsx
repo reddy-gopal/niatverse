@@ -1,11 +1,12 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import { ChevronRight, ChevronLeft, Clock, Pencil, Trash2, MoreVertical, ThumbsUp, Eye } from 'lucide-react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import ImageWithFallback from '../components/ImageWithFallback';
 import { ArticleSuggestionForm } from '../components/ArticleSuggestionForm';
-import { campuses, allArticles } from '../data/mockData';
+import { allArticles } from '../data/mockData';
+import { useCampuses } from '../hooks/useCampuses';
 import { CATEGORY_CONFIG } from '../data/articleCategories';
 import { useArticleDetail } from '../hooks/useArticles';
 import { useUpvote } from '../hooks/useUpvote';
@@ -24,14 +25,19 @@ function stripImageCardsFromHtml(html: string): string {
 }
 
 export default function Article() {
-  const { id, articleId } = useParams<{ id?: string; articleId: string }>();
-  const isGlobalRoute = !id;
-  const campusId = id ? parseInt(id, 10) : null;
+  const { slug: campusSlug, articleId } = useParams<{ slug?: string; articleId: string }>();
+  const isGlobalRoute = !campusSlug;
   const articleIdNum = parseInt(articleId || '0', 10);
+
+  const { campuses: apiCampuses } = useCampuses();
+  const campus = useMemo(() => {
+    if (!campusSlug || !apiCampuses.length) return null;
+    const item = apiCampuses.find((c) => c.slug === campusSlug);
+    return item ?? null;
+  }, [apiCampuses, campusSlug]);
 
   const { article: apiArticle, loading } = useArticleDetail(articleIdNum > 0 ? articleIdNum : null);
   const pageArticle = allArticles.find((a) => a.id === articleIdNum);
-  const campus = campusId ? campuses.find((c) => c.id === campusId) || null : null;
 
   // Only fall back to mock data AFTER the DB fetch is complete (not while loading)
   const fromApi = !loading && !!apiArticle;
@@ -157,7 +163,7 @@ export default function Article() {
       .delete(apiArticle.id)
       .then(() => {
         setDeleteConfirmOpen(false);
-        navigate(isGlobalRoute ? '/articles' : `/campus/${campusId}`);
+        navigate(isGlobalRoute ? '/articles' : `/campus/${campusSlug ?? ''}`);
       })
       .finally(() => setDeleteLoading(false));
   };
@@ -192,7 +198,7 @@ export default function Article() {
             )
           ) : (
             <>
-              <Link to={`/campus/${campusId}`} className="hover:text-[#991b1b]">
+              <Link to={`/campus/${campusSlug ?? ''}`} className="hover:text-[#991b1b]">
                 {campus?.name ?? 'Campus'}
               </Link>
               <ChevronRight className="h-4 w-4 mx-1" />
@@ -353,8 +359,22 @@ export default function Article() {
 
         {!loading && (
           <>
-        {/* Meta Row */}
-        <div className="flex flex-wrap items-center gap-4 text-sm text-black mb-6 pb-6 border-b border-[rgba(30,41,59,0.1)]">
+        {/* Article Body — API body or excerpt */}
+        {fromApi && apiArticle?.body ? (
+          <div className="article-body-read-only">
+            <article
+              className="prose prose-lg max-w-none mb-8"
+              dangerouslySetInnerHTML={{ __html: stripImageCardsFromHtml(apiArticle.body) }}
+            />
+          </div>
+        ) : (
+          <article className="prose prose-lg max-w-none mb-8">
+            <p className="text-black leading-relaxed">{article.excerpt}</p>
+          </article>
+        )}
+
+        {/* Meta Row — below body */}
+        <div className="flex flex-wrap items-center gap-4 text-sm text-black mb-6 pb-6 border-t border-[rgba(30,41,59,0.1)] pt-6">
           <span>Written by {article.author}</span>
           <span className="flex items-center">
             <Clock className="h-4 w-4 mr-1" />
@@ -370,7 +390,7 @@ export default function Article() {
           </span>
         </div>
 
-        {/* Upvote + Suggest (API articles only) */}
+        {/* Upvote + Suggest (API articles only) — below body */}
         {fromApi && articleIdForEngagement != null && (
           <div className="flex flex-wrap items-center gap-3 mb-8">
             {currentUsername != null && (
@@ -394,20 +414,6 @@ export default function Article() {
               />
             )}
           </div>
-        )}
-
-        {/* Article Body — API body or excerpt */}
-        {fromApi && apiArticle?.body ? (
-          <div className="article-body-read-only">
-            <article
-              className="prose prose-lg max-w-none mb-8"
-              dangerouslySetInnerHTML={{ __html: stripImageCardsFromHtml(apiArticle.body) }}
-            />
-          </div>
-        ) : (
-          <article className="prose prose-lg max-w-none mb-8">
-            <p className="text-black leading-relaxed">{article.excerpt}</p>
-          </article>
         )}
 
         {/* Delete confirmation modal */}

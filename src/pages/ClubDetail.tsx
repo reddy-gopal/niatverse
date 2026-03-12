@@ -1,9 +1,12 @@
+import { useMemo } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { Mail, ChevronRight } from 'lucide-react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import ImageWithFallback from '../components/ImageWithFallback';
-import { campuses, clubs as allClubs, allArticles } from '../data/mockData';
+import { clubs as allClubs, allArticles } from '../data/mockData';
+import { useCampuses } from '../hooks/useCampuses';
+import { apiCampusToCampus } from '../lib/campusUtils';
 import { CLUB_TYPE_BADGE_STYLES } from '../constants/clubBadges';
 import type { ArticlePageArticle } from '../types';
 
@@ -37,10 +40,16 @@ function categoryLabel(category: ArticlePageArticle['category']): string {
 }
 
 export default function ClubDetail() {
-  const { id, clubId: clubIdParam } = useParams<{ id: string; clubId: string }>();
-  const campusId = parseInt(id || '1');
-  const clubId = parseInt(clubIdParam || '0');
-  const campus = campuses.find((c) => c.id === campusId) || campuses[0];
+  const { slug: campusSlug, clubId: clubIdParam } = useParams<{ slug: string; clubId: string }>();
+  const clubId = parseInt(clubIdParam || '0', 10);
+  const { campuses: apiCampuses } = useCampuses();
+  const campus = useMemo(() => {
+    if (!campusSlug || !apiCampuses.length) return null;
+    const item = apiCampuses.find((c) => c.slug === campusSlug);
+    return item ? apiCampusToCampus(item) : null;
+  }, [apiCampuses, campusSlug]);
+  const campusId = campus?.id ?? 0;
+  const displayCampus = campus ?? { id: 0, slug: '', name: 'Campus', university: '', city: '—', state: '—', niatSince: new Date().getFullYear(), batchSize: 0, articleCount: 0, rating: null, coverColor: '#991b1b', coverImage: '' };
   const club = allClubs.find((c) => c.id === clubId && (c.campusId === campusId || c.campusId === null));
 
   const clubArticles = club ? getClubArticles(club.id, campusId) : [];
@@ -56,8 +65,8 @@ export default function ClubDetail() {
         <Navbar />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 text-center">
           <p className="text-[#1e293b] mb-4">Club not found.</p>
-          <Link to={`/campus/${campusId}/clubs`} className="text-[#991b1b] hover:underline">
-            ← Back to {campus.name} clubs
+          <Link to={`/campus/${campusSlug ?? ''}/clubs`} className="text-[#991b1b] hover:underline">
+            ← Back to {displayCampus.name} clubs
           </Link>
         </div>
         <Footer />
@@ -90,9 +99,9 @@ export default function ClubDetail() {
             <ChevronRight className="h-4 w-4 mx-2 opacity-70" />
             <Link to="/campuses" className="hover:text-white">Campuses</Link>
             <ChevronRight className="h-4 w-4 mx-2 opacity-70" />
-            <Link to={`/campus/${campusId}`} className="hover:text-white">{campus.name}</Link>
+            <Link to={`/campus/${campusSlug ?? ''}`} className="hover:text-white">{displayCampus.name}</Link>
             <ChevronRight className="h-4 w-4 mx-2 opacity-70" />
-            <Link to={`/campus/${campusId}/clubs`} className="hover:text-white">Clubs</Link>
+            <Link to={`/campus/${campusSlug ?? ''}/clubs`} className="hover:text-white">Clubs</Link>
             <ChevronRight className="h-4 w-4 mx-2 opacity-70" />
             <span className="text-white">{club.name}</span>
           </nav>
@@ -206,11 +215,11 @@ export default function ClubDetail() {
         </div>
 
         <Link
-          to={`/campus/${campusId}/clubs`}
+          to={`/campus/${campusSlug ?? ''}/clubs`}
           className="inline-block mt-6 text-[#991b1b] hover:underline"
           style={{ fontFamily: 'DM Sans, sans-serif' }}
         >
-          ← Back to all {campus.name} clubs
+          ← Back to all {displayCampus.name} clubs
         </Link>
 
         {/* Articles related to this club — section below club summary */}
@@ -228,7 +237,7 @@ export default function ClubDetail() {
                 return (
                   <Link
                     key={article.id}
-                    to={`/campus/${campusId}/article/${article.id}`}
+                    to={`/campus/${campusSlug ?? ''}/article/${article.id}`}
                     className="block p-4 rounded-xl border border-[rgba(30,41,59,0.08)] hover:bg-[#fbf2f3] hover:border-[rgba(153,27,27,0.2)] transition-colors"
                   >
                     <div className="flex flex-wrap gap-2 mb-2">

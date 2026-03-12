@@ -5,13 +5,14 @@ import ImageWithFallback from './ImageWithFallback';
 
 interface ArticleCardProps {
   article: Article;
-  campusId: number;
+  /** Campus slug for URL (e.g. niat-amet-university). */
+  campusSlug: string;
 }
 
-export default function ArticleCard({ article, campusId }: ArticleCardProps) {
+export default function ArticleCard({ article, campusSlug }: ArticleCardProps) {
   return (
     <Link
-      to={`/campus/${campusId}/article/${article.id}`}
+      to={`/campus/${campusSlug}/article/${article.id}`}
       className="block bg-white rounded-xl shadow-card hover:border-[#991b1b] transition-all duration-200 overflow-hidden border-l-4 border-transparent"
     >
       {article.coverImage && (

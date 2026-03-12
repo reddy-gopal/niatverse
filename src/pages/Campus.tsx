@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useMemo } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import {
   Star, MapPin, Users, FileText, Clock, ChevronRight,
-  Calendar, MessageSquare, Award, Utensils, Home, Play, Info
+  Calendar, MessageSquare, Award, Utensils, Home, Play, Info, PenLine, Sparkles
 } from 'lucide-react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
@@ -10,34 +10,37 @@ import ImageWithFallback from '../components/ImageWithFallback';
 import { ratings, clubs, allArticles } from '../data/mockData';
 import { CLUB_TYPE_BADGE_STYLES } from '../constants/clubBadges';
 import { useCampuses } from '../hooks/useCampuses';
+import { usePublishedArticles } from '../hooks/useArticles';
 import { apiCampusToCampus } from '../lib/campusUtils';
 import { articleService } from '../lib/articleService';
 import type { Campus } from '../types';
 
 export default function Campus() {
-  const { id } = useParams<{ id: string }>();
-  const campusId = parseInt(id || '0', 10);
+  const { slug: campusSlug } = useParams<{ slug: string }>();
   const { campuses: apiCampuses, isLoading: campusesLoading } = useCampuses();
   const [articleCount, setArticleCount] = useState<number>(0);
 
   const campus: Campus | null = useMemo(() => {
-    if (!apiCampuses.length || !Number.isFinite(campusId)) return null;
-    const item = apiCampuses.find((c) => c.id === campusId);
+    if (!apiCampuses.length || !campusSlug) return null;
+    const item = apiCampuses.find((c) => c.slug === campusSlug);
     if (!item) return null;
     return apiCampusToCampus(item);
-  }, [apiCampuses, campusId]);
+  }, [apiCampuses, campusSlug]);
+
+  const campusId = campus?.id ?? 0;
 
   useEffect(() => {
-    if (!Number.isFinite(campusId) || campusId < 1) return;
+    if (!campus?.id) return;
     articleService
-      .list({ campus: campusId })
+      .list({ campus: campus.id })
       .then((res) => setArticleCount((res.data as { count?: number })?.count ?? 0))
       .catch(() => setArticleCount(0));
-  }, [campusId]);
+  }, [campus?.id]);
 
-  const notFound = !campusesLoading && !campus && Number.isFinite(campusId) && campusId > 0;
+  const notFound = !campusesLoading && !campus && !!campusSlug;
   const displayCampus: Campus = campus ?? {
-    id: campusId,
+    id: 0,
+    slug: campusSlug ?? '',
     name: notFound ? 'Campus not found' : '',
     university: '',
     city: '—',
@@ -51,9 +54,10 @@ export default function Campus() {
   };
   const displayArticleCount = campus ? articleCount : displayCampus.articleCount;
 
-  const [activeSection, setActiveSection] = useState('topVoted');
+  const [activeSection, setActiveSection] = useState('recentUpdates');
 
   const sectionRefs = {
+    recentUpdates: useRef<HTMLDivElement>(null),
     topVoted: useRef<HTMLDivElement>(null),
     week1: useRef<HTMLDivElement>(null),
     campusLife: useRef<HTMLDivElement>(null),
@@ -62,6 +66,10 @@ export default function Campus() {
     living: useRef<HTMLDivElement>(null),
     reviews: useRef<HTMLDivElement>(null),
   };
+
+  const { articles: recentPublishedArticles, loading: recentLoading } = usePublishedArticles(
+    campus?.id ? { campus: campus.id } : undefined
+  );
 
   const campusLifeVideos = [
     { id: '4XMwDh8BsSA', url: 'https://youtu.be/4XMwDh8BsSA?si=66y6Xlndg8C6y5yY' },
@@ -74,6 +82,9 @@ export default function Campus() {
     () => allArticles.filter((a) => a.campusId === campusId || a.campusId === null),
     [campusId]
   );
+  const slugForLinks = campus?.slug ?? campusSlug ?? '';
+  const slugForCampusId = (id: number) =>
+    id === campusId ? slugForLinks : (apiCampuses.find((c) => c.id === id)?.slug ?? String(id));
   const topVotedArticles = useMemo(
     () => [...campusArticles].sort((a, b) => b.upvoteCount - a.upvoteCount).slice(0, 6),
     [campusArticles]
@@ -194,6 +205,7 @@ export default function Campus() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex overflow-x-auto scrollbar-hide gap-1 py-3">
             {[
+              { id: 'recentUpdates', label: 'Recent updates', icon: FileText },
               { id: 'topVoted', label: 'Top voted', icon: Award },
               { id: 'week1', label: '30 days', icon: Calendar },
               { id: 'campusLife', label: 'Campus Life', icon: Play },
@@ -219,6 +231,69 @@ export default function Campus() {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Section: Recent updates — published articles from API */}
+        <section ref={sectionRefs.recentUpdates} className="mb-16">
+          <div className="flex items-center mb-4">
+            <FileText className="h-6 w-6 text-[#991b1b] mr-3" />
+            <h2 className="font-display text-2xl font-bold text-black">
+              Recent updates
+            </h2>
+          </div>
+          <p className="text-black mb-6">Latest published articles at {displayCampus.name}.</p>
+          {recentLoading ? (
+            <div className="flex items-center gap-2 text-[#64748b] py-4">
+              <span className="animate-spin rounded-full border-2 border-[#991b1b]/30 border-t-[#991b1b] size-5" aria-hidden />
+              Loading articles…
+            </div>
+          ) : recentPublishedArticles.length === 0 ? (
+            <div className="rounded-2xl border-2 border-dashed border-[#991b1b]/30 bg-[#fbf2f3]/80 p-8 md:p-10 text-center">
+              <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-[#991b1b]/10 text-[#991b1b] mb-4">
+                <Sparkles className="h-7 w-7" />
+              </div>
+              <h3 className="font-display text-xl font-bold text-[#1e293b] mb-2">No stories yet — yours could be first</h3>
+              <p className="text-[#64748b] max-w-md mx-auto mb-6">
+                Students at {displayCampus.name} haven’t published anything here yet. Share your week-one tips, food spots, or campus life and help the next batch find their way.
+              </p>
+              <Link
+                to={`/contribute/write${campus?.id ? `?campus=${campus.id}` : ''}`}
+                className="inline-flex items-center gap-2 rounded-xl bg-[#991b1b] px-6 py-3 text-white font-medium hover:bg-[#7f1d1d] transition-colors shadow-lg hover:shadow-xl"
+              >
+                <PenLine className="h-5 w-5" />
+                Write the first article
+              </Link>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+              {recentPublishedArticles.map((article) => (
+                <Link
+                  key={article.id}
+                  to={article.campus_id ? `/campus/${slugForLinks}/article/${article.id}` : `/article/${article.id}`}
+                  className="block bg-white rounded-xl shadow-card overflow-hidden border border-transparent hover:border-[#991b1b]/30 transition-colors"
+                >
+                  {article.cover_image && (
+                    <div className="h-36 w-full overflow-hidden">
+                      <ImageWithFallback src={article.cover_image} alt={article.title} loading="lazy" className="w-full h-full object-cover" />
+                    </div>
+                  )}
+                  <div className="p-4">
+                    <h3 className="font-display font-medium text-[#1e293b] mb-1 line-clamp-2">{article.title}</h3>
+                    <p className="text-sm text-[#64748b] line-clamp-2 mb-2">{article.excerpt}</p>
+                    <span className="text-xs text-[#94a3b8]">👍 {article.upvote_count} upvotes · Updated {article.updated_days} days ago</span>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          )}
+          {recentPublishedArticles.length > 0 && (
+            <Link
+              to={`/articles${campusId ? `?campus=${campusId}` : ''}`}
+              className="inline-flex items-center gap-1.5 rounded-lg bg-[#991b1b] px-5 py-2.5 text-sm font-medium text-white hover:bg-[#7f1d1d] transition-colors"
+            >
+              View all articles <ChevronRight className="h-4 w-4" />
+            </Link>
+          )}
+        </section>
+
         {/* Section: Top voted articles */}
         <section ref={sectionRefs.topVoted} className="mb-16">
           <div className="flex items-center mb-4">
@@ -235,7 +310,7 @@ export default function Campus() {
               {topVotedArticles.map((article) => (
                 <Link
                   key={article.id}
-                  to={article.campusId ? `/campus/${article.campusId}/article/${article.id}` : `/article/${article.id}`}
+                  to={article.campusId ? `/campus/${slugForCampusId(article.campusId)}/article/${article.id}` : `/article/${article.id}`}
                   className="block bg-white rounded-xl shadow-card overflow-hidden border border-transparent hover:border-[#991b1b]/30 transition-colors"
                 >
                   {article.coverImage && (
@@ -253,7 +328,7 @@ export default function Campus() {
             </div>
           )}
           <Link
-            to={`/articles${campusId && Number.isFinite(campusId) ? `?campus=${campusId}` : ''}`}
+            to={`/articles${campusId ? `?campus=${campusId}` : ''}`}
             className="inline-flex items-center gap-1.5 rounded-lg bg-[#991b1b] px-5 py-2.5 text-sm font-medium text-white hover:bg-[#7f1d1d] transition-colors"
           >
             Know more <ChevronRight className="h-4 w-4" />
@@ -274,7 +349,7 @@ export default function Campus() {
             {thirtyDaysArticles.map((article) => (
               <Link
                 key={article.id}
-                to={article.campusId ? `/campus/${article.campusId}/article/${article.id}` : `/article/${article.id}`}
+                to={article.campusId ? `/campus/${slugForCampusId(article.campusId)}/article/${article.id}` : `/article/${article.id}`}
                 className="block bg-white rounded-lg shadow-card p-5 border-l-4 border-[#991b1b] hover:border-[#7f1d1d] transition-colors"
               >
                 <h3 className="font-bold text-black mb-2">{article.title.replace('Your first month at NIAT — ', '')}</h3>
@@ -284,7 +359,7 @@ export default function Campus() {
           </div>
 
           <Link
-            to={`/articles${campusId && Number.isFinite(campusId) ? `?campus=${campusId}` : ''}`}
+            to={`/articles${campusId ? `?campus=${campusId}` : ''}`}
             className="inline-flex items-center gap-1.5 rounded-lg bg-[#991b1b] px-5 py-2.5 text-sm font-medium text-white hover:bg-[#7f1d1d] transition-colors"
           >
             Know more <ChevronRight className="h-4 w-4" />
@@ -368,7 +443,7 @@ export default function Campus() {
               return (
                 <>
                   <p className="text-black mb-2">No clubs listed yet for this campus.</p>
-                  <Link to={`/campus/${campusId}/clubs`} className="text-[#991b1b] hover:underline">
+                  <Link to={`/campus/${slugForLinks}/clubs`} className="text-[#991b1b] hover:underline">
                     → View clubs directory
                   </Link>
                 </>
@@ -382,7 +457,7 @@ export default function Campus() {
                     return (
                       <Link
                         key={club.id}
-                        to={`/campus/${campusId}/clubs/${club.id}`}
+                        to={`/campus/${slugForLinks}/clubs/${club.id}`}
                         className="block bg-white rounded-xl border border-[rgba(30,41,59,0.1)] transition-all hover:border-[#991b1b] hover:shadow-lg overflow-hidden flex flex-col"
                         style={{ boxShadow: '0 4px 12px rgba(30, 41, 59, 0.08)' }}
                       >
@@ -438,7 +513,7 @@ export default function Campus() {
                   })}
                 </div>
                 <Link
-                  to={`/campus/${campusId}/clubs`}
+                  to={`/campus/${slugForLinks}/clubs`}
                   className="inline-flex items-center gap-1.5 px-4 py-2 border-2 border-[#991b1b] text-[#991b1b] font-medium rounded-lg hover:bg-[#991b1b] hover:text-white transition-colors"
                 >
                   Club directory <ChevronRight className="h-4 w-4" />
@@ -464,7 +539,7 @@ export default function Campus() {
               {foodArticles.map((article) => (
                 <Link
                   key={article.id}
-                  to={article.campusId ? `/campus/${article.campusId}/article/${article.id}` : `/article/${article.id}`}
+                  to={article.campusId ? `/campus/${slugForCampusId(article.campusId)}/article/${article.id}` : `/article/${article.id}`}
                   className="block bg-white rounded-xl shadow-card overflow-hidden border border-transparent hover:border-[#991b1b]/30 transition-colors"
                 >
                   {article.coverImage && (
@@ -482,7 +557,7 @@ export default function Campus() {
             </div>
           )}
           <Link
-            to={`/articles${campusId && Number.isFinite(campusId) ? `?campus=${campusId}` : ''}`}
+            to={`/articles${campusId ? `?campus=${campusId}` : ''}`}
             className="inline-flex items-center gap-1.5 text-[#991b1b] font-medium text-sm hover:underline"
           >
             Know more <ChevronRight className="h-4 w-4" />
@@ -505,7 +580,7 @@ export default function Campus() {
               {livingArticles.map((article) => (
                 <Link
                   key={article.id}
-                  to={article.campusId ? `/campus/${article.campusId}/article/${article.id}` : `/article/${article.id}`}
+                  to={article.campusId ? `/campus/${slugForCampusId(article.campusId)}/article/${article.id}` : `/article/${article.id}`}
                   className="block bg-white rounded-xl shadow-card overflow-hidden border border-transparent hover:border-[#991b1b]/30 transition-colors"
                 >
                   {article.coverImage && (
@@ -523,7 +598,7 @@ export default function Campus() {
             </div>
           )}
           <Link
-            to={`/articles${campusId && Number.isFinite(campusId) ? `?campus=${campusId}` : ''}`}
+            to={`/articles${campusId ? `?campus=${campusId}` : ''}`}
             className="inline-flex items-center gap-1.5 text-[#991b1b] font-medium text-sm hover:underline"
           >
             Know more <ChevronRight className="h-4 w-4" />

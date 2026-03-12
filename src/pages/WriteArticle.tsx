@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import Footer from '../components/Footer';
 import { campuses } from '../data/mockData';
+import { useCampuses } from '../hooks/useCampuses';
 import { articleService, type ApiCategory } from '../lib/articleService';
 import { fetchFoundingEditorProfile, fetchMe } from '../lib/authApi';
 const STYLE_OPTIONS = [
@@ -140,6 +141,8 @@ export default function WriteArticle() {
   const [validationErrors, setValidationErrors] = useState<{ title?: boolean; campus?: boolean; body?: boolean; section?: boolean; subcategory?: boolean; subcategoryOther?: boolean }>({});
   type ToastItem = { id: number; message: string; type: 'validation' | 'error' };
   const [toasts, setToasts] = useState<ToastItem[]>([]);
+  const { campuses: apiCampuses } = useCampuses();
+  const submittedCampusSlug = submittedCampusId != null ? (apiCampuses.find((c) => c.id === submittedCampusId)?.slug ?? String(submittedCampusId)) : null;
   const toastIdRef = useRef(0);
   const toastTimeoutsRef = useRef<ReturnType<typeof setTimeout>[]>([]);
   const addToast = useCallback((message: string, type: 'validation' | 'error') => {
@@ -1178,7 +1181,7 @@ export default function WriteArticle() {
             <div className="flex flex-col gap-3">
               {submittedArticleId != null && (
                 <Link
-                  to={submittedCampusId != null ? `/campus/${submittedCampusId}/article/${submittedArticleId}` : `/article/${submittedArticleId}`}
+                  to={submittedCampusSlug != null ? `/campus/${submittedCampusSlug}/article/${submittedArticleId}` : `/article/${submittedArticleId}`}
                   className="inline-flex items-center justify-center gap-2 py-3 rounded-xl bg-[#991b1b] text-white font-medium hover:bg-[#b91c1c] transition-colors"
                   onClick={() => setShowSuccessModal(false)}
                 >

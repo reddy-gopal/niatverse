@@ -3,9 +3,12 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { Search as SearchIcon, Filter, Clock, ChevronRight, FileSearch } from 'lucide-react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
-import { searchResults, campuses } from '../data/mockData';
+import { searchResults } from '../data/mockData';
+import { useCampuses } from '../hooks/useCampuses';
 
 export default function Search() {
+  const { campuses: apiCampuses } = useCampuses();
+  const campusSlugForName = (name: string) => apiCampuses.find((c) => c.name === name)?.slug;
   const [searchParams] = useSearchParams();
   const query = searchParams.get('q') || '';
   const [searchInput, setSearchInput] = useState(query);
@@ -68,7 +71,7 @@ export default function Search() {
               className="appearance-none bg-section text-black px-4 py-2 pr-8 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-[#991b1b]"
             >
               <option>All Campuses</option>
-              {campuses.map((c) => (
+              {apiCampuses.map((c) => (
                 <option key={c.id}>{c.name}</option>
               ))}
             </select>
@@ -112,7 +115,7 @@ export default function Search() {
           {searchResults.map((result) => (
             <Link
               key={result.id}
-              to={`/campus/1/article/${result.id}`}
+              to={campusSlugForName(result.campus) ? `/campus/${campusSlugForName(result.campus)}/article/${result.id}` : `/article/${result.id}`}
               className="block bg-white rounded-lg shadow-soft p-5 hover:shadow-card transition-shadow"
             >
               <h3 className="font-display text-lg font-bold text-black mb-2">

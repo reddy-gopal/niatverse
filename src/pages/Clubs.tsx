@@ -4,14 +4,22 @@ import { Users, Mail, ChevronRight } from 'lucide-react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import ImageWithFallback from '../components/ImageWithFallback';
-import { campuses, clubs as allClubs } from '../data/mockData';
+import { clubs as allClubs } from '../data/mockData';
+import { useCampuses } from '../hooks/useCampuses';
+import { apiCampusToCampus } from '../lib/campusUtils';
 import { CLUB_TYPE_FILTER_OPTIONS } from '../constants/clubBadges';
 import type { ClubType } from '../types';
 
 export default function Clubs() {
-  const { id } = useParams<{ id: string }>();
-  const campusId = parseInt(id || '1');
-  const campus = campuses.find((c) => c.id === campusId) || campuses[0];
+  const { slug: campusSlug } = useParams<{ slug: string }>();
+  const { campuses: apiCampuses } = useCampuses();
+  const campus = useMemo(() => {
+    if (!campusSlug || !apiCampuses.length) return null;
+    const item = apiCampuses.find((c) => c.slug === campusSlug);
+    return item ? apiCampusToCampus(item) : null;
+  }, [apiCampuses, campusSlug]);
+  const campusId = campus?.id ?? 0;
+  const displayCampus = campus ?? { id: 0, slug: '', name: 'Campus', university: '', city: '—', state: '—', niatSince: new Date().getFullYear(), batchSize: 0, articleCount: 0, rating: null, coverColor: '#991b1b', coverImage: '' };
 
   const [typeFilter, setTypeFilter] = useState<ClubType | 'All'>('All');
   const [openToAllOnly, setOpenToAllOnly] = useState(false);
@@ -41,7 +49,7 @@ export default function Clubs() {
       <section
         className="py-8 min-h-[160px] flex flex-col justify-end"
         style={{
-          background: `linear-gradient(135deg, ${campus.coverColor} 0%, #220000 100%)`,
+          background: `linear-gradient(135deg, ${displayCampus.coverColor} 0%, #220000 100%)`,
         }}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
@@ -53,7 +61,7 @@ export default function Clubs() {
             <ChevronRight className="h-4 w-4 mx-2 opacity-70" />
             <Link to="/campuses" className="hover:text-white">Campuses</Link>
             <ChevronRight className="h-4 w-4 mx-2 opacity-70" />
-            <Link to={`/campus/${campusId}`} className="hover:text-white">{campus.name}</Link>
+            <Link to={`/campus/${campusSlug ?? ''}`} className="hover:text-white">{displayCampus.name}</Link>
             <ChevronRight className="h-4 w-4 mx-2 opacity-70" />
             <span className="text-white">Clubs</span>
           </nav>
@@ -62,7 +70,7 @@ export default function Clubs() {
             className="font-display text-[28px] font-bold text-white mb-1"
             style={{ fontFamily: 'Playfair Display, serif' }}
           >
-            {campus.name} — Clubs & Communities
+            {displayCampus.name} — Clubs & Communities
           </h1>
           <p
             className="text-sm text-white/75"
@@ -114,7 +122,7 @@ export default function Clubs() {
           <div className="text-center py-16 px-4">
             <Users className="h-14 w-14 mx-auto text-[rgba(30,41,59,0.3)] mb-4" />
             <p className="text-[#1e293b] font-medium mb-1">
-              No {typeFilter !== 'All' ? typeFilter.toLowerCase() : ''} clubs found at {campus.name}
+              No {typeFilter !== 'All' ? typeFilter.toLowerCase() : ''} clubs found at {displayCampus.name}
             </p>
             <div className="flex flex-col gap-2 mt-2">
               <button
@@ -137,7 +145,7 @@ export default function Clubs() {
               <div key={club.id}>
                 {/* PART 1: Club card — vertical + horizontal split */}
                 <Link
-                  to={`/campus/${campusId}/clubs/${club.id}`}
+                  to={`/campus/${campusSlug ?? ''}/clubs/${club.id}`}
                   className="flex flex-col rounded-[14px] overflow-hidden transition-shadow duration-200 hover:shadow-[0_8px_32px_rgba(30,41,59,0.14)] bg-white"
                   style={{ boxShadow: '0 4px 20px rgba(30, 41, 59, 0.10)' }}
                 >

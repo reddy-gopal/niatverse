@@ -9,7 +9,7 @@ interface CampusCardProps {
 export default function CampusCard({ campus }: CampusCardProps) {
   return (
     <Link
-      to={`/campus/${campus.id}`}
+      to={`/campus/${campus.slug}`}
       className="block bg-section rounded-lg shadow-card overflow-hidden hover:shadow-lg hover:ring-2 hover:ring-[#991b1b] transition-all duration-200"
     >
       {/* Campus Image Area */}
