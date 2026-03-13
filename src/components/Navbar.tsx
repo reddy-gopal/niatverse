@@ -113,7 +113,12 @@ export default function Navbar({ searchQuery = '', showSearch }: NavbarProps) {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
-            <Link to="/" className="flex items-center shrink-0">
+            <Link to="/" className="flex items-center gap-2 shrink-0">
+              <img
+                src="/niat.png"
+                alt="NIAT"
+                className="h-8 w-8 sm:h-9 sm:w-9 object-contain"
+              />
               <span className="font-display text-xl sm:text-2xl font-bold text-[#991b1b]">NIAT</span>
               <span className="font-body text-lg sm:text-xl font-medium text-black ml-1">Insider</span>
             </Link>
@@ -294,12 +299,12 @@ export default function Navbar({ searchQuery = '', showSearch }: NavbarProps) {
                     )}
                   </div>
 
-                  <Link
-                    to="/talk-to-seniors"
+                  <a
+                    href ="/talk-to-seniors"
                     className="text-black hover:text-black text-sm font-medium transition-colors"
                   >
                     Talk To Seniors
-                  </Link>
+                  </a>
 
                   <Link to="/contribute/write" className="btn-primary text-sm font-medium inline-flex items-center gap-1.5">
                     <PenLine className="h-4 w-4" />
@@ -429,13 +434,13 @@ export default function Navbar({ searchQuery = '', showSearch }: NavbarProps) {
                     >
                       Articles
                     </Link>
-                    <Link
-                      to="/talk-to-seniors"
+                    <a
+                      href="/talk-to-seniors"
                       onClick={() => setMobileMenuOpen(false)}
                       className="text-black hover:text-black text-sm font-medium"
                     >
                       Talk To Seniors
-                    </Link>
+                    </a>
                     <Link
                       to="/contribute/write"
                       onClick={() => setMobileMenuOpen(false)}
