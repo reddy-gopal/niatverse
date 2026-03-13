@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Star, FileText } from 'lucide-react';
+import { Star } from 'lucide-react';
 import type { Campus } from '../types';
 import ImageWithFallback from './ImageWithFallback';
 interface CampusCardProps {
@@ -37,19 +37,13 @@ export default function CampusCard({ campus }: CampusCardProps) {
           {campus.city}, {campus.state}
         </p>
 
-        {/* Stats row */}
-        <div className="flex items-center space-x-3">
-          {campus.rating && (
-            <div className="flex items-center text-sm">
-              <Star className="h-4 w-4 text-[#f7b801] fill-[#f7b801] mr-1" />
-              <span className="font-medium text-black">{campus.rating}</span>
-            </div>
-          )}
-          <div className="flex items-center text-sm text-black">
-            <FileText className="h-4 w-4 mr-1" />
-            <span>{campus.articleCount} articles</span>
+        {/* Stats row — rating only (article count hidden for now) */}
+        {campus.rating != null && campus.rating > 0 && (
+          <div className="flex items-center text-sm">
+            <Star className="h-4 w-4 text-[#f7b801] fill-[#f7b801] mr-1" />
+            <span className="font-medium text-black">{campus.rating}</span>
           </div>
-        </div>
+        )}
       </div>
     </Link>
   );

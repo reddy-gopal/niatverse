@@ -7,6 +7,7 @@ import {
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import ImageWithFallback from '../components/ImageWithFallback';
+import RecentUpdateCard from '../components/RecentUpdateCard';
 import { ratings, clubs, allArticles } from '../data/mockData';
 import { CLUB_TYPE_BADGE_STYLES } from '../constants/clubBadges';
 import { useCampuses } from '../hooks/useCampuses';
@@ -265,22 +266,11 @@ export default function Campus() {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
               {recentPublishedArticles.map((article) => (
-                <Link
+                <RecentUpdateCard
                   key={article.id}
-                  to={article.campus_id ? `/campus/${slugForLinks}/article/${article.id}` : `/article/${article.id}`}
-                  className="block bg-white rounded-xl shadow-card overflow-hidden border border-transparent hover:border-[#991b1b]/30 transition-colors"
-                >
-                  {article.cover_image && (
-                    <div className="h-36 w-full overflow-hidden">
-                      <ImageWithFallback src={article.cover_image} alt={article.title} loading="lazy" className="w-full h-full object-cover" />
-                    </div>
-                  )}
-                  <div className="p-4">
-                    <h3 className="font-display font-medium text-[#1e293b] mb-1 line-clamp-2">{article.title}</h3>
-                    <p className="text-sm text-[#64748b] line-clamp-2 mb-2">{article.excerpt}</p>
-                    <span className="text-xs text-[#94a3b8]">👍 {article.upvote_count} upvotes · Updated {article.updated_days} days ago</span>
-                  </div>
-                </Link>
+                  article={article}
+                  campusSlug={slugForLinks}
+                />
               ))}
             </div>
           )}

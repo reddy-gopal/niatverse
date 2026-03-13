@@ -294,6 +294,13 @@ export default function Navbar({ searchQuery = '', showSearch }: NavbarProps) {
                     )}
                   </div>
 
+                  <Link
+                    to="/talk-to-seniors"
+                    className="text-black hover:text-black text-sm font-medium transition-colors"
+                  >
+                    Talk To Seniors
+                  </Link>
+
                   <Link to="/contribute/write" className="btn-primary text-sm font-medium inline-flex items-center gap-1.5">
                     <PenLine className="h-4 w-4" />
                     Write Article
@@ -421,6 +428,13 @@ export default function Navbar({ searchQuery = '', showSearch }: NavbarProps) {
                       className="text-black hover:text-black text-sm font-medium"
                     >
                       Articles
+                    </Link>
+                    <Link
+                      to="/talk-to-seniors"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="text-black hover:text-black text-sm font-medium"
+                    >
+                      Talk To Seniors
                     </Link>
                     <Link
                       to="/contribute/write"

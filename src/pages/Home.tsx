@@ -110,14 +110,12 @@ export default function Home() {
             {(() => {
               const campus = campuses.find((c) => c.id === profile.campus_id);
               const campusName = campus ? `${campus.name}, ${campus.city}` : 'My campus';
-              const articleCount = allArticles.filter((a) => a.campusId === profile.campus_id).length;
               return (
                 <div className="bg-white rounded-lg shadow-card border-l-4 border-[#991b1b] p-6">
                   <p className="text-sm text-black mb-1">Welcome back</p>
-                  <h2 className="font-display text-xl font-bold text-black mb-1">
+                  <h2 className="font-display text-xl font-bold text-black mb-4">
                     {campusName}
                   </h2>
-                  <p className="text-sm text-black mb-4">{articleCount} articles</p>
                   <Link
                     to={campus ? `/campus/${campus.slug}` : '/campuses'}
                     className="inline-flex items-center text-[#991b1b] font-medium hover:underline"

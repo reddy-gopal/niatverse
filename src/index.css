@@ -196,6 +196,14 @@
   .article-body-read-only .article-image-card__remove {
     display: none;
   }
+  /* Links in article body: blue so they’re clearly clickable */
+  .article-body-read-only a {
+    color: #2563eb;
+    text-decoration: underline;
+  }
+  .article-body-read-only a:hover {
+    color: #1d4ed8;
+  }
   .article-image-card__caption {
     margin-top: 8px;
     font-size: 13px;
