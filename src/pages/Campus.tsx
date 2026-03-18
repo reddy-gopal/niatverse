@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useMemo } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import {
   Star, MapPin, Users, FileText, Clock, ChevronRight,
-  Calendar, MessageSquare, Award, Utensils, Home, Play, PenLine, Sparkles
+  Calendar, MessageSquare, Award, Utensils, Home, Play, PenLine, Sparkles, ExternalLink, Info
 } from 'lucide-react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
@@ -68,6 +68,8 @@ export default function Campus() {
     university: '',
     city: '—',
     state: '—',
+    description: '',
+    googleMapLink: null,
     niatSince: new Date().getFullYear(),
     batchSize: 0,
     articleCount: 0,
@@ -88,6 +90,7 @@ export default function Campus() {
     food: useRef<HTMLDivElement>(null),
     living: useRef<HTMLDivElement>(null),
     reviews: useRef<HTMLDivElement>(null),
+    about: useRef<HTMLDivElement>(null),
   };
 
   const { articles: recentPublishedArticles, loading: recentLoading } = usePublishedArticles(
@@ -201,7 +204,6 @@ export default function Campus() {
           {!(campusesLoading && !campus) && (
             <p className="text-white/80 text-lg mb-4">{displayCampus.university || displayCampus.name}</p>
           )}
-
           {/* Stats Row — real-time article count */}
           <div className="flex flex-wrap items-center gap-4 text-white/80 text-sm">
             <span className="flex items-center">
@@ -249,6 +251,7 @@ export default function Campus() {
               { id: 'food', label: 'Food', icon: Utensils },
               { id: 'living', label: 'Living', icon: Home },
               { id: 'reviews', label: 'Reviews', icon: MessageSquare },
+              { id: 'about', label: 'About', icon: Info },
             ].map(({ id, label, icon: Icon }) => (
               <button
                 key={id}
@@ -448,16 +451,18 @@ export default function Campus() {
           </div>
         </section>
 
-        {/* Section: Clubs & Communities */}
+        {/* Section: Clubs */}
         <section ref={sectionRefs.clubs} className="mb-16">
           <div className="flex items-center mb-4">
             <Users className="h-6 w-6 text-[#991b1b] mr-3" />
             <h2 className="font-display text-2xl font-bold text-black">
-              🎯 Clubs & Communities
+              Clubs
             </h2>
           </div>
           <p className="text-black mb-6">
-            Active student clubs at {displayCampus.name}
+            Some students join clubs for fun.
+            <br />
+            Some join to learn something new.
           </p>
 
           {(() => {
@@ -670,6 +675,43 @@ export default function Campus() {
             <p className="text-sm text-black text-center">
               All reviews are anonymous and verified by Campus Ambassador
             </p>
+          </div>
+        </section>
+
+        {/* Section: About */}
+        <section ref={sectionRefs.about} className="mb-16">
+          <div className="flex items-center mb-4">
+            <Info className="h-6 w-6 text-[#991b1b] mr-3" />
+            <h2 className="font-display text-2xl font-bold text-black">
+              About
+            </h2>
+          </div>
+
+          <div className="bg-white rounded-lg shadow-card p-6">
+            <p className="text-sm uppercase tracking-wide text-[#64748b] mb-2">
+              About {displayCampus.name}
+            </p>
+            <p className="text-black leading-relaxed mb-6">
+              {displayCampus.description?.trim()
+                ? displayCampus.description
+                : `More campus information for ${displayCampus.name} will be added soon.`}
+            </p>
+
+            {displayCampus.googleMapLink ? (
+              <a
+                href={displayCampus.googleMapLink}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-1.5 rounded-lg bg-[#991b1b] px-5 py-2.5 text-sm font-medium text-white hover:bg-[#7f1d1d] transition-colors"
+              >
+                Get a Direction
+                <ExternalLink className="h-4 w-4" />
+              </a>
+            ) : (
+              <p className="text-sm text-[#64748b]">
+                Direction link is not available yet for this campus.
+              </p>
+            )}
           </div>
         </section>
 

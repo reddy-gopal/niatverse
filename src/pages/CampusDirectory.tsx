@@ -23,10 +23,10 @@ export default function CampusDirectory() {
       <section className="bg-section py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h1 className="font-display text-3xl md:text-4xl font-bold text-black mb-3">
-            NIAT Campuses
+            15+ Universities Offer the NIAT Program
           </h1>
           <p className="text-black text-base md:text-lg max-w-2xl mx-auto">
-            Find yours. Explore others. Every campus mapped by students who&apos;ve been there.
+            NIAT is offered at 15+ universities across India. Explore the universities where students are currently pursuing their degrees while being part of the NIAT ecosystem.
           </p>
         </div>
       </section>

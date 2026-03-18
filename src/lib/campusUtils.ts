@@ -12,6 +12,8 @@ export function apiCampusToCampus(item: CampusListItem): Campus {
     university: item.shortName ?? item.name,
     city: item.location || '—',
     state: item.state || '—',
+    description: item.description || '',
+    googleMapLink: item.googleMapLink ?? null,
     niatSince: new Date().getFullYear(),
     batchSize: 0,
     articleCount: 0,

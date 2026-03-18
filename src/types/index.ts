@@ -5,6 +5,8 @@ export interface Campus {
   university: string;
   city: string;
   state: string;
+  description?: string;
+  googleMapLink?: string | null;
   niatSince: number;
   batchSize: number;
   articleCount: number;

@@ -19,6 +19,7 @@ const Profile = lazy(() => import('./pages/Profile'));
 const Onboarding = lazy(() => import('./pages/Onboarding'));
 const Login = lazy(() => import('./pages/Login'));
 const Register = lazy(() => import('./pages/Register'));
+const About = lazy(() => import('./pages/About'));
 
 function AppLoader() {
   return (
@@ -54,6 +55,7 @@ function App() {
           <Route path="/contribute/write" element={<RequireOnboarding><WriteArticle /></RequireOnboarding>} />
           <Route path="/profile" element={<RequireOnboarding><Profile /></RequireOnboarding>} />
           <Route path="/my-articles" element={<RequireOnboarding><MyArticles /></RequireOnboarding>} />
+          <Route path="/about" element={<RequireOnboarding><About /></RequireOnboarding>} />
         </Routes>
       </Suspense>
     </Router>

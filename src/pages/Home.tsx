@@ -1,10 +1,11 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Search, ChevronRight, Calendar, Edit3, MapPin } from 'lucide-react';
+import { Search, ChevronRight, Calendar, Edit3, MapPin, Rocket } from 'lucide-react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import CampusCard from '../components/CampusCard';
 import VideoCarousel from '../components/VideoCarousel';
+import AskMeAnythingSpotlight from '../components/AskMeAnythingSpotlight';
 import { useCampuses } from '../hooks/useCampuses';
 import { usePublishedArticles } from '../hooks/useArticles';
 import { apiCampusToCampus } from '../lib/campusUtils';
@@ -13,6 +14,7 @@ import { fetchFoundingEditorProfile, type FoundingEditorProfile } from '../lib/a
 const HOW_TO_GUIDES_URL = '/how-to-guides';
 
 const HOME_CAMPUS_PREVIEW_COUNT = 6;
+const HERO_SLOGAN_TERMS = ['Campus Life', 'Onboarding Kit', 'Clubs', 'Hackathons', 'Internships'];
 
 export default function Home() {
   const { campuses: apiCampuses, isLoading: campusesLoading, isError: campusesError } = useCampuses();
@@ -20,9 +22,12 @@ export default function Home() {
   const campusPreview = useMemo(() => campuses.slice(0, HOME_CAMPUS_PREVIEW_COUNT), [campuses]);
   const { articles: globalGuideArticles } = usePublishedArticles({ is_global_guide: true });
   const [heroSearch, setHeroSearch] = useState('');
+  const [sloganTermIndex, setSloganTermIndex] = useState(0);
+  const [showSloganTerm, setShowSloganTerm] = useState(true);
   const [showNavSearch, setShowNavSearch] = useState(false);
   const [hasToken, setHasToken] = useState(false);
   const [profile, setProfile] = useState<FoundingEditorProfile | null>(null);
+  const sloganSwapTimeoutRef = useRef<number | null>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -76,40 +81,104 @@ export default function Home() {
     [globalGuideArticles]
   );
 
+  useEffect(() => {
+    const intervalId = window.setInterval(() => {
+      setShowSloganTerm(false);
+      if (sloganSwapTimeoutRef.current != null) {
+        window.clearTimeout(sloganSwapTimeoutRef.current);
+      }
+      sloganSwapTimeoutRef.current = window.setTimeout(() => {
+        setSloganTermIndex((prev) => (prev + 1) % HERO_SLOGAN_TERMS.length);
+        setShowSloganTerm(true);
+      }, 180);
+    }, 2200);
+
+    return () => {
+      window.clearInterval(intervalId);
+      if (sloganSwapTimeoutRef.current != null) {
+        window.clearTimeout(sloganSwapTimeoutRef.current);
+      }
+    };
+  }, []);
+
   return (
     <div className="min-h-screen bg-white overflow-x-hidden">
       <Navbar showSearch={showNavSearch} />
 
       {/* Hero Section */}
       <section className="hero-gradient py-16 md:py-24">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h1 className="font-display text-3xl md:text-5xl font-bold text-white mb-4 leading-tight">
-            Don&apos;t guess. Ask someone who&apos;s been there.
-          </h1>
-          <p className="text-white/80 text-base md:text-lg mb-8 max-w-2xl mx-auto">
-            Real stories, real campuses — from students who actually lived it.
-          </p>
-
-          {/* Hero Search */}
-          <form onSubmit={handleHeroSearch} className="max-w-xl mx-auto mb-6">
-            <div className="relative">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-              <input
-                type="text"
-                placeholder="Find your campus — type name or city"
-                value={heroSearch}
-                onChange={(e) => setHeroSearch(e.target.value)}
-                className="w-full pl-12 pr-4 py-4 bg-white rounded-lg text-black placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-white/50"
-              />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 lg:grid-cols-[1.35fr_0.95fr] gap-8 items-center">
+            <div className="text-center lg:text-left">
+              <p className="inline-flex rounded-full border border-white/25 bg-white/10 px-3 py-1 text-xs font-semibold text-white/90 mb-4">
+                Real student voices across NIAT campuses
+              </p>
+              <h1 className="font-display text-3xl md:text-5xl font-bold text-white mb-4 leading-tight">
+            The unofficial NIAT survival guide
+              </h1>
+              <p className="text-white/85 text-base md:text-lg mb-3 max-w-2xl lg:max-w-3xl mx-auto lg:mx-0">
+            For the students. By the students. Of the students.
+              </p>
+              <p className="text-white/90 text-base md:text-lg mb-6 max-w-3xl mx-auto lg:mx-0">
+                Find out everything. Like everything.
+                <span
+                  className={`ml-2 inline-block text-white/95 font-semibold transition-opacity duration-200 ${
+                    showSloganTerm ? 'opacity-100' : 'opacity-0'
+                  }`}
+                >
+                  {HERO_SLOGAN_TERMS[sloganTermIndex]}
+                </span>
+              </p>
+              {/* Hero Search */}
+              <form onSubmit={handleHeroSearch} className="max-w-xl mx-auto lg:mx-0 mb-5">
+                <div className="relative">
+                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+                  <input
+                    type="text"
+                    placeholder="Find your campus — type name or city"
+                    value={heroSearch}
+                    onChange={(e) => setHeroSearch(e.target.value)}
+                    className="w-full pl-12 pr-4 py-4 bg-white rounded-lg text-black placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-white/50"
+                  />
+                </div>
+              </form>
+              <div className="flex flex-wrap items-center justify-center lg:justify-start gap-3">
+                <Link
+                  to="/campuses"
+                  className="inline-flex items-center gap-1.5 rounded-lg bg-white px-4 py-2 text-[#991b1b] font-semibold hover:bg-[#fff1f2] transition-colors"
+                >
+                  Explore all Campuses <ChevronRight className="h-4 w-4" />
+                </Link>
+                <Link
+                  to={HOW_TO_GUIDES_URL}
+                  className="inline-flex items-center gap-1.5 rounded-lg border border-white/35 bg-white/10 px-4 py-2 text-white font-medium hover:bg-white/20 transition-colors"
+                >
+                  Explore Guides <ChevronRight className="h-4 w-4" />
+                </Link>
+              </div>
             </div>
-          </form>
 
-          <Link
-            to="/campuses"
-            className="inline-flex items-center gap-1.5 mt-4 text-white font-medium hover:underline"
-          >
-            Explore all Campuses <ChevronRight className="h-4 w-4" />
-          </Link>
+            <div className="rounded-2xl border border-white/20 bg-white/10 p-5 backdrop-blur-sm">
+              <p className="text-white/80 text-sm mb-3">At a glance</p>
+              <div className="space-y-3">
+                <div className="rounded-xl bg-white/10 p-3">
+                  <p className="text-3xl font-bold text-white">{campuses.length}+</p>
+                  <p className="text-xs text-white/70">Universities in NIAT ecosystem</p>
+                </div>
+                <div className="rounded-xl bg-white/10 p-3">
+                  <p className="text-3xl font-bold text-white">{globalGuideArticles.length}+</p>
+                  <p className="text-xs text-white/70">Guides written by students</p>
+                </div>
+                <Link
+                  to="/campuses"
+                  className="inline-flex w-full items-center justify-between rounded-xl bg-white/10 px-3 py-2 text-sm text-white/90 hover:bg-white/20 transition-colors"
+                >
+                  Start your campus journey
+                  <Rocket className="h-4 w-4" />
+                </Link>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -143,8 +212,11 @@ export default function Home() {
       <section className="py-12 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="font-display text-2xl md:text-3xl font-bold text-black mb-6">
-            Campuses
+            NIAT Around India
           </h2>
+          <p className="text-[#64748b] mb-6">
+            NIAT is offered at 15+ universities across India.
+          </p>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {campusesLoading ? (
@@ -172,6 +244,8 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      <AskMeAnythingSpotlight />
 
       {/* Life in or At NIAT: videos + How-to Guides */}
       <section className="bg-section">

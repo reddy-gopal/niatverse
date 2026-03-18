@@ -8,4 +8,6 @@ export interface CampusListItem {
   imageUrl: string;
   slug: string;
   isDeemed: boolean;
+  googleMapLink?: string | null;
+  description?: string;
 }

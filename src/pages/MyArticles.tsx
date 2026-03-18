@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { PenLine } from 'lucide-react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import { useCampuses } from '../hooks/useCampuses';
@@ -39,9 +40,10 @@ export default function MyArticles() {
   }
 
   return (
-    <div className="min-h-screen bg-white overflow-x-hidden">
+    <div className="min-h-screen bg-white overflow-x-hidden flex flex-col">
       <Navbar />
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="flex-1">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <h1 className="font-playfair text-2xl font-bold text-[#1e293b] mb-2">My Articles</h1>
         <p className="text-[#64748b] mb-6">View and manage your submitted articles.</p>
         {error && (
@@ -55,7 +57,16 @@ export default function MyArticles() {
             <div className="animate-spin rounded-full border-2 border-[#fbf2f3] size-10 border-t-[#991b1b]" role="status" aria-label="Loading" />
           </div>
         ) : articles.length === 0 ? (
-          <p className="text-[#64748b] py-8">You haven’t submitted any articles yet.</p>
+          <div className="py-8">
+            <p className="text-[#64748b] mb-4">You haven’t submitted any articles yet.</p>
+            <Link
+              to="/contribute/write"
+              className="inline-flex items-center gap-2 rounded-lg bg-[#991b1b] px-4 py-2 text-sm font-medium text-white hover:bg-[#7f1d1d] transition-colors"
+            >
+              <PenLine className="h-4 w-4" />
+              Write your first article
+            </Link>
+          </div>
         ) : (
           <ul className="space-y-4">
             {articles.map((a) => (
@@ -100,7 +111,8 @@ export default function MyArticles() {
             ))}
           </ul>
         )}
-      </div>
+        </div>
+      </main>
       <Footer />
     </div>
   );
