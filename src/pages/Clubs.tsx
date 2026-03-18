@@ -4,8 +4,8 @@ import { Users, Mail, ChevronRight } from 'lucide-react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import ImageWithFallback from '../components/ImageWithFallback';
-import { clubs as allClubs } from '../data/mockData';
 import { useCampuses } from '../hooks/useCampuses';
+import { useClubs } from '../hooks/useClubs';
 import { apiCampusToCampus } from '../lib/campusUtils';
 import { CLUB_TYPE_FILTER_OPTIONS } from '../constants/clubBadges';
 import type { ClubType } from '../types';
@@ -18,23 +18,33 @@ export default function Clubs() {
     const item = apiCampuses.find((c) => c.slug === campusSlug);
     return item ? apiCampusToCampus(item) : null;
   }, [apiCampuses, campusSlug]);
-  const campusId = campus?.id ?? 0;
+  const campusId = campus?.id != null ? String(campus.id) : '';
   const displayCampus = campus ?? { id: 0, slug: '', name: 'Campus', university: '', city: '—', state: '—', niatSince: new Date().getFullYear(), batchSize: 0, articleCount: 0, rating: null, coverColor: '#991b1b', coverImage: '' };
+  const { clubs: apiClubs, loading, error } = useClubs(campusId ? { campus: campusId } : undefined);
 
   const [typeFilter, setTypeFilter] = useState<ClubType | 'All'>('All');
   const [openToAllOnly, setOpenToAllOnly] = useState(false);
 
   const campusClubsCount = useMemo(
-    () => allClubs.filter((c) => c.campusId === campusId || c.campusId === null).length,
-    [campusId]
+    () => apiClubs.length,
+    [apiClubs]
   );
 
   const filteredClubs = useMemo(() => {
-    let list = allClubs.filter((c) => c.campusId === campusId || c.campusId === null);
+    let list = [...apiClubs];
     if (typeFilter !== 'All') list = list.filter((c) => c.type === typeFilter);
-    if (openToAllOnly) list = list.filter((c) => c.openToAll);
+    if (openToAllOnly) list = list.filter((c) => c.open_to_all);
     return list;
-  }, [campusId, typeFilter, openToAllOnly]);
+  }, [apiClubs, typeFilter, openToAllOnly]);
+
+  const lastUpdatedLabel = useMemo(() => {
+    if (apiClubs.length === 0) return 'No updates yet';
+    const latest = [...apiClubs]
+      .map((c) => c.updated_at)
+      .sort((a, b) => new Date(b).getTime() - new Date(a).getTime())[0];
+    const days = Math.max(0, Math.floor((Date.now() - new Date(latest).getTime()) / (1000 * 60 * 60 * 24)));
+    return days === 0 ? 'Updated today' : `Updated ${days} day${days > 1 ? 's' : ''} ago`;
+  }, [apiClubs]);
 
   const instagramUrl = (handle: string) => {
     const clean = handle.replace('@', '');
@@ -76,7 +86,7 @@ export default function Clubs() {
             className="text-sm text-white/75"
             style={{ fontFamily: 'DM Sans, sans-serif', fontSize: '14px' }}
           >
-            {campusClubsCount} active clubs · Last updated Jan 2026
+            {campusClubsCount} active clubs · {lastUpdatedLabel}
           </p>
         </div>
       </section>
@@ -118,7 +128,15 @@ export default function Clubs() {
 
       {/* Club grid: 2 columns desktop, 1 column mobile */}
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {filteredClubs.length === 0 ? (
+        {loading && (
+          <div className="flex justify-center py-12">
+            <div className="animate-spin rounded-full border-2 border-[#fbf2f3] size-10 border-t-[#991b1b]" role="status" aria-label="Loading" />
+          </div>
+        )}
+        {!loading && error && (
+          <p className="text-red-700 text-sm mb-6">{error}</p>
+        )}
+        {!loading && filteredClubs.length === 0 ? (
           <div className="text-center py-16 px-4">
             <Users className="h-14 w-14 mx-auto text-[rgba(30,41,59,0.3)] mb-4" />
             <p className="text-[#1e293b] font-medium mb-1">
@@ -150,7 +168,7 @@ export default function Clubs() {
                   style={{ boxShadow: '0 4px 20px rgba(30, 41, 59, 0.10)' }}
                 >
                   <div className="h-40 w-full shrink-0">
-                    <ImageWithFallback src={club.coverImage} alt={club.name} loading="lazy" className="w-full h-full object-cover" />
+                    <ImageWithFallback src={club.cover_image} alt={club.name} loading="lazy" className="w-full h-full object-cover" />
                   </div>
                   <div className="flex flex-col md:flex-row flex-1">
                     {/* Left: maroon */}
@@ -179,11 +197,11 @@ export default function Clubs() {
                           className="mt-2 text-[13px]"
                           style={{ fontFamily: 'DM Sans, sans-serif', color: 'rgba(255,255,255,0.65)' }}
                         >
-                          Est. {club.foundedYear}
+                          Est. {club.founded_year ?? '—'}
                         </p>
                       </div>
                       <div className="mt-6">
-                        {club.openToAll ? (
+                        {club.open_to_all ? (
                           <span
                             className="inline-block text-[12px] font-medium rounded-full px-3 py-1 border"
                             style={{
@@ -210,7 +228,7 @@ export default function Clubs() {
                           className="mt-2 text-[12px]"
                           style={{ fontFamily: 'DM Sans, sans-serif', color: 'rgba(255,255,255,0.6)' }}
                         >
-                          ~{club.memberCount} members
+                          ~{club.member_count} members
                         </p>
                       </div>
                     </div>
@@ -269,7 +287,7 @@ export default function Clubs() {
                           style={{ backgroundColor: '#fbf2f3' }}
                         >
                           <p className="text-[14px] text-[#1e293b]" style={{ fontFamily: 'DM Sans, sans-serif' }}>
-                            {club.howToJoin}
+                            {club.how_to_join}
                           </p>
                         </div>
                       </div>
@@ -303,7 +321,7 @@ export default function Clubs() {
                           className="ml-auto text-[11px] text-[#15803d]"
                           style={{ fontFamily: 'DM Sans, sans-serif' }}
                         >
-                          ✓ Verified {club.verifiedDate}
+                          {club.verified_at ? `✓ Verified ${club.verified_at}` : '✓ Verified'}
                         </span>
                       </div>
                     </div>

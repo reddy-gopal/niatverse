@@ -5,26 +5,20 @@ import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import CampusCard from '../components/CampusCard';
 import VideoCarousel from '../components/VideoCarousel';
-import { allArticles } from '../data/mockData';
 import { useCampuses } from '../hooks/useCampuses';
+import { usePublishedArticles } from '../hooks/useArticles';
 import { apiCampusToCampus } from '../lib/campusUtils';
 import { fetchFoundingEditorProfile, type FoundingEditorProfile } from '../lib/authApi';
 
 const HOW_TO_GUIDES_URL = '/how-to-guides';
 
-function getGlobalGuides(limit: number) {
-  return allArticles
-    .filter((a) => a.isGlobalGuide === true)
-    .sort((a, b) => b.upvoteCount - a.upvoteCount)
-    .slice(0, limit);
-}
-
 const HOME_CAMPUS_PREVIEW_COUNT = 6;
 
 export default function Home() {
-  const { campuses: apiCampuses } = useCampuses();
+  const { campuses: apiCampuses, isLoading: campusesLoading, isError: campusesError } = useCampuses();
   const campuses = useMemo(() => (apiCampuses ?? []).map(apiCampusToCampus), [apiCampuses]);
   const campusPreview = useMemo(() => campuses.slice(0, HOME_CAMPUS_PREVIEW_COUNT), [campuses]);
+  const { articles: globalGuideArticles } = usePublishedArticles({ is_global_guide: true });
   const [heroSearch, setHeroSearch] = useState('');
   const [showNavSearch, setShowNavSearch] = useState(false);
   const [hasToken, setHasToken] = useState(false);
@@ -50,11 +44,22 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
+    let ticking = false;
+    let last = false;
     const handleScroll = () => {
-      const threshold = window.innerWidth < 768 ? 400 : 500;
-      setShowNavSearch(window.scrollY > threshold);
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(() => {
+        const threshold = window.innerWidth < 768 ? 400 : 500;
+        const next = window.scrollY > threshold;
+        if (next !== last) {
+          last = next;
+          setShowNavSearch(next);
+        }
+        ticking = false;
+      });
     };
-    window.addEventListener('scroll', handleScroll);
+    window.addEventListener('scroll', handleScroll, { passive: true });
     handleScroll();
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
@@ -65,6 +70,11 @@ export default function Home() {
       navigate(`/search?q=${encodeURIComponent(heroSearch.trim())}`);
     }
   };
+
+  const topGlobalGuides = useMemo(
+    () => [...globalGuideArticles].sort((a, b) => b.upvote_count - a.upvote_count).slice(0, 3),
+    [globalGuideArticles]
+  );
 
   return (
     <div className="min-h-screen bg-white overflow-x-hidden">
@@ -108,7 +118,7 @@ export default function Home() {
         <section className="bg-section py-8">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             {(() => {
-              const campus = campuses.find((c) => c.id === profile.campus_id);
+              const campus = campuses.find((c) => String(c.id) === String(profile.campus_id));
               const campusName = campus ? `${campus.name}, ${campus.city}` : 'My campus';
               return (
                 <div className="bg-white rounded-lg shadow-card border-l-4 border-[#991b1b] p-6">
@@ -137,10 +147,14 @@ export default function Home() {
           </h2>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {campusPreview.length === 0 ? (
+            {campusesLoading ? (
               <div className="col-span-full flex justify-center py-12">
                 <div className="animate-spin rounded-full border-2 border-[#fbf2f3] size-10 border-t-[#991b1b]" role="status" aria-label="Loading" />
               </div>
+            ) : campusesError ? (
+              <p className="col-span-full text-center text-sm text-red-700">Unable to load campuses right now.</p>
+            ) : campusPreview.length === 0 ? (
+              <p className="col-span-full text-center text-sm text-[#64748b]">No campuses available yet.</p>
             ) : (
               campusPreview.map((campus) => (
                 <CampusCard key={campus.id} campus={campus} />
@@ -171,20 +185,20 @@ export default function Home() {
               Practical knowledge that helps — no matter which campus you&apos;re at
             </p>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-              {getGlobalGuides(3).map((guide) => (
+              {topGlobalGuides.map((guide) => (
                 <Link
                   key={guide.id}
-                  to={`/article/${guide.id}`}
+                  to={`/article/${guide.slug || guide.id}`}
                   className="block bg-white rounded-xl shadow-card p-5 hover:shadow-lg hover:border-[#991b1b] transition-all border border-transparent"
                 >
                   <h3 className="font-display text-lg font-bold text-[#1e293b] mb-2 line-clamp-2">
                     {guide.title}
                   </h3>
                   <p className="text-sm text-[#64748b] line-clamp-2 mb-3">
-                    {guide.excerpt}
+                    {guide.excerpt || 'No excerpt available yet.'}
                   </p>
                   <p className="text-xs text-[#94a3b8] mb-2">
-                    👍 {guide.upvoteCount} upvoted this
+                    👍 {guide.upvote_count} upvoted this
                   </p>
                   <span className="inline-flex items-center text-[#991b1b] text-sm font-medium hover:underline">
                     Read <ChevronRight className="h-4 w-4 ml-0.5" />
@@ -254,7 +268,7 @@ export default function Home() {
         </div>
       </section>
 
-      <Footer />
+      <Footer loadGuides={false} />
     </div>
   );
 }

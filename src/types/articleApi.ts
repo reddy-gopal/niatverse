@@ -9,11 +9,11 @@ export type GuideTopic =
   | 'Skills';
 
 export interface ApiArticle {
-  id: number;
-  campus_id: number | null;
+  id: string;
+  campus_id: string | null;
   campus_name: string;
   category: ArticleCategory;
-  category_id?: number | null;
+  category_id?: string | null;
   title: string;
   slug: string;
   excerpt: string;
@@ -25,7 +25,6 @@ export interface ApiArticle {
   view_count: number;
   is_global_guide: boolean;
   topic: GuideTopic | '';
-  club_id: number | null;
   subcategory: string;
   subcategory_other: string;
   author_username: string;
@@ -64,10 +63,10 @@ export interface PaginatedResponse<T> {
 }
 
 export interface ArticleWritePayload {
-  campus_id: number | null;
+  campus_id: string | null;
   campus_name: string;
   category?: ArticleCategory;
-  category_id?: number | null;
+  category_id?: string | null;
   title: string;
   excerpt: string;
   body: string;
@@ -75,7 +74,6 @@ export interface ArticleWritePayload {
   images?: string[];
   is_global_guide: boolean;
   topic?: GuideTopic | '';
-  club_id?: number | null;
   subcategory?: string;
   subcategory_other?: string;
   save_as_draft?: boolean;

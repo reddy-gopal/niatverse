@@ -18,7 +18,6 @@ import {
   Sparkles,
 } from 'lucide-react';
 import Footer from '../components/Footer';
-import { campuses } from '../data/mockData';
 import { useCampuses } from '../hooks/useCampuses';
 import { articleService, type ApiCategory } from '../lib/articleService';
 import { fetchFoundingEditorProfile, fetchMe } from '../lib/authApi';
@@ -56,7 +55,7 @@ type ArticleDraft = {
   subtitle: string;
   body: string;
   attachedImages: { id: string; url: string; description: string }[];
-  categoryId: number | null;
+  categoryId: string | null;
   subcategory: string;
   subcategoryOther: string;
   campusId: string;
@@ -117,7 +116,7 @@ export default function WriteArticle() {
   const [saved, setSaved] = useState(true);
   const [saving, setSaving] = useState(false);
   const [campusId, setCampusId] = useState<string>('');
-  const [categoryId, setCategoryId] = useState<number | null>(null);
+  const [categoryId, setCategoryId] = useState<string | null>(null);
   const [categories, setCategories] = useState<ApiCategory[]>([]);
   const [categoriesLoading, setCategoriesLoading] = useState(true);
   const [title, setTitle] = useState('');
@@ -134,15 +133,18 @@ export default function WriteArticle() {
   const [imageUrl, setImageUrl] = useState('');
   const [videoUrl, setVideoUrl] = useState('');
   const [showSuccessModal, setShowSuccessModal] = useState(false);
-  const [submittedArticleId, setSubmittedArticleId] = useState<number | null>(null);
-  const [submittedCampusId, setSubmittedCampusId] = useState<number | null>(null);
+  const [submittedArticleKey, setSubmittedArticleKey] = useState<string | null>(null);
+  const [submittedCampusId, setSubmittedCampusId] = useState<string | null>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [submitLoading, setSubmitLoading] = useState(false);
   const [validationErrors, setValidationErrors] = useState<{ title?: boolean; campus?: boolean; body?: boolean; section?: boolean; subcategory?: boolean; subcategoryOther?: boolean }>({});
   type ToastItem = { id: number; message: string; type: 'validation' | 'error' };
   const [toasts, setToasts] = useState<ToastItem[]>([]);
   const { campuses: apiCampuses } = useCampuses();
-  const submittedCampusSlug = submittedCampusId != null ? (apiCampuses.find((c) => c.id === submittedCampusId)?.slug ?? String(submittedCampusId)) : null;
+  const submittedCampusSlug =
+    submittedCampusId != null
+      ? (apiCampuses.find((c) => String(c.id) === String(submittedCampusId))?.slug ?? String(submittedCampusId))
+      : null;
   const toastIdRef = useRef(0);
   const toastTimeoutsRef = useRef<ReturnType<typeof setTimeout>[]>([]);
   const addToast = useCallback((message: string, type: 'validation' | 'error') => {
@@ -168,7 +170,7 @@ export default function WriteArticle() {
   const [miniToolbarPos, setMiniToolbarPos] = useState({ top: 0, left: 0 });
   const miniToolbarRef = useRef<HTMLDivElement>(null);
   const imageFileInputRef = useRef<HTMLInputElement>(null);
-  const [editId, setEditId] = useState<number | null>(null);
+  const [editId, setEditId] = useState<string | null>(null);
   const [loadEditError, setLoadEditError] = useState<string | null>(null);
   const [searchParams, setSearchParams] = useSearchParams();
   const editParam = searchParams.get('edit');
@@ -177,7 +179,7 @@ export default function WriteArticle() {
   /** Reset form for a new article and navigate to write (no edit param). Closes success modal. */
   const startWriteAnotherArticle = useCallback(() => {
     setShowSuccessModal(false);
-    setSubmittedArticleId(null);
+    setSubmittedArticleKey(null);
     setSubmittedCampusId(null);
     setEditId(null);
     setLoadEditError(null);
@@ -214,7 +216,7 @@ export default function WriteArticle() {
       return;
     }
     articleService
-      .getSubcategories(slug)
+      .getSubcategories(slug, campusId || undefined)
       .then((res) => {
         const list = (res.data || []).map((s: { slug: string; label: string; requires_other: boolean }) => ({
           value: s.slug,
@@ -224,11 +226,11 @@ export default function WriteArticle() {
         setSubcategoryOptions(list);
       })
       .catch(() => setSubcategoryOptions([]));
-  }, [categoryId, categories]);
+  }, [categoryId, categories, campusId]);
 
   useEffect(() => {
-    const id = editParam ? parseInt(editParam, 10) : NaN;
-    if (!Number.isFinite(id)) return;
+    const id = (editParam || '').trim();
+    if (!id) return;
     setLoadEditError(null);
     articleService
       .detail(id)
@@ -238,7 +240,7 @@ export default function WriteArticle() {
         setTitle(a.title);
         setSubtitle(a.excerpt);
         setCampusId(a.campus_id != null ? String(a.campus_id) : '');
-        setCategoryId(a.category_id ?? null);
+        setCategoryId(a.category_id != null ? String(a.category_id) : null);
         setSubcategory((a as { subcategory?: string }).subcategory ?? '');
         setSubcategoryOther((a as { subcategory_other?: string }).subcategory_other ?? '');
         setShowSectionSelect(false);
@@ -269,7 +271,7 @@ export default function WriteArticle() {
       const d: ArticleDraft = JSON.parse(raw);
       setTitle(d.title ?? '');
       setSubtitle(d.subtitle ?? '');
-      setCategoryId(d.categoryId ?? null);
+      setCategoryId(d.categoryId != null ? String(d.categoryId) : null);
       setSubcategory(d.subcategory ?? '');
       setSubcategoryOther(d.subcategoryOther ?? '');
       setAttachedImages(Array.isArray(d.attachedImages) ? d.attachedImages : []);
@@ -441,10 +443,9 @@ export default function WriteArticle() {
       return;
     }
     setSubmitLoading(true);
-    const campusName = campuses.find((c) => String(c.id) === campusId)?.name ?? '';
-    const parsedCampusId = parseInt(String(campusId), 10);
-    const safeCampusId = Number.isFinite(parsedCampusId) ? parsedCampusId : null;
-    const safeCategoryId = categoryId != null ? (Number(categoryId) || null) : null;
+    const campusName = apiCampuses.find((c) => String(c.id) === campusId)?.name ?? '';
+    const safeCampusId = campusId.trim() !== '' ? campusId : null;
+    const safeCategoryId = categoryId != null && categoryId !== '' ? categoryId : null;
     try {
       const subcategoryPayload = needsSubcategory
         ? {
@@ -475,12 +476,12 @@ export default function WriteArticle() {
       console.log('[DEBUG] campusId:', campusId, 'safeCampusId:', safeCampusId);
       if (editId) {
         await articleService.update(editId, { ...payload, status: 'pending_review' });
-        setSubmittedArticleId(editId);
+        setSubmittedArticleKey(editId);
         setSubmittedCampusId(safeCampusId);
       } else {
         const res = await articleService.create(payload);
-        const created = res.data as { id: number; campus_id?: number | null };
-        setSubmittedArticleId(created.id);
+        const created = res.data as { id: string; slug?: string; campus_id?: string | null };
+        setSubmittedArticleKey(created.slug || created.id);
         setSubmittedCampusId(created.campus_id ?? safeCampusId);
       }
       if (typeof localStorage !== 'undefined') localStorage.removeItem(NIAT_ARTICLE_DRAFT);
@@ -797,7 +798,7 @@ export default function WriteArticle() {
                 id="section-select"
                 value={categoryId ?? ''}
                 onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
-                  const nextId = e.target.value ? parseInt(e.target.value, 10) : null;
+                  const nextId = e.target.value ? e.target.value : null;
                   setCategoryId(nextId);
                   setShowSectionSelect(false);
                   if (validationErrors.section) setValidationErrors((prev) => ({ ...prev, section: false }));
@@ -1179,9 +1180,9 @@ export default function WriteArticle() {
               Your article has been saved and is now in the review queue. A moderator will look at it soon—once approved, it'll be visible to the whole community.
             </p>
             <div className="flex flex-col gap-3">
-              {submittedArticleId != null && (
+              {submittedArticleKey != null && (
                 <Link
-                  to={submittedCampusSlug != null ? `/campus/${submittedCampusSlug}/article/${submittedArticleId}` : `/article/${submittedArticleId}`}
+                  to={submittedCampusSlug != null ? `/campus/${submittedCampusSlug}/article/${submittedArticleKey}` : `/article/${submittedArticleKey}`}
                   className="inline-flex items-center justify-center gap-2 py-3 rounded-xl bg-[#991b1b] text-white font-medium hover:bg-[#b91c1c] transition-colors"
                   onClick={() => setShowSuccessModal(false)}
                 >

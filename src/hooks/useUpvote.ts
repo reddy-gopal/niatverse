@@ -6,14 +6,14 @@ import type { UpvoteStatus } from '../types/articleApi';
 const STALE_TIME_MS = 60 * 1000;
 const DEBOUNCE_MS = 500;
 
-function fetcher(articleId: number) {
+function fetcher(articleId: string | number) {
   return articleService.getUpvoteStatus(articleId).then((r) => r.data);
 }
 
 /**
  * Upvote status with SWR (stale 60s). Toggle with optimistic update and 500ms debounce.
  */
-export function useUpvote(articleId: number | null) {
+export function useUpvote(articleId: string | number | null) {
   const { data, mutate } = useSWR<UpvoteStatus>(
     articleId != null ? ['upvote-status', articleId] : null,
     () => fetcher(articleId!),

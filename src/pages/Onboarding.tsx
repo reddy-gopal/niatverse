@@ -72,7 +72,10 @@ export default function Onboarding() {
     try {
       const payload = {
         ...form,
-        campus_name: form.campus_id != null ? (campuses.find((c: CampusListItem) => c.id === form.campus_id)?.name ?? '') : '',
+        campus_name:
+          form.campus_id != null
+            ? (campuses.find((c: CampusListItem) => String(c.id) === String(form.campus_id))?.name ?? '')
+            : '',
       };
       await updateFoundingEditorProfile(payload);
       window.dispatchEvent(new Event('niat:auth'));
@@ -119,7 +122,7 @@ export default function Onboarding() {
               </label>
               <CampusSelector
                 value={form.campus_id != null ? String(form.campus_id) : null}
-                onChange={(id) => setForm((f) => ({ ...f, campus_id: parseInt(id, 10) }))}
+                onChange={(id) => setForm((f) => ({ ...f, campus_id: id }))}
               />
               <p className="text-xs text-[#64748b] mt-1.5">This will be used as the default when you write articles.</p>
             </div>

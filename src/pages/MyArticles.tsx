@@ -18,9 +18,10 @@ export default function MyArticles() {
   const navigate = useNavigate();
   const [allowed, setAllowed] = useState<boolean | null>(null);
   const { articles, loading, error, refetch } = useMyArticles();
-  const [expandedId, setExpandedId] = useState<number | null>(null);
+  const [expandedId, setExpandedId] = useState<string | null>(null);
   const { campuses: apiCampuses } = useCampuses();
-  const getCampusSlug = (id: number) => apiCampuses.find((c) => c.id === id)?.slug ?? String(id);
+  const getCampusSlug = (id: string | number) =>
+    apiCampuses.find((c) => String(c.id) === String(id))?.slug ?? String(id);
 
   useEffect(() => {
     fetchMe().then((profile) => {
@@ -61,7 +62,7 @@ export default function MyArticles() {
               <li key={a.id} className="p-4 rounded-xl border border-[rgba(30,41,59,0.1)]">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <Link
-                    to={a.campus_id ? `/campus/${getCampusSlug(a.campus_id)}/article/${a.id}` : `/article/${a.id}`}
+                    to={a.campus_id ? `/campus/${getCampusSlug(a.campus_id)}/article/${a.slug || a.id}` : `/article/${a.slug || a.id}`}
                     className="font-medium text-[#991b1b] hover:underline"
                   >
                     {a.title}
@@ -77,12 +78,12 @@ export default function MyArticles() {
                   <div className="mt-2">
                     <button
                       type="button"
-                      onClick={() => setExpandedId(expandedId === a.id ? null : a.id)}
+                      onClick={() => setExpandedId(expandedId === String(a.id) ? null : String(a.id))}
                       className="text-sm text-red-600 hover:underline"
                     >
-                      {expandedId === a.id ? 'Hide' : 'Show'} rejection reason
+                      {expandedId === String(a.id) ? 'Hide' : 'Show'} rejection reason
                     </button>
-                    {expandedId === a.id && (
+                    {expandedId === String(a.id) && (
                       <p className="mt-1 text-sm text-red-700 bg-red-50 p-2 rounded">{a.rejection_reason}</p>
                     )}
                   </div>

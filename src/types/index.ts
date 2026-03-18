@@ -1,5 +1,5 @@
 export interface Campus {
-  id: number;
+  id: string | number;
   slug: string;
   name: string;
   university: string;
@@ -17,7 +17,8 @@ export interface Campus {
 
 export interface Article {
   id: number;
-  campusId: number;
+  slug?: string;
+  campusId: string | number;
   section: string;
   title: string;
   excerpt: string;
@@ -156,8 +157,9 @@ export type GuideTopic =
 export type CampusSectionTag = 'food' | 'living' | '30days';
 
 export interface ArticlePageArticle {
-  id: number;
-  campusId: number | null;
+  id: string | number;
+  slug?: string;
+  campusId: string | number | null;
   campusName: string;
   category: ArticleCategory;
   title: string;

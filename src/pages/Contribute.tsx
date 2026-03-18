@@ -6,9 +6,10 @@ import {
 } from 'lucide-react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
-import { campuses } from '../data/mockData';
+import { useCampuses } from '../hooks/useCampuses';
 
 export default function Contribute() {
+  const { campuses: apiCampuses } = useCampuses();
   const [selectedType, setSelectedType] = useState('article');
   const [selectedCampus, setSelectedCampus] = useState('');
   const [selectedSection, setSelectedSection] = useState('');
@@ -107,7 +108,7 @@ export default function Contribute() {
                 className="w-full px-4 py-3 bg-white border border-[rgba(30,41,59,0.1)] rounded-lg text-black focus:outline-none focus:ring-2 focus:ring-[#991b1b]"
               >
                 <option value="">Select your campus</option>
-                {campuses.map((c) => (
+                {apiCampuses.map((c) => (
                   <option key={c.id} value={c.id}>
                     {c.name}
                   </option>

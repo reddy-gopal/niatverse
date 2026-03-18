@@ -29,7 +29,7 @@ const SUGGESTION_OPTIONS: { value: SuggestionType; label: string }[] = [
 const MAX_CONTENT_LENGTH = 150;
 
 interface ArticleSuggestionFormProps {
-  articleId: number;
+  articleId: string | number;
   onSubmit: (payload: { type: SuggestionType; content: string; is_anonymous?: boolean }) => Promise<void>;
   triggerLabel?: string;
 }

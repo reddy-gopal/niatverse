@@ -1,6 +1,6 @@
 /** Campus from GET /api/campuses/ (directory API). */
 export interface CampusListItem {
-  id: number;
+  id: string;
   name: string;
   shortName: string | null;
   location: string;

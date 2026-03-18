@@ -5,7 +5,6 @@ import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import ImageWithFallback from '../components/ImageWithFallback';
 import { ArticleSuggestionForm } from '../components/ArticleSuggestionForm';
-import { allArticles } from '../data/mockData';
 import { useCampuses } from '../hooks/useCampuses';
 import { CATEGORY_CONFIG } from '../data/articleCategories';
 import { useArticleDetail } from '../hooks/useArticles';
@@ -27,7 +26,7 @@ function stripImageCardsFromHtml(html: string): string {
 export default function Article() {
   const { slug: campusSlug, articleId } = useParams<{ slug?: string; articleId: string }>();
   const isGlobalRoute = !campusSlug;
-  const articleIdNum = parseInt(articleId || '0', 10);
+  const articleIdParam = articleId?.trim() || null;
 
   const { campuses: apiCampuses } = useCampuses();
   const campus = useMemo(() => {
@@ -36,15 +35,12 @@ export default function Article() {
     return item ?? null;
   }, [apiCampuses, campusSlug]);
 
-  const { article: apiArticle, loading } = useArticleDetail(articleIdNum > 0 ? articleIdNum : null);
-  const pageArticle = allArticles.find((a) => a.id === articleIdNum);
-
-  // Only fall back to mock data AFTER the DB fetch is complete (not while loading)
+  const { article: apiArticle, loading, error } = useArticleDetail(articleIdParam);
   const fromApi = !loading && !!apiArticle;
+  const notFound = !loading && articleIdParam != null && !apiArticle;
 
   const article = loading
     ? {
-        // Placeholder while loading — prevents premature mock data render
         title: '',
         excerpt: '',
         updatedDays: 0,
@@ -57,7 +53,7 @@ export default function Article() {
         status: undefined as string | undefined,
         rejectionReason: undefined as string | undefined,
       }
-    : fromApi
+    : fromApi && apiArticle
       ? {
           title: apiArticle.title,
           excerpt: apiArticle.excerpt,
@@ -71,33 +67,19 @@ export default function Article() {
           status: apiArticle.status,
           rejectionReason: apiArticle.rejection_reason,
         }
-      : pageArticle
-        ? {
-            title: pageArticle.title,
-            excerpt: pageArticle.excerpt,
-            updatedDays: pageArticle.updatedDays,
-            upvoteCount: pageArticle.upvoteCount ?? 0,
-            viewCount: 0,
-            author: 'NIAT Student',
-            category: pageArticle.category,
-            campusName: pageArticle.campusName,
-            coverImage: pageArticle.coverImage,
-            status: undefined as string | undefined,
-            rejectionReason: undefined as string | undefined,
-          }
-        : {
-            title: 'Article not found',
-            excerpt: '',
-            updatedDays: 0,
-            upvoteCount: 0,
-            viewCount: 0,
-            author: 'NIAT Student',
-            category: 'academics' as const,
-            campusName: 'Global',
-            coverImage: undefined,
-            status: undefined as string | undefined,
-            rejectionReason: undefined as string | undefined,
-          };
+      : {
+          title: notFound ? 'Article not found' : '',
+          excerpt: '',
+          updatedDays: 0,
+          upvoteCount: 0,
+          viewCount: 0,
+          author: '',
+          category: 'academics' as const,
+          campusName: 'Global',
+          coverImage: undefined,
+          status: undefined as string | undefined,
+          rejectionReason: undefined as string | undefined,
+        };
 
   const articleIdForEngagement = fromApi && apiArticle ? apiArticle.id : null;
   const { upvoteCount, upvoted, toggle } = useUpvote(articleIdForEngagement);
@@ -152,7 +134,7 @@ export default function Article() {
 
   useEffect(() => {
     setCarouselIndex(0);
-  }, [articleIdNum]);
+  }, [articleIdParam]);
 
   const isAuthor = fromApi && apiArticle && currentUsername && apiArticle.author_username === currentUsername;
 
@@ -168,6 +150,22 @@ export default function Article() {
       .finally(() => setDeleteLoading(false));
   };
 
+  if (notFound) {
+    return (
+      <div className="min-h-screen bg-white overflow-x-hidden">
+        <Navbar />
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-16 text-center">
+          <p className="text-xl font-medium text-[#1e293b] mb-2">Article not found</p>
+          <p className="text-[#64748b] mb-4">{error ?? 'This article may have been removed or the link is invalid.'}</p>
+          <Link to={isGlobalRoute ? '/articles' : `/campus/${campusSlug ?? ''}`} className="text-[#991b1b] font-medium hover:underline">
+            ← Back to {isGlobalRoute ? 'Articles' : 'Campus'}
+          </Link>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-white overflow-x-hidden">
       <Navbar />
@@ -178,7 +176,7 @@ export default function Article() {
           <Link to="/" className="hover:text-[#991b1b]">Home</Link>
           <ChevronRight className="h-4 w-4 mx-1" />
           {isGlobalRoute ? (
-            pageArticle?.isGlobalGuide ? (
+            fromApi && apiArticle?.is_global_guide ? (
               <>
                 <Link to="/how-to-guides" className="hover:text-[#991b1b]">How-To Guides</Link>
                 <ChevronRight className="h-4 w-4 mx-1" />

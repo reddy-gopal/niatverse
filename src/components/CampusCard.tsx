@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { memo } from 'react';
 import { Star } from 'lucide-react';
 import type { Campus } from '../types';
 import ImageWithFallback from './ImageWithFallback';
@@ -6,17 +7,19 @@ interface CampusCardProps {
   campus: Campus;
 }
 
-export default function CampusCard({ campus }: CampusCardProps) {
+function CampusCard({ campus }: CampusCardProps) {
   return (
     <Link
       to={`/campus/${campus.slug}`}
-      className="block bg-section rounded-lg shadow-card overflow-hidden hover:shadow-lg hover:ring-2 hover:ring-[#991b1b] transition-all duration-200"
+      className="block bg-section rounded-lg border border-transparent shadow-card overflow-hidden hover:shadow-lg hover:border-[#991b1b]/30 transition-all duration-200 will-change-transform hover:-translate-y-0.5"
     >
       {/* Campus Image Area */}
       <div className="relative h-48 w-full">
         <ImageWithFallback
           src={campus.coverImage}
           alt={campus.name}
+          loading="lazy"
+          decoding="async"
           className="h-full w-full object-cover"
         />
       </div>
@@ -48,3 +51,5 @@ export default function CampusCard({ campus }: CampusCardProps) {
     </Link>
   );
 }
+
+export default memo(CampusCard);

@@ -2,20 +2,17 @@ import { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Search, Menu, X, ChevronRight, PenLine, UserCircle, LogOut } from 'lucide-react';
 import { clearTokens, fetchFoundingEditorProfile, isOnboardingComplete } from '../lib/authApi';
-import { allArticles } from '../data/mockData';
 import { useCampuses } from '../hooks/useCampuses';
-import { CATEGORY_CONFIG } from '../data/articleCategories';
+import { useCategories } from '../hooks/useCategories';
+import { usePublishedArticles } from '../hooks/useArticles';
+import { getCategoryConfig } from '../data/articleCategories';
+import type { ApiArticle } from '../types/articleApi';
 
 interface NavbarProps {
   searchQuery?: string;
   showSearch?: boolean;
 }
 
-const CATEGORY_NAV_LINKS = [
-  { key: 'campus-life' as const, label: 'Campus Life', icon: '🏠', path: '/articles?category=campus-life' },
-  { key: 'experiences' as const, label: 'Experiences', icon: '💼', path: '/articles?category=experiences' },
-  { key: 'academics' as const, label: 'Academics', icon: '📚', path: '/articles?category=academics' },
-];
 const HOW_TO_GUIDES_LINK = { label: 'How-To Guides', icon: '📘', path: '/how-to-guides' };
 
 export default function Navbar({ searchQuery = '', showSearch }: NavbarProps) {
@@ -31,7 +28,14 @@ export default function Navbar({ searchQuery = '', showSearch }: NavbarProps) {
   const navigate = useNavigate();
   const location = useLocation();
   const { campuses: apiCampuses } = useCampuses();
-  const getCampusSlug = (campusId: number) => apiCampuses.find((c) => c.id === campusId)?.slug ?? String(campusId);
+  const { categories: apiCategories } = useCategories();
+  const getCampusSlug = (campusId: string) => apiCampuses.find((c) => String(c.id) === campusId)?.slug ?? campusId;
+  const showFullNav = hasToken && onboardingComplete;
+
+  const { articles: publishedArticles, loading: recentArticlesLoading } = usePublishedArticles(
+    { page_size: 12, ordering: 'updated_at' },
+    { enabled: showFullNav && articlesDropdownOpen }
+  );
 
   useEffect(() => {
     const update = () => {
@@ -58,16 +62,22 @@ export default function Navbar({ searchQuery = '', showSearch }: NavbarProps) {
       .finally(() => setIsLoadingProfile(false));
   }, [hasToken]);
 
-  const showFullNav = hasToken && onboardingComplete;
-
   const isHome = location.pathname === '/';
   const isOnArticles = location.pathname === '/articles';
   const shouldShowSearch = showFullNav && (!isHome || showSearch === true);
   const shouldShowNavShadow = isHome && showSearch === true;
 
-  const recentlyUpdated = allArticles
-    .sort((a, b) => a.updatedDays - b.updatedDays)
-    .slice(0, 12);
+  const recentlyUpdated = (publishedArticles as ApiArticle[])
+    .slice(0, 12)
+    .map((a) => ({
+      id: String(a.id),
+      slug: a.slug,
+      title: a.title,
+      campusId: a.campus_id != null ? String(a.campus_id) : null,
+      campusName: a.campus_name ?? 'Global',
+      category: a.category,
+      updatedDays: a.updated_days,
+    }));
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -211,18 +221,21 @@ export default function Navbar({ searchQuery = '', showSearch }: NavbarProps) {
                                 Browse by Category
                               </h4>
                               <ul className="space-y-0.5">
-                                {CATEGORY_NAV_LINKS.map(({ key, label, icon, path }) => (
-                                  <li key={key}>
-                                    <Link
-                                      to={path}
-                                      onClick={() => setArticlesDropdownOpen(false)}
-                                      className="flex items-center gap-2 py-2 px-2 -mx-2 rounded-md text-[#1e293b] hover:bg-[#fbf2f3] hover:text-[#991b1b] transition-colors text-sm font-medium"
-                                    >
-                                      <span>{icon}</span>
-                                      {label}
-                                    </Link>
-                                  </li>
-                                ))}
+                                {apiCategories.map((c) => {
+                                  const style = getCategoryConfig(c.slug);
+                                  return (
+                                    <li key={c.slug}>
+                                      <Link
+                                        to={`/articles?category=${c.slug}`}
+                                        onClick={() => setArticlesDropdownOpen(false)}
+                                        className="flex items-center gap-2 py-2 px-2 -mx-2 rounded-md text-[#1e293b] hover:bg-[#fbf2f3] hover:text-[#991b1b] transition-colors text-sm font-medium"
+                                      >
+                                        <span>{style.icon}</span>
+                                        {c.name}
+                                      </Link>
+                                    </li>
+                                  );
+                                })}
                                 <li className="border-t border-[rgba(30,41,59,0.08)] mt-2 pt-2">
                                   <Link
                                     to={HOW_TO_GUIDES_LINK.path}
@@ -243,11 +256,20 @@ export default function Navbar({ searchQuery = '', showSearch }: NavbarProps) {
                               </h4>
                               <div className="overflow-y-auto overscroll-contain flex-1 min-h-0 rounded-lg -mx-1 px-1 scroll-smooth">
                                 <div className="space-y-1.5">
-                                  {recentlyUpdated.map((a) => {
-                                    const config = CATEGORY_CONFIG[a.category];
-                                    const url = a.campusId
-                                      ? `/campus/${getCampusSlug(a.campusId)}/article/${a.id}`
-                                      : `/article/${a.id}`;
+                                  {recentArticlesLoading && (
+                                    <p className="text-xs text-[#64748b] py-2 px-1">Loading recent articles...</p>
+                                  )}
+                                  {!recentArticlesLoading && recentlyUpdated.length === 0 && (
+                                    <p className="text-xs text-[#64748b] py-2 px-1">No recent articles yet.</p>
+                                  )}
+                                  {!recentArticlesLoading && recentlyUpdated.map((a) => {
+                                    const config = getCategoryConfig(a.category ?? '');
+                                    const categoryLabel = apiCategories.find((c) => c.slug === a.category)?.name ?? config.label;
+                                    const campusIdForUrl = a.campusId != null && a.campusId !== '' ? a.campusId : '';
+                                    const articleKey = a.slug || a.id;
+                                    const url = campusIdForUrl
+                                      ? `/campus/${getCampusSlug(campusIdForUrl)}/article/${articleKey}`
+                                      : `/article/${articleKey}`;
                                     return (
                                       <Link
                                         key={a.id}
@@ -263,7 +285,7 @@ export default function Navbar({ searchQuery = '', showSearch }: NavbarProps) {
                                             className="text-[10px] px-2 py-0.5 rounded-full"
                                             style={{ backgroundColor: config.bg, color: config.text }}
                                           >
-                                            {config.label}
+                                            {categoryLabel}
                                           </span>
                                           <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#991b1b] text-white">
                                             {a.campusName}

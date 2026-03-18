@@ -61,7 +61,10 @@ export default function Profile() {
     try {
       const payload = {
         ...editForm,
-        campus_name: editForm.campus_id != null ? (campuses.find((c: CampusListItem) => c.id === editForm.campus_id)?.name ?? '') : '',
+        campus_name:
+          editForm.campus_id != null
+            ? (campuses.find((c: CampusListItem) => String(c.id) === String(editForm.campus_id))?.name ?? '')
+            : '',
       };
       const updated = await updateFoundingEditorProfile(payload);
       setEditForm(updated);
@@ -117,7 +120,7 @@ export default function Profile() {
                   </label>
                   <CampusSelector
                     value={editForm.campus_id != null ? String(editForm.campus_id) : null}
-                    onChange={(id) => setEditForm((f) => ({ ...f, campus_id: parseInt(id, 10) }))}
+                    onChange={(id) => setEditForm((f) => ({ ...f, campus_id: id }))}
                   />
                 </div>
                 <div>

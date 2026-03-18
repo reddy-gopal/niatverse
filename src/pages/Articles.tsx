@@ -5,24 +5,25 @@ import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import ImageWithFallback from '../components/ImageWithFallback';
 import { useCampuses } from '../hooks/useCampuses';
+import { useCategories } from '../hooks/useCategories';
 import { usePublishedArticles } from '../hooks/useArticles';
-import { CATEGORY_ORDER, backendCategoryToFrontend, getCategoryConfig } from '../data/articleCategories';
-import type { ArticleCategory } from '../types';
+import { getCategoryConfig } from '../data/articleCategories';
 import type { ArticlePageArticle } from '../types';
 import type { ApiArticle } from '../types/articleApi';
 
-const CATEGORY_LINKS = [
-  { key: 'campus-life' as const, label: "Campus Life" },
-  { key: 'experiences' as const, label: "Experiences" },
-  { key: 'academics' as const, label: "Academics" },
-  { key: 'howto' as const, label: "How-To Guides" },
-];
-
-function ArticleRow({ article, getCampusSlug }: { article: ArticlePageArticle; getCampusSlug: (id: number) => string }) {
+function ArticleRow({
+  article,
+  getCampusSlug,
+  categoryLabel,
+}: {
+  article: ArticlePageArticle;
+  getCampusSlug: (id: string | number) => string;
+  categoryLabel: string;
+}) {
   const config = getCategoryConfig(article.category);
-  const articleUrl = article.campusId
-    ? `/campus/${getCampusSlug(article.campusId)}/article/${article.id}`
-    : `/article/${article.id}`;
+  const articleUrl = article.campusId != null && article.campusId !== ''
+    ? `/campus/${getCampusSlug(article.campusId)}/article/${article.slug || article.id}`
+    : `/article/${article.slug || article.id}`;
 
   return (
     <Link
@@ -40,7 +41,7 @@ function ArticleRow({ article, getCampusSlug }: { article: ArticlePageArticle; g
             className="inline-block text-[11px] font-semibold px-2 py-0.5 rounded-[100px]"
             style={{ backgroundColor: config.bg, color: config.text }}
           >
-            {config.label}
+            {categoryLabel}
           </span>
           <span
             className="inline-block text-[11px] font-semibold px-2 py-0.5 rounded-[100px]"
@@ -70,6 +71,7 @@ function ArticleRow({ article, getCampusSlug }: { article: ArticlePageArticle; g
 function apiArticleToPageArticle(a: ApiArticle): ArticlePageArticle {
   return {
     id: a.id,
+    slug: a.slug,
     campusId: a.campus_id,
     campusName: a.campus_name ?? 'Global',
     category: a.category as ArticlePageArticle['category'],
@@ -83,23 +85,26 @@ function apiArticleToPageArticle(a: ApiArticle): ArticlePageArticle {
 
 export default function Articles() {
   const [searchParams, setSearchParams] = useSearchParams();
-  const categoryParam = searchParams.get('category') as ArticleCategory | null;
+  const categoryParam = searchParams.get('category');
   const campusParam = searchParams.get('campus');
   const [campusDropdownOpen, setCampusDropdownOpen] = useState(false);
 
-  const activeCategory = categoryParam && CATEGORY_ORDER.includes(categoryParam) ? categoryParam : null;
-  const activeCampusId = campusParam ? parseInt(campusParam, 10) : null;
-  const validCampusId = activeCampusId != null && !isNaN(activeCampusId) ? activeCampusId : undefined;
+  const { categories: apiCategories } = useCategories();
+  const apiCategorySlugs = useMemo(() => new Set(apiCategories.map((c) => c.slug)), [apiCategories]);
+  const activeCategory = categoryParam && apiCategorySlugs.has(categoryParam) ? categoryParam : null;
+  const activeCampusId = campusParam ? String(campusParam) : null;
+  const validCampusId = activeCampusId ?? undefined;
 
   const { campuses: apiCampuses } = useCampuses();
-  const { articles: apiArticles, loading: articlesLoading, error: articlesError, isNetworkError } = usePublishedArticles(
-    validCampusId != null ? { campus: validCampusId } : undefined
-  );
+  const { articles: apiArticles, loading: articlesLoading, error: articlesError, isNetworkError } = usePublishedArticles({
+    ...(validCampusId != null && { campus: validCampusId }),
+    ...(activeCategory && { category: activeCategory }),
+  });
 
   const displayArticles = useMemo(() => {
     let result = apiArticles.map(apiArticleToPageArticle);
-    if (activeCategory) result = result.filter((a) => backendCategoryToFrontend(a.category) === activeCategory);
-    if (validCampusId != null) result = result.filter((a) => a.campusId === validCampusId);
+    if (activeCategory) result = result.filter((a) => a.category === activeCategory);
+    if (validCampusId != null) result = result.filter((a) => String(a.campusId) === validCampusId);
     return [...result].sort((a, b) => b.upvoteCount - a.upvoteCount);
   }, [apiArticles, activeCategory, validCampusId]);
 
@@ -110,29 +115,32 @@ export default function Articles() {
   );
 
   const campusArticleCounts = useMemo(() => {
-    const counts = new Map<number, number>();
+    const counts = new Map<string, number>();
     for (const a of apiArticles) {
       const cid = a.campus_id;
-      if (cid != null) counts.set(cid, (counts.get(cid) || 0) + 1);
+      if (cid != null) {
+        const key = String(cid);
+        counts.set(key, (counts.get(key) || 0) + 1);
+      }
     }
     return counts;
   }, [apiArticles]);
 
-  const setCategory = (cat: ArticleCategory | null) => {
+  const setCategory = (slug: string | null) => {
     const next = new URLSearchParams(searchParams);
-    if (cat) next.set('category', cat);
+    if (slug) next.set('category', slug);
     else next.delete('category');
     setSearchParams(next);
   };
 
-  const setCampus = (id: number | null) => {
+  const setCampus = (id: string | null) => {
     const next = new URLSearchParams(searchParams);
-    if (id !== null && !isNaN(id)) next.set('campus', String(id));
+    if (id !== null && id !== '') next.set('campus', String(id));
     else next.delete('campus');
     setSearchParams(next);
     setCampusDropdownOpen(false);
   };
-  const getCampusSlug = (id: number) => apiCampuses.find((c) => c.id === id)?.slug ?? String(id);
+  const getCampusSlug = (id: string | number) => apiCampuses.find((c) => String(c.id) === String(id))?.slug ?? String(id);
 
   const totalCount = displayArticles.length;
   const campusCount = apiCampuses.length;
@@ -171,16 +179,16 @@ export default function Articles() {
               >
                 All
               </button>
-              {CATEGORY_LINKS.map(({ key, label }) => (
+              {apiCategories.map((c) => (
                 <button
-                  key={key}
-                  onClick={() => setCategory(key)}
-                  className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${activeCategory === key
+                  key={c.slug}
+                  onClick={() => setCategory(c.slug)}
+                  className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${activeCategory === c.slug
                       ? 'bg-[#991b1b] text-white'
                       : 'bg-white text-[#1e293b] hover:bg-[#fbf2f3]'
                     }`}
                 >
-                  {label}
+                  {c.name}
                 </button>
               ))}
             </div>
@@ -190,7 +198,7 @@ export default function Articles() {
                 className="flex items-center gap-2 px-4 py-2 bg-white border border-[rgba(30,41,59,0.1)] rounded-md text-sm font-medium text-[#1e293b] hover:bg-gray-50"
               >
                 {activeCampusId != null
-                  ? apiCampuses.find((c) => c.id === activeCampusId)?.name ?? 'All Campuses'
+                  ? apiCampuses.find((c) => String(c.id) === activeCampusId)?.name ?? 'All Campuses'
                   : 'All Campuses'}
                 <ChevronDown className="h-4 w-4" />
               </button>
@@ -211,12 +219,12 @@ export default function Articles() {
                     {apiCampuses.map((c) => (
                       <button
                         key={c.id}
-                        onClick={() => setCampus(c.id)}
-                        className={`w-full text-left px-4 py-2 text-sm flex justify-between ${activeCampusId === c.id ? 'bg-[#fbf2f3] text-[#991b1b] font-medium' : 'text-[#1e293b] hover:bg-gray-50'
+                        onClick={() => setCampus(String(c.id))}
+                        className={`w-full text-left px-4 py-2 text-sm flex justify-between ${activeCampusId === String(c.id) ? 'bg-[#fbf2f3] text-[#991b1b] font-medium' : 'text-[#1e293b] hover:bg-gray-50'
                           }`}
                       >
                         {c.name}
-                        <span className="text-[#64748b]">{campusArticleCounts.get(c.id) ?? 0}</span>
+                        <span className="text-[#64748b]">{campusArticleCounts.get(String(c.id)) ?? 0}</span>
                       </button>
                     ))}
                   </div>
@@ -231,7 +239,7 @@ export default function Articles() {
           <main className="flex-1 min-w-0">
             <p className="font-dm-sans text-sm text-[#64748b] mb-2">
               {activeCategory
-                ? `Showing ${filteredArticles.length} articles in ${getCategoryConfig(activeCategory).label}`
+                ? `Showing ${filteredArticles.length} articles in ${apiCategories.find((c) => c.slug === activeCategory)?.name ?? getCategoryConfig(activeCategory).label}`
                 : `Showing ${filteredArticles.length} articles`}
             </p>
             <div className="border-b border-[rgba(30,41,59,0.08)] mb-0" />
@@ -270,7 +278,12 @@ export default function Articles() {
               <>
                 <div className="divide-y divide-[rgba(30,41,59,0.08)]">
                   {filteredArticles.map((a: ArticlePageArticle) => (
-                    <ArticleRow key={a.id} article={a} getCampusSlug={getCampusSlug} />
+                    <ArticleRow
+                      key={a.id}
+                      article={a}
+                      getCampusSlug={getCampusSlug}
+                      categoryLabel={apiCategories.find((c) => c.slug === a.category)?.name ?? getCategoryConfig(a.category).label}
+                    />
                   ))}
                 </div>
               </>
@@ -285,9 +298,9 @@ export default function Articles() {
                 <h3 className="font-playfair font-bold text-[#1e293b] mb-3">Top Articles This Week</h3>
                 <ul className="space-y-3">
                   {topArticles.map((a: ArticlePageArticle) => {
-                    const url = a.campusId
-                      ? `/campus/${getCampusSlug(a.campusId)}/article/${a.id}`
-                      : `/article/${a.id}`;
+                    const url = a.campusId != null && a.campusId !== ''
+                      ? `/campus/${getCampusSlug(a.campusId)}/article/${a.slug || a.id}`
+                      : `/article/${a.slug || a.id}`;
                     return (
                       <li key={a.id}>
                         <Link
@@ -316,7 +329,7 @@ export default function Articles() {
                         {c.name}
                       </Link>
                       <span className="text-xs text-[#64748b]">
-                        {campusArticleCounts.get(c.id) ?? 0} articles
+                        {campusArticleCounts.get(String(c.id)) ?? 0} articles
                       </span>
                     </li>
                   ))}

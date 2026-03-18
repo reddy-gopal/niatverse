@@ -1,17 +1,22 @@
 import { Link } from 'react-router-dom';
-import { allArticles } from '../data/mockData';
+import { useMemo } from 'react';
+import { usePublishedArticles } from '../hooks/useArticles';
 
 const HOW_TO_GUIDES_URL = '/how-to-guides';
 
-function getGlobalGuides(limit: number) {
-  return allArticles
-    .filter((a) => a.isGlobalGuide === true)
-    .sort((a, b) => b.upvoteCount - a.upvoteCount)
-    .slice(0, limit);
+interface FooterProps {
+  loadGuides?: boolean;
 }
 
-export default function Footer() {
-  const guides = getGlobalGuides(4);
+export default function Footer({ loadGuides = true }: FooterProps) {
+  const { articles: globalGuideArticles } = usePublishedArticles(
+    { is_global_guide: true, page_size: 4, ordering: 'upvote_count' },
+    { enabled: loadGuides }
+  );
+  const guides = useMemo(
+    () => [...globalGuideArticles].slice(0, 4),
+    [globalGuideArticles]
+  );
   return (
     <footer className="bg-black text-white py-8 sm:py-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -50,7 +55,7 @@ export default function Footer() {
               {guides.map((guide) => (
                 <li key={guide.id}>
                   <Link
-                    to={`/article/${guide.id}`}
+                    to={`/article/${guide.slug || guide.id}`}
                     className="text-white/60 hover:text-white text-sm transition-colors"
                   >
                     {guide.title}

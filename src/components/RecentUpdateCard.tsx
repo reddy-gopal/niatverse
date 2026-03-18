@@ -13,9 +13,10 @@ interface RecentUpdateCardProps {
  * Shows: title, excerpt, "Written by [author]", and helpful (upvote) count.
  */
 export default function RecentUpdateCard({ article, campusSlug }: RecentUpdateCardProps) {
+  const articleKey = article.slug || article.id;
   const href = article.campus_id
-    ? `/campus/${campusSlug}/article/${article.id}`
-    : `/article/${article.id}`;
+    ? `/campus/${campusSlug}/article/${articleKey}`
+    : `/article/${articleKey}`;
 
   return (
     <Link

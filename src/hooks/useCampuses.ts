@@ -12,7 +12,11 @@ async function fetcher(): Promise<CampusListItem[]> {
 }
 
 export function useCampuses() {
-  const { data, error, isLoading } = useSWR<CampusListItem[]>(url, fetcher);
+  const { data, error, isLoading } = useSWR<CampusListItem[]>(url, fetcher, {
+    revalidateOnFocus: false,
+    revalidateOnReconnect: true,
+    dedupingInterval: 60_000,
+  });
   return {
     campuses: data ?? [],
     isLoading,

@@ -53,7 +53,7 @@ export interface MeProfile {
 /** Founding Editor profile (one-to-one with user): campus, LinkedIn, year joined. */
 export interface FoundingEditorProfile {
   linkedin_profile: string;
-  campus_id: number | null;
+  campus_id: string | null;
   campus_name: string;
   year_joined: number | null;
 }

@@ -4,8 +4,9 @@ import { Search, ChevronRight } from 'lucide-react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import ImageWithFallback from '../components/ImageWithFallback';
-import { allArticles } from '../data/mockData';
-import type { ArticlePageArticle, GuideTopic } from '../types';
+import { usePublishedArticles } from '../hooks/useArticles';
+import type { GuideTopic } from '../types';
+import type { ApiArticle } from '../types/articleApi';
 
 const TOPICS: { value: GuideTopic | 'All'; label: string }[] = [
   { value: 'All', label: 'All' },
@@ -17,35 +18,29 @@ const TOPICS: { value: GuideTopic | 'All'; label: string }[] = [
   { value: 'Skills', label: 'Skills' },
 ];
 
-function getGlobalGuides(): ArticlePageArticle[] {
-  return allArticles
-    .filter((a) => a.isGlobalGuide === true)
-    .sort((a, b) => b.upvoteCount - a.upvoteCount);
-}
-
-function getFeaturedGuide(): ArticlePageArticle | null {
-  const featured = allArticles
-    .filter((a) => a.isGlobalGuide === true && a.featured === true)
-    .sort((a, b) => b.upvoteCount - a.upvoteCount);
-  return featured[0] ?? null;
-}
-
 export default function HowToGuides() {
   const [search, setSearch] = useState('');
   const [activeTopic, setActiveTopic] = useState<GuideTopic | 'All'>('All');
+  const { articles: globalGuideArticles } = usePublishedArticles({ is_global_guide: true });
 
-  const guides = useMemo(() => getGlobalGuides(), []);
-  const featuredGuide = useMemo(() => getFeaturedGuide(), []);
+  const guides = useMemo(
+    () => [...globalGuideArticles].sort((a, b) => b.upvote_count - a.upvote_count),
+    [globalGuideArticles]
+  );
+  const featuredGuide = useMemo(
+    () => guides.find((g) => g.featured) ?? guides[0] ?? null,
+    [guides]
+  );
 
   const filteredGuides = useMemo(() => {
     let list = guides;
     if (activeTopic !== 'All') {
-      list = list.filter((a) => a.topic === activeTopic);
+      list = list.filter((a: ApiArticle) => a.topic === activeTopic);
     }
     if (search.trim()) {
       const q = search.trim().toLowerCase();
       list = list.filter(
-        (a) =>
+        (a: ApiArticle) =>
           a.title.toLowerCase().includes(q) ||
           (a.excerpt && a.excerpt.toLowerCase().includes(q))
       );
@@ -84,13 +79,13 @@ export default function HowToGuides() {
         {featuredGuide && (
           <section className="mb-12">
             <Link
-              to={`/article/${featuredGuide.id}`}
+              to={`/article/${featuredGuide.slug || featuredGuide.id}`}
               className="block rounded-xl overflow-hidden shadow-card hover:shadow-lg border border-[rgba(30,41,59,0.08)] hover:border-[#991b1b]/30 transition-all"
             >
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-0 bg-white">
                 <div className="relative h-56 lg:h-72">
                   <ImageWithFallback
-                    src={featuredGuide.coverImage}
+                    src={featuredGuide.cover_image}
                     alt={featuredGuide.title}
                     className="w-full h-full object-cover"
                   />
@@ -108,7 +103,7 @@ export default function HowToGuides() {
                     {featuredGuide.excerpt}
                   </p>
                   <p className="text-sm text-[#94a3b8] mb-4">
-                    👍 {featuredGuide.upvoteCount} upvoted this
+                    👍 {featuredGuide.upvote_count} upvoted this
                   </p>
                   <span className="inline-flex items-center text-[#991b1b] font-medium hover:underline">
                     Read Guide <ChevronRight className="h-4 w-4 ml-1" />
@@ -145,13 +140,13 @@ export default function HowToGuides() {
               {filteredGuides.map((guide) => (
                 <Link
                   key={guide.id}
-                  to={`/article/${guide.id}`}
+                  to={`/article/${guide.slug || guide.id}`}
                   className="block bg-white rounded-xl shadow-card overflow-hidden hover:shadow-lg border border-transparent hover:border-[#991b1b] transition-all"
                 >
-                  {guide.coverImage && (
+                  {guide.cover_image && (
                     <div className="h-40 w-full overflow-hidden">
                       <ImageWithFallback
-                        src={guide.coverImage}
+                        src={guide.cover_image}
                         alt={guide.title}
                         loading="lazy"
                         className="w-full h-full object-cover"
@@ -171,7 +166,7 @@ export default function HowToGuides() {
                       {guide.excerpt}
                     </p>
                     <p className="text-xs text-[#94a3b8] mb-2">
-                      👍 {guide.upvoteCount} upvoted this
+                      👍 {guide.upvote_count} upvoted this
                     </p>
                     <span className="inline-flex items-center text-[#991b1b] text-sm font-medium hover:underline">
                       Read Guide <ChevronRight className="h-4 w-4 ml-0.5" />

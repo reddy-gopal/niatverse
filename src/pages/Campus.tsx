@@ -2,19 +2,41 @@ import { useState, useEffect, useRef, useMemo } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import {
   Star, MapPin, Users, FileText, Clock, ChevronRight,
-  Calendar, MessageSquare, Award, Utensils, Home, Play, Info, PenLine, Sparkles
+  Calendar, MessageSquare, Award, Utensils, Home, Play, PenLine, Sparkles
 } from 'lucide-react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import ImageWithFallback from '../components/ImageWithFallback';
 import RecentUpdateCard from '../components/RecentUpdateCard';
-import { ratings, clubs, allArticles } from '../data/mockData';
+import { ratings } from '../data/mockData';
 import { CLUB_TYPE_BADGE_STYLES } from '../constants/clubBadges';
 import { useCampuses } from '../hooks/useCampuses';
 import { usePublishedArticles } from '../hooks/useArticles';
+import { useClubs } from '../hooks/useClubs';
 import { apiCampusToCampus } from '../lib/campusUtils';
 import { articleService } from '../lib/articleService';
 import type { Campus } from '../types';
+import type { ArticlePageArticle } from '../types';
+import type { ApiArticle } from '../types/articleApi';
+import { backendCategoryToFrontend } from '../data/articleCategories';
+
+function apiArticleToPageArticle(a: ApiArticle): ArticlePageArticle {
+  return {
+    id: a.id,
+    slug: a.slug,
+    campusId: a.campus_id,
+    campusName: a.campus_name ?? 'Global',
+    category: backendCategoryToFrontend(a.category) as ArticlePageArticle['category'],
+    title: a.title,
+    excerpt: a.excerpt,
+    coverImage: a.cover_image || undefined,
+    updatedDays: a.updated_days,
+    upvoteCount: a.upvote_count,
+    featured: a.featured,
+    isGlobalGuide: a.is_global_guide,
+    topic: (a.topic as ArticlePageArticle['topic']) ?? undefined,
+  };
+}
 
 export default function Campus() {
   const { slug: campusSlug } = useParams<{ slug: string }>();
@@ -28,15 +50,15 @@ export default function Campus() {
     return apiCampusToCampus(item);
   }, [apiCampuses, campusSlug]);
 
-  const campusId = campus?.id ?? 0;
+  const campusId = campus?.id != null ? String(campus.id) : '';
 
   useEffect(() => {
-    if (!campus?.id) return;
+    if (!campusId) return;
     articleService
-      .list({ campus: campus.id })
+      .list({ campus: campusId })
       .then((res) => setArticleCount((res.data as { count?: number })?.count ?? 0))
       .catch(() => setArticleCount(0));
-  }, [campus?.id]);
+  }, [campusId]);
 
   const notFound = !campusesLoading && !campus && !!campusSlug;
   const displayCampus: Campus = campus ?? {
@@ -69,38 +91,51 @@ export default function Campus() {
   };
 
   const { articles: recentPublishedArticles, loading: recentLoading } = usePublishedArticles(
-    campus?.id ? { campus: campus.id } : undefined
+    campusId ? { campus: campusId } : undefined,
+    { enabled: !!campusId }
   );
+  const { clubs: campusClubs } = useClubs(campusId ? { campus: campusId } : undefined);
+  const { articles: globalGuideArticles } = usePublishedArticles({ is_global_guide: true });
 
   const campusLifeVideos = [
-    { id: '4XMwDh8BsSA', url: 'https://youtu.be/4XMwDh8BsSA?si=66y6Xlndg8C6y5yY' },
-    { id: '7JObBe_knlU', url: 'https://youtu.be/7JObBe_knlU?si=azrfEDKJN5Izw4Ah' },
-    { id: 'LVaKm48qTMw', url: 'https://youtu.be/LVaKm48qTMw?si=aDaEbmyi6gr_IKjN' },
-    { id: '8JhNZhq-HRU', url: 'https://youtu.be/8JhNZhq-HRU?si=eMpZcL9qWGxobV6F' },
+    { id: '4XMwDh8BsSA', url: 'https://youtu.be/4XMwDh8BsSA?si=66y6Xlndg8C6y5yY', title: 'Hostel and First Week Vibes', tag: 'Campus Life' },
+    { id: '7JObBe_knlU', url: 'https://youtu.be/7JObBe_knlU?si=azrfEDKJN5Izw4Ah', title: 'A Day in NIAT', tag: 'Student Story' },
+    { id: 'LVaKm48qTMw', url: 'https://youtu.be/LVaKm48qTMw?si=aDaEbmyi6gr_IKjN', title: 'Inside Clubs and Communities', tag: 'Clubs' },
+    { id: '8JhNZhq-HRU', url: 'https://youtu.be/8JhNZhq-HRU?si=eMpZcL9qWGxobV6F', title: 'Campus Tour Highlights', tag: 'Tour' },
   ];
 
+  const campusRecentPublishedArticles = useMemo(
+    () => recentPublishedArticles.filter((a) => a.campus_id != null && String(a.campus_id) === campusId),
+    [recentPublishedArticles, campusId]
+  );
   const campusArticles = useMemo(
-    () => allArticles.filter((a) => a.campusId === campusId || a.campusId === null),
-    [campusId]
+    () => campusRecentPublishedArticles.map(apiArticleToPageArticle),
+    [campusRecentPublishedArticles]
   );
   const slugForLinks = campus?.slug ?? campusSlug ?? '';
-  const slugForCampusId = (id: number) =>
-    id === campusId ? slugForLinks : (apiCampuses.find((c) => c.id === id)?.slug ?? String(id));
+  const slugForCampusId = (id: string | number) => {
+    const idStr = String(id);
+    return idStr === campusId ? slugForLinks : (apiCampuses.find((c) => String(c.id) === idStr)?.slug ?? idStr);
+  };
   const topVotedArticles = useMemo(
     () => [...campusArticles].sort((a, b) => b.upvoteCount - a.upvoteCount).slice(0, 6),
     [campusArticles]
   );
   const foodArticles = useMemo(
-    () => campusArticles.filter((a) => a.campusSection === 'food'),
+    () => campusArticles.filter((a) => a.category === 'campus-life' || a.category === 'experiences').slice(0, 6),
     [campusArticles]
   );
   const livingArticles = useMemo(
-    () => campusArticles.filter((a) => a.campusSection === 'living'),
+    () => campusArticles.filter((a) => a.category === 'academics').slice(0, 6),
     [campusArticles]
   );
   const thirtyDaysArticles = useMemo(
-    () => allArticles.filter((a) => a.campusSection === '30days'),
-    []
+    () => [...campusArticles].filter((a) => (a.updatedDays ?? 9999) <= 30).slice(0, 6),
+    [campusArticles]
+  );
+  const topGlobalGuides = useMemo(
+    () => [...globalGuideArticles].sort((a, b) => b.upvote_count - a.upvote_count).slice(0, 3),
+    [globalGuideArticles]
   );
 
   const scrollToSection = (sectionId: string) => {
@@ -246,7 +281,7 @@ export default function Campus() {
               <span className="animate-spin rounded-full border-2 border-[#991b1b]/30 border-t-[#991b1b] size-5" aria-hidden />
               Loading articles…
             </div>
-          ) : recentPublishedArticles.length === 0 ? (
+          ) : campusRecentPublishedArticles.length === 0 ? (
             <div className="rounded-2xl border-2 border-dashed border-[#991b1b]/30 bg-[#fbf2f3]/80 p-8 md:p-10 text-center">
               <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-[#991b1b]/10 text-[#991b1b] mb-4">
                 <Sparkles className="h-7 w-7" />
@@ -265,7 +300,7 @@ export default function Campus() {
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-              {recentPublishedArticles.map((article) => (
+              {campusRecentPublishedArticles.map((article) => (
                 <RecentUpdateCard
                   key={article.id}
                   article={article}
@@ -274,7 +309,7 @@ export default function Campus() {
               ))}
             </div>
           )}
-          {recentPublishedArticles.length > 0 && (
+          {campusRecentPublishedArticles.length > 0 && (
             <Link
               to={`/articles${campusId ? `?campus=${campusId}` : ''}`}
               className="inline-flex items-center gap-1.5 rounded-lg bg-[#991b1b] px-5 py-2.5 text-sm font-medium text-white hover:bg-[#7f1d1d] transition-colors"
@@ -300,7 +335,7 @@ export default function Campus() {
               {topVotedArticles.map((article) => (
                 <Link
                   key={article.id}
-                  to={article.campusId ? `/campus/${slugForCampusId(article.campusId)}/article/${article.id}` : `/article/${article.id}`}
+                  to={article.campusId ? `/campus/${slugForCampusId(article.campusId)}/article/${article.slug || article.id}` : `/article/${article.slug || article.id}`}
                   className="block bg-white rounded-xl shadow-card overflow-hidden border border-transparent hover:border-[#991b1b]/30 transition-colors"
                 >
                   {article.coverImage && (
@@ -339,7 +374,7 @@ export default function Campus() {
             {thirtyDaysArticles.map((article) => (
               <Link
                 key={article.id}
-                to={article.campusId ? `/campus/${slugForCampusId(article.campusId)}/article/${article.id}` : `/article/${article.id}`}
+                to={article.campusId ? `/campus/${slugForCampusId(article.campusId)}/article/${article.slug || article.id}` : `/article/${article.slug || article.id}`}
                 className="block bg-white rounded-lg shadow-card p-5 border-l-4 border-[#991b1b] hover:border-[#7f1d1d] transition-colors"
               >
                 <h3 className="font-bold text-black mb-2">{article.title.replace('Your first month at NIAT — ', '')}</h3>
@@ -356,7 +391,7 @@ export default function Campus() {
           </Link>
         </section>
 
-        {/* Section: Campus Life — videos (demo, infinite scroll) */}
+        {/* Section: Campus Life — clean, immersive moving video strip */}
         <section ref={sectionRefs.campusLife} className="mb-16">
           <div className="flex items-center gap-3 mb-2">
             <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-[#991b1b]/10">
@@ -367,19 +402,14 @@ export default function Campus() {
             </h2>
           </div>
 
-          <p className="text-[#64748b] text-sm mb-4 max-w-2xl">
-            Get a feel for life at <span className="font-medium text-[#1e293b]">{displayCampus.name}</span> and across NIAT.
+          <p className="text-[#64748b] text-sm mb-5 max-w-2xl">
+            Real moments from NIAT. Tap any thumbnail and jump straight into campus energy.
           </p>
 
-          <div className="flex items-start gap-3 p-4 mb-6 rounded-xl border border-[#991b1b]/15 bg-[#fbf2f3]/50">
-            <Info className="h-5 w-5 text-[#991b1b] shrink-0 mt-0.5" />
-            <p className="text-sm text-[#475569]">
-              For this demo we’re showing the same videos on every campus. Once we have real campus-specific content, we’ll swap these out so each campus has its own vibe and stories.
-            </p>
-          </div>
-
-          {/* Infinite scrolling video strip — duplicate list for seamless loop */}
-          <div className="relative -mx-4 sm:-mx-6 lg:-mx-8 overflow-hidden">
+          {/* Infinite scrolling video strip — no CTA button, thumbnail-first */}
+          <div className="relative -mx-4 sm:-mx-6 lg:-mx-8 overflow-hidden rounded-2xl">
+            <div className="pointer-events-none absolute inset-y-0 left-0 w-12 sm:w-20 bg-gradient-to-r from-white to-transparent z-10" />
+            <div className="pointer-events-none absolute inset-y-0 right-0 w-12 sm:w-20 bg-gradient-to-l from-white to-transparent z-10" />
             <div className="flex w-[200%] animate-campus-life-scroll">
               {[...campusLifeVideos, ...campusLifeVideos].map((video, index) => (
                 <a
@@ -387,25 +417,29 @@ export default function Campus() {
                   href={video.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="group flex-[0_0_12.5%] shrink-0 pr-4 pl-1"
+                  className="group flex-[0_0_14.28%] shrink-0 pr-4 pl-1"
                 >
-                  <div className="rounded-xl overflow-hidden border border-[rgba(30,41,59,0.08)] bg-white shadow-[0_2px_8px_rgba(30,41,59,0.06)] hover:border-[#991b1b]/30 hover:shadow-[0_8px_24px_rgba(30,41,59,0.12)] transition-all duration-300">
+                  <div className="rounded-xl overflow-hidden border border-[rgba(30,41,59,0.08)] bg-white shadow-[0_2px_8px_rgba(30,41,59,0.06)] hover:border-[#991b1b]/30 hover:shadow-[0_10px_26px_rgba(30,41,59,0.18)] transition-all duration-300">
                     <div className="relative aspect-video bg-[#1e293b]">
                       <img
                         src={`https://img.youtube.com/vi/${video.id}/mqdefault.jpg`}
-                        alt=""
-                        className="w-full h-full object-cover"
+                        alt={video.title}
+                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                       />
-                      <div className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-black/35 transition-colors">
-                        <span className="flex items-center justify-center w-12 h-12 rounded-full bg-[#991b1b] text-white shadow-lg group-hover:scale-110 transition-transform">
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/25 to-transparent" />
+                      <div className="absolute top-3 left-3">
+                        <span className="inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-semibold bg-white/90 text-[#991b1b]">
+                          {video.tag}
+                        </span>
+                      </div>
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <span className="flex items-center justify-center w-12 h-12 rounded-full bg-[#991b1b]/90 text-white shadow-lg group-hover:scale-110 transition-transform">
                           <Play className="h-6 w-6 ml-0.5" fill="currentColor" />
                         </span>
                       </div>
-                    </div>
-                    <div className="p-3 text-center">
-                      <span className="text-xs font-medium text-[#991b1b] group-hover:underline uppercase tracking-wide">
-                        Watch on YouTube
-                      </span>
+                      <div className="absolute bottom-2 left-3 right-3">
+                        <p className="text-white text-sm font-medium line-clamp-1">{video.title}</p>
+                      </div>
                     </div>
                   </div>
                 </a>
@@ -427,7 +461,6 @@ export default function Campus() {
           </p>
 
           {(() => {
-            const campusClubs = clubs.filter((c) => c.campusId === campusId || c.campusId === null);
             const previewClubs = campusClubs.slice(0, 3);
             if (campusClubs.length === 0) {
               return (
@@ -451,9 +484,9 @@ export default function Campus() {
                         className="block bg-white rounded-xl border border-[rgba(30,41,59,0.1)] transition-all hover:border-[#991b1b] hover:shadow-lg overflow-hidden flex flex-col"
                         style={{ boxShadow: '0 4px 12px rgba(30, 41, 59, 0.08)' }}
                       >
-                        {club.coverImage && (
+                        {club.cover_image && (
                           <div className="h-32 w-full shrink-0">
-                            <ImageWithFallback src={club.coverImage} alt={club.name} loading="lazy" className="w-full h-full object-cover" />
+                            <ImageWithFallback src={club.cover_image} alt={club.name} loading="lazy" className="w-full h-full object-cover" />
                           </div>
                         )}
                         <div className="p-5 flex flex-col flex-1">
@@ -469,7 +502,7 @@ export default function Campus() {
                             >
                               {club.type}
                             </span>
-                            {club.openToAll ? (
+                            {club.open_to_all ? (
                               <span className="text-xs font-medium text-green-700 bg-green-100 px-2 py-0.5 rounded-full">
                                 Open to All
                               </span>
@@ -492,7 +525,7 @@ export default function Campus() {
                             className="text-[12px] text-[rgba(30,41,59,0.5)] mb-2"
                             style={{ fontFamily: 'DM Sans, sans-serif' }}
                           >
-                            Since {club.foundedYear} · ~{club.memberCount} members
+                            Since {club.founded_year ?? '—'} · ~{club.member_count} members
                           </p>
                           <span className="text-[#991b1b] text-sm font-medium hover:underline">
                             View details →
@@ -529,7 +562,7 @@ export default function Campus() {
               {foodArticles.map((article) => (
                 <Link
                   key={article.id}
-                  to={article.campusId ? `/campus/${slugForCampusId(article.campusId)}/article/${article.id}` : `/article/${article.id}`}
+                  to={article.campusId ? `/campus/${slugForCampusId(article.campusId)}/article/${article.slug || article.id}` : `/article/${article.slug || article.id}`}
                   className="block bg-white rounded-xl shadow-card overflow-hidden border border-transparent hover:border-[#991b1b]/30 transition-colors"
                 >
                   {article.coverImage && (
@@ -570,7 +603,7 @@ export default function Campus() {
               {livingArticles.map((article) => (
                 <Link
                   key={article.id}
-                  to={article.campusId ? `/campus/${slugForCampusId(article.campusId)}/article/${article.id}` : `/article/${article.id}`}
+                  to={article.campusId ? `/campus/${slugForCampusId(article.campusId)}/article/${article.slug || article.id}` : `/article/${article.slug || article.id}`}
                   className="block bg-white rounded-xl shadow-card overflow-hidden border border-transparent hover:border-[#991b1b]/30 transition-colors"
                 >
                   {article.coverImage && (
@@ -646,21 +679,17 @@ export default function Campus() {
             📘 Global Guides — upvotes at any campus
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-            {allArticles
-              .filter((a) => a.isGlobalGuide === true)
-              .sort((a, b) => b.upvoteCount - a.upvoteCount)
-              .slice(0, 3)
-              .map((guide) => (
+            {topGlobalGuides.map((guide) => (
                 <Link
                   key={guide.id}
-                  to={`/article/${guide.id}`}
+                  to={`/article/${guide.slug || guide.id}`}
                   className="block bg-white rounded-lg p-4 border border-[rgba(30,41,59,0.08)] hover:border-[#991b1b]/30 transition-colors"
                 >
                   <h4 className="font-display font-medium text-[#1e293b] mb-1 line-clamp-2">
                     {guide.title}
                   </h4>
                   <p className="text-sm text-[#64748b] line-clamp-2 mb-2">
-                    {guide.excerpt}
+                    {guide.excerpt || 'No excerpt available yet.'}
                   </p>
                   <span className="inline-flex items-center text-[#991b1b] text-sm font-medium hover:underline">
                     Read <ChevronRight className="h-4 w-4 ml-0.5" />
