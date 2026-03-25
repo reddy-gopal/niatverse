@@ -41,45 +41,45 @@ export default function Article() {
 
   const article = loading
     ? {
-        title: '',
+      title: '',
+      excerpt: '',
+      updatedDays: 0,
+      upvoteCount: 0,
+      viewCount: 0,
+      author: '',
+      category: 'onboarding-kit' as const,
+      campusName: '',
+      coverImage: undefined,
+      status: undefined as string | undefined,
+      rejectionReason: undefined as string | undefined,
+    }
+    : fromApi && apiArticle
+      ? {
+        title: apiArticle.title,
+        excerpt: apiArticle.excerpt,
+        updatedDays: apiArticle.updated_days,
+        upvoteCount: apiArticle.upvote_count,
+        viewCount: apiArticle.view_count,
+        author: apiArticle.author_username,
+        category: apiArticle.category,
+        campusName: apiArticle.campus_name,
+        coverImage: apiArticle.cover_image || undefined,
+        status: apiArticle.status,
+        rejectionReason: apiArticle.rejection_reason,
+      }
+      : {
+        title: notFound ? 'Article not found' : '',
         excerpt: '',
         updatedDays: 0,
         upvoteCount: 0,
         viewCount: 0,
         author: '',
-        category: 'onboarding-kit' as const,
-        campusName: '',
+        category: 'academics' as const,
+        campusName: 'Global',
         coverImage: undefined,
         status: undefined as string | undefined,
         rejectionReason: undefined as string | undefined,
-      }
-    : fromApi && apiArticle
-      ? {
-          title: apiArticle.title,
-          excerpt: apiArticle.excerpt,
-          updatedDays: apiArticle.updated_days,
-          upvoteCount: apiArticle.upvote_count,
-          viewCount: apiArticle.view_count,
-          author: apiArticle.author_username,
-          category: apiArticle.category,
-          campusName: apiArticle.campus_name,
-          coverImage: apiArticle.cover_image || undefined,
-          status: apiArticle.status,
-          rejectionReason: apiArticle.rejection_reason,
-        }
-      : {
-          title: notFound ? 'Article not found' : '',
-          excerpt: '',
-          updatedDays: 0,
-          upvoteCount: 0,
-          viewCount: 0,
-          author: '',
-          category: 'academics' as const,
-          campusName: 'Global',
-          coverImage: undefined,
-          status: undefined as string | undefined,
-          rejectionReason: undefined as string | undefined,
-        };
+      };
 
   const articleIdForEngagement = fromApi && apiArticle ? apiArticle.id : null;
   const { upvoteCount, upvoted, toggle } = useUpvote(articleIdForEngagement);
@@ -95,9 +95,9 @@ export default function Article() {
       if (sessionStorage.getItem(key)) return;
       sessionStorage.setItem(key, '1');
       setViewIncremented(true);
-      articleService.incrementView(articleIdForEngagement).catch(() => {});
+      articleService.incrementView(articleIdForEngagement).catch(() => { });
     } catch {
-      articleService.incrementView(articleIdForEngagement).catch(() => {});
+      articleService.incrementView(articleIdForEngagement).catch(() => { });
     }
   }, [articleIdForEngagement]);
 
@@ -357,97 +357,96 @@ export default function Article() {
 
         {!loading && (
           <>
-        {/* Article Body — API body or excerpt */}
-        {fromApi && apiArticle?.body ? (
-          <div className="article-body-read-only">
-            <article
-              className="prose prose-lg max-w-none mb-8"
-              dangerouslySetInnerHTML={{ __html: stripImageCardsFromHtml(apiArticle.body) }}
-            />
-          </div>
-        ) : (
-          <article className="prose prose-lg max-w-none mb-8">
-            <p className="text-black leading-relaxed">{article.excerpt}</p>
-          </article>
-        )}
-
-        {/* Meta Row — below body */}
-        <div className="flex flex-wrap items-center gap-4 text-sm text-black mb-6 pb-6 border-t border-[rgba(30,41,59,0.1)] pt-6">
-          <span>Written by {article.author}</span>
-          <span className="flex items-center">
-            <Clock className="h-4 w-4 mr-1" />
-            Last updated {article.updatedDays} days ago
-          </span>
-          <span className="flex items-center gap-1">
-            <ThumbsUp className="h-4 w-4" />
-            {displayUpvoteCount} upvote{displayUpvoteCount !== 1 ? 's' : ''}
-          </span>
-          <span className="flex items-center gap-1">
-            <Eye className="h-4 w-4" />
-            {displayViewCount} view{displayViewCount !== 1 ? 's' : ''}
-          </span>
-        </div>
-
-        {/* Upvote + Suggest (API articles only) — below body */}
-        {fromApi && articleIdForEngagement != null && (
-          <div className="flex flex-wrap items-center gap-3 mb-8">
-            {currentUsername != null && (
-              <button
-                type="button"
-                onClick={toggle}
-                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-sm font-medium transition-colors ${
-                  upvoted
-                    ? 'bg-[#991b1b] border-[#991b1b] text-white'
-                    : 'border-[#991b1b] text-[#991b1b] hover:bg-[#fbf2f3]'
-                }`}
-              >
-                <ThumbsUp className="h-4 w-4" />
-                {upvoted ? 'Upvoted' : 'Upvote'}
-              </button>
-            )}
-            {currentUsername != null && (
-              <ArticleSuggestionForm
-                articleId={articleIdForEngagement}
-                onSubmit={(payload) => articleService.submitSuggestion(articleIdForEngagement, payload).then(() => undefined)}
-              />
-            )}
-          </div>
-        )}
-
-        {/* Delete confirmation modal */}
-        {deleteConfirmOpen && (
-          <>
-            <div className="fixed inset-0 bg-black/50 z-50" onClick={() => !deleteLoading && setDeleteConfirmOpen(false)} aria-hidden />
-            <div className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-full max-w-sm mx-4 p-6 rounded-xl bg-white shadow-xl">
-              <h3 className="font-display text-lg font-bold text-black mb-2">Delete this article?</h3>
-              <p className="text-sm text-black/80 mb-6">This cannot be undone. The article will be permanently removed.</p>
-              <div className="flex gap-3 justify-end">
-                <button
-                  type="button"
-                  onClick={() => !deleteLoading && setDeleteConfirmOpen(false)}
-                  className="px-4 py-2 rounded-lg border border-gray-300 text-black hover:bg-gray-50"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="button"
-                  onClick={handleDeleteArticle}
-                  disabled={deleteLoading}
-                  className="px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 disabled:opacity-60"
-                >
-                  {deleteLoading ? (
-                <span className="inline-flex items-center gap-2">
-                  <span className="animate-spin rounded-full border-2 border-white/40 border-t-white size-4 shrink-0" role="status" aria-label="Deleting" />
-                  Deleting…
-                </span>
-              ) : (
-                'Delete'
-              )}
-                </button>
+            {/* Article Body — API body or excerpt */}
+            {fromApi && apiArticle?.body ? (
+              <div className="article-body-read-only mb-8">
+                <div
+                  className="w-full"
+                  dangerouslySetInnerHTML={{ __html: stripImageCardsFromHtml(apiArticle.body) }}
+                />
               </div>
+            ) : (
+              <div className="mb-8">
+                <p className="text-[#374151] leading-relaxed text-lg">{article.excerpt}</p>
+              </div>
+            )}
+
+            {/* Meta Row — below body */}
+            <div className="flex flex-wrap items-center gap-4 text-sm text-black mb-6 pb-6 border-t border-[rgba(30,41,59,0.1)] pt-6">
+              <span>Written by {article.author}</span>
+              <span className="flex items-center">
+                <Clock className="h-4 w-4 mr-1" />
+                Last updated {article.updatedDays} days ago
+              </span>
+              <span className="flex items-center gap-1">
+                <ThumbsUp className="h-4 w-4" />
+                {displayUpvoteCount} upvote{displayUpvoteCount !== 1 ? 's' : ''}
+              </span>
+              <span className="flex items-center gap-1">
+                <Eye className="h-4 w-4" />
+                {displayViewCount} view{displayViewCount !== 1 ? 's' : ''}
+              </span>
             </div>
-          </>
-        )}
+
+            {/* Upvote + Suggest (API articles only) — below body */}
+            {fromApi && articleIdForEngagement != null && (
+              <div className="flex flex-wrap items-center gap-3 mb-8">
+                {currentUsername != null && (
+                  <button
+                    type="button"
+                    onClick={toggle}
+                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-sm font-medium transition-colors ${upvoted
+                        ? 'bg-[#991b1b] border-[#991b1b] text-white'
+                        : 'border-[#991b1b] text-[#991b1b] hover:bg-[#fbf2f3]'
+                      }`}
+                  >
+                    <ThumbsUp className="h-4 w-4" />
+                    {upvoted ? 'Upvoted' : 'Upvote'}
+                  </button>
+                )}
+                {currentUsername != null && (
+                  <ArticleSuggestionForm
+                    articleId={articleIdForEngagement}
+                    onSubmit={(payload) => articleService.submitSuggestion(articleIdForEngagement, payload).then(() => undefined)}
+                  />
+                )}
+              </div>
+            )}
+
+            {/* Delete confirmation modal */}
+            {deleteConfirmOpen && (
+              <>
+                <div className="fixed inset-0 bg-black/50 z-50" onClick={() => !deleteLoading && setDeleteConfirmOpen(false)} aria-hidden />
+                <div className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-full max-w-sm mx-4 p-6 rounded-xl bg-white shadow-xl">
+                  <h3 className="font-display text-lg font-bold text-black mb-2">Delete this article?</h3>
+                  <p className="text-sm text-black/80 mb-6">This cannot be undone. The article will be permanently removed.</p>
+                  <div className="flex gap-3 justify-end">
+                    <button
+                      type="button"
+                      onClick={() => !deleteLoading && setDeleteConfirmOpen(false)}
+                      className="px-4 py-2 rounded-lg border border-gray-300 text-black hover:bg-gray-50"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleDeleteArticle}
+                      disabled={deleteLoading}
+                      className="px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 disabled:opacity-60"
+                    >
+                      {deleteLoading ? (
+                        <span className="inline-flex items-center gap-2">
+                          <span className="animate-spin rounded-full border-2 border-white/40 border-t-white size-4 shrink-0" role="status" aria-label="Deleting" />
+                          Deleting…
+                        </span>
+                      ) : (
+                        'Delete'
+                      )}
+                    </button>
+                  </div>
+                </div>
+              </>
+            )}
           </>
         )}
       </div>

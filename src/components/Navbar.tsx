@@ -123,14 +123,14 @@ export default function Navbar({ searchQuery = '', showSearch }: NavbarProps) {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
-            <Link to="/" className="flex items-center gap-2 shrink-0">
+            <Link to="/" className="flex items-center gap-1.5 shrink-0">
               <img
-                src="/niat.png"
+                src="/niat.svg"
                 alt="NIAT"
                 className="h-8 w-8 sm:h-9 sm:w-9 object-contain"
               />
               <span className="font-display text-xl sm:text-2xl font-bold text-[#991b1b]">NIAT</span>
-              <span className="font-body text-lg sm:text-xl font-medium text-black ml-1">Insider</span>
+              <span className="font-display text-lg sm:text-xl font-bold text-black">Insider</span>
             </Link>
 
             <form
@@ -322,7 +322,7 @@ export default function Navbar({ searchQuery = '', showSearch }: NavbarProps) {
                   </div>
 
                   <a
-                    href ="/talk-to-seniors"
+                    href="/talk-to-seniors"
                     className="text-black hover:text-black text-sm font-medium transition-colors"
                   >
                     Talk To Seniors
